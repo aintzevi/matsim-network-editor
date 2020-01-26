@@ -1,6 +1,7 @@
 package controllers;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.stage.Stage;
 
@@ -9,14 +10,13 @@ import javafx.stage.Stage;
  */
 public class MenuController {
     @FXML
-    public MenuItem menuExit;
+    private MenuItem fileExit;
+    @FXML
+    private MenuBar menuBar;
 
-    // TODO Decide if I need to split this over multiple controllers
     public void handleMenuExit() {
-        // TODO Save things here
-//        menuExit.setText("hm");
-        System.out.println("blah");
-
-//        mainWindow.close();
+        Stage stage = (Stage) menuBar.getScene().getWindow();
+        System.out.println("Close window");
+        stage.close();
     }
 }
