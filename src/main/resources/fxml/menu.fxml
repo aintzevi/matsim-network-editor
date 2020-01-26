@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0"
+      prefWidth="649.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.MenuController">
+    <MenuBar>
+        <Menu text="_File">
+            <MenuItem text="_New"/>
+            <MenuItem text="_Open..."/>
+            <MenuItem text="_Save"/>
+            <MenuItem text="Save _as..."/>
+            <MenuItem text="_Exit" fx:id="menuExit" onAction="#handleMenuExit"/>
+        </Menu>
+        <Menu text="_Edit">
+            <MenuItem text="Add node"/>
+            <MenuItem text="Add link"/>
+            <MenuItem text="Delete node"/>
+            <MenuItem text="Delete link"/>
+            <MenuItem text="Edit attributes"/>
+        </Menu>
+        <Menu text="_Import">
+            <MenuItem text="From ._xml file"/>
+            <MenuItem text="From _"/>
+        </Menu>
+        <Menu text="E_xport">
+                <MenuItem text="In ._shp form"/>
+        </Menu>
+        <Menu text="_Help">
+            <MenuItem text="_Source"/>
+            <MenuItem text="_About"/>
+        </Menu>
+    </MenuBar>
+</VBox>
