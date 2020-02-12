@@ -1,14 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 
-
-<BorderPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MainController">
+<BorderPane minWidth="300.0" prefHeight="450.0" prefWidth="650.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MainController">
    <top>
-       <fx:include fx:id="menu" source="menu.fxml" />
+       <fx:include fx:id="menu" snapToPixel="false" source="menu.fxml" />
    </top>
    <bottom>
-      <HBox prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+      <HBox alignment="CENTER_LEFT" prefHeight="29.0" prefWidth="649.0" BorderPane.alignment="CENTER">
+         <children>
+            <Label text="Stat. 1" />
+            <Region prefHeight="10.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
+            <Label text="Stat.2" />
+            <Region prefHeight="10.0" prefWidth="200.0" />
+            <Label text="Stat.3" />
+         </children></HBox>
    </bottom>
 </BorderPane>
