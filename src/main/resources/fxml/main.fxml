@@ -51,6 +51,40 @@
          </Menu>
       </MenuBar>
    </top>
+   <left>
+      <ToolBar orientation="VERTICAL" fx:id="toolbar">
+         <Button>a</Button>
+         <Button>b</Button>
+         <Button>c</Button>
+      </ToolBar>
+   </left>
+   <right>
+      <Accordion minWidth="200.00">
+         <panes>
+            <TitledPane fx:id="nodesPane" text="Nodes">
+               <GridPane fx:id="nodesGridPanel">
+                  <TableView fx:id="nodesTable">
+
+                  </TableView>
+                  <!--                        <Label GridPane.columnIndex="0" GridPane.rowIndex="0" text="this is a label"/>
+                                          <Label GridPane.columnIndex="0" GridPane.rowIndex="1" text="this is a label"/>-->
+               </GridPane>
+            </TitledPane>
+            <TitledPane fx:id="linksPane" text="Links">
+               <TableView fx:id="linksTable">
+
+               </TableView>
+            </TitledPane>
+         </panes>
+      </Accordion>
+   </right>
+   <center>
+      <AnchorPane fx:id="centerPanel">
+         <!-- Anchors to extend to parent size -->
+         <MapView fx:id="mapView" prefHeight="450.0" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" xmlns="http://javafx.com/javafx/11.0.1"
+                  xmlns:fx="http://javafx.com/fxml/1"/>
+      </AnchorPane>
+   </center>
    <bottom>
       <HBox alignment="CENTER_LEFT" prefHeight="29.0" prefWidth="649.0" BorderPane.alignment="CENTER">
          <Label text="Stat. 1"/>
