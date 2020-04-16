@@ -5,18 +5,59 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 
-<BorderPane minWidth="300.0" prefHeight="450.0" prefWidth="650.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MainController">
+<?import com.gluonhq.maps.MapView?>
+
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.control.TableView?>
+<BorderPane fx:id="mainPane" minWidth="300.0" prefHeight="450.0" prefWidth="650.0"
+            xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controllers.MainController">
    <top>
-       <fx:include fx:id="menu" snapToPixel="false" source="menu.fxml" />
+      <!--<fx:include fx:id="menu" snapToPixel="false" source="menu.fxml" />-->
+      <MenuBar fx:id="menuBar" prefHeight="29.0" maxHeight="29.0">
+         <Menu fx:id="file" text="_File">
+            <!--            <MenuItem text="_New" fx:id="newFile"/>
+                        <MenuItem text="_Open..." fx:id="openFile"/>
+                           <MenuItem text="_Save" fx:id="saveFile"/>
+                           <MenuItem text="Save _as..." fx:id="saveFileAs"/>-->
+            <MenuItem fx:id="exitFile" onAction="#handleMenuExit" text="_Exit"/>
+         </Menu>
+         <!--        <Menu text="_Edit">
+                     <MenuItem text="Add node"/>
+                        <MenuItem text="Add link"/>
+                        <MenuItem text="Delete node"/>
+                        <MenuItem text="Delete link"/>
+                        <MenuItem text="Edit attributes"/>
+                    </Menu>-->
+         <Menu text="_Import">
+            <MenuItem fx:id="importFile" onAction="#handleMenuImport" text="From ._xml file"/>
+         </Menu>
+         <Menu text="E_xport">
+            <MenuItem text="In ._shp form"/>
+         </Menu>
+         <Menu text="_Help">
+            <MenuItem text="_Source"/>
+            <MenuItem text="_About"/>
+         </Menu>
+      </MenuBar>
    </top>
    <bottom>
       <HBox alignment="CENTER_LEFT" prefHeight="29.0" prefWidth="649.0" BorderPane.alignment="CENTER">
-         <children>
-            <Label text="Stat. 1" />
-            <Region prefHeight="10.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
-            <Label text="Stat.2" />
-            <Region prefHeight="10.0" prefWidth="200.0" />
-            <Label text="Stat.3" />
-         </children></HBox>
+         <Label text="Stat. 1"/>
+         <Region prefHeight="10.0" prefWidth="200.0" HBox.hgrow="ALWAYS"/>
+         <Label text="Stat.2"/>
+         <Region prefHeight="10.0" prefWidth="200.0"/>
+         <Label text="Stat.3"/>
+      </HBox>
    </bottom>
 </BorderPane>
