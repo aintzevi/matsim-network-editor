@@ -71,9 +71,9 @@
             </TitledPane>
             <TitledPane fx:id="linksPane" text="Links">
                <ScrollPane fx:id="linksScrollPane">
-               <TableView fx:id="linksTable">
-               </TableView>
-               <ScrollPane/>
+                  <TableView fx:id="linksTable">
+                  </TableView>
+               </ScrollPane>
             </TitledPane>
          </panes>
       </Accordion>
