@@ -12,11 +12,14 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.FileChooser;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
@@ -66,12 +69,17 @@ public class MainController implements Initializable {
         // Create tables for nodes and links
         createAttributeTables();
 
-        for(Node node : network.getNodes().values()) {
+        for (Node node : network.getNodes().values()) {
             // Add to drop menu
             nodesTable.getItems().add(network.getNodes().values().toString());
         }
 
-        System.out.println(network.getNodes());
+        for (Link link : network.getLinks().values()) {
+            // Add to drop menu
+            linksTable.getItems().add(network.getLinks().values().toString());
+        }
+
+        System.out.println(network.getNodes().values().toArray()[0]);
     }
 
     private void createAttributeTables() {

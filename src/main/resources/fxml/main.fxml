@@ -63,14 +63,13 @@
       <Accordion minWidth="200.00" maxWidth="200.00">
          <panes>
             <TitledPane fx:id="nodesPane" text="Nodes">
-               <ScrollPane fx:id="nodesScrollPane">
+               <ScrollPane fx:id="nodesScrollPane" fitToWidth="true"  fitToHeight="true">
                   <TableView fx:id="nodesTable">
-
                   </TableView>
                </ScrollPane>
             </TitledPane>
             <TitledPane fx:id="linksPane" text="Links">
-               <ScrollPane fx:id="linksScrollPane">
+               <ScrollPane fx:id="linksScrollPane" fitToWidth="true" fitToHeight="true">
                   <TableView fx:id="linksTable">
                   </TableView>
                </ScrollPane>
