@@ -29,7 +29,7 @@ public class MainController implements Initializable {
     private MapView mapView;
 
     @FXML
-    private GridPane nodesGridPanel;
+    private ScrollPane nodesScrollPane;
 
     @FXML
     TableView<String> nodesTable = new TableView<>();
@@ -63,16 +63,8 @@ public class MainController implements Initializable {
 
         new MatsimNetworkReader(network).readFile(importedFile.getPath());
 
-        // Create Table columns
-        TableColumn<String, Node> nodeIdCol = new TableColumn<>("id");
-        TableColumn<String, Node> xCoordCol = new TableColumn<>("x");
-        TableColumn<String, Node> yCoordCol = new TableColumn<>("y");
-
-        nodeIdCol.setCellValueFactory(new PropertyValueFactory<>("id"));
-        xCoordCol.setCellValueFactory(new PropertyValueFactory<>("x"));
-        yCoordCol.setCellValueFactory(new PropertyValueFactory<>("y"));
-
-        nodesTable.getColumns().addAll(nodeIdCol, xCoordCol, yCoordCol);
+        // Create tables for nodes and links
+        createAttributeTables();
 
         for(Node node : network.getNodes().values()) {
             // Add to drop menu
@@ -80,5 +72,46 @@ public class MainController implements Initializable {
         }
 
         System.out.println(network.getNodes());
+    }
+
+    private void createAttributeTables() {
+        // Create Table columns
+        TableColumn<String, Node> nodeIdColumn = new TableColumn<>("id");
+        TableColumn<String, Node> xCoordColumn = new TableColumn<>("x");
+        TableColumn<String, Node> yCoordColumn = new TableColumn<>("y");
+        TableColumn<String, Node> typeColumn = new TableColumn<>("type");
+        TableColumn<String, Node> nOfInLinksColumn = new TableColumn<>("in-links");
+        TableColumn<String, Node> nOfOutLinksColumn = new TableColumn<>("out-links");
+
+        // Create Table columns
+        TableColumn<String, Node> linkIdColumn = new TableColumn<>("id");
+        TableColumn<String, Node> fromColumn = new TableColumn<>("from");
+        TableColumn<String, Node> toColumn = new TableColumn<>("to");
+        TableColumn<String, Node> lengthColumn = new TableColumn<>("lenght");
+        TableColumn<String, Node> capacityColumn = new TableColumn<>("capacity");
+        TableColumn<String, Node> freespeedColumn = new TableColumn<>("freespeed");
+        TableColumn<String, Node> permlanesColumn = new TableColumn<>("perm-lanes");
+
+        // Property-matching value for each cell
+        nodeIdColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+        xCoordColumn.setCellValueFactory(new PropertyValueFactory<>("x"));
+        yCoordColumn.setCellValueFactory(new PropertyValueFactory<>("y"));
+        typeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
+        nOfInLinksColumn.setCellValueFactory(new PropertyValueFactory<>("in-links"));
+        nOfOutLinksColumn.setCellValueFactory(new PropertyValueFactory<>("out-links"));
+
+        linkIdColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+        toColumn.setCellValueFactory(new PropertyValueFactory<>("from"));
+        fromColumn.setCellValueFactory(new PropertyValueFactory<>("to"));
+        lengthColumn.setCellValueFactory(new PropertyValueFactory<>("length"));
+        capacityColumn.setCellValueFactory(new PropertyValueFactory<>("capacity"));
+        freespeedColumn.setCellValueFactory(new PropertyValueFactory<>("freespeed"));
+        permlanesColumn.setCellValueFactory(new PropertyValueFactory<>("perm-lanes"));
+
+        nodesTable.getColumns().addAll(nodeIdColumn, xCoordColumn, yCoordColumn, nOfInLinksColumn, nOfOutLinksColumn);
+        nodesTable.setPlaceholder(new Label("No rows to display"));
+
+        linksTable.getColumns().addAll(linkIdColumn, toColumn, fromColumn, lengthColumn, capacityColumn, freespeedColumn, permlanesColumn);
+        linksTable.setPlaceholder(new Label("No rows to display"));
     }
 }
