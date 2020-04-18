@@ -19,6 +19,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.ScrollPane?>
 <BorderPane fx:id="mainPane" minWidth="300.0" prefHeight="450.0" prefWidth="650.0"
             xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controllers.MainController">
@@ -59,21 +60,20 @@
       </ToolBar>
    </left>
    <right>
-      <Accordion minWidth="200.00">
+      <Accordion minWidth="200.00" maxWidth="200.00">
          <panes>
             <TitledPane fx:id="nodesPane" text="Nodes">
-               <GridPane fx:id="nodesGridPanel">
+               <ScrollPane fx:id="nodesScrollPane">
                   <TableView fx:id="nodesTable">
 
                   </TableView>
-                  <!--                        <Label GridPane.columnIndex="0" GridPane.rowIndex="0" text="this is a label"/>
-                                          <Label GridPane.columnIndex="0" GridPane.rowIndex="1" text="this is a label"/>-->
-               </GridPane>
+               </ScrollPane>
             </TitledPane>
             <TitledPane fx:id="linksPane" text="Links">
+               <ScrollPane fx:id="linksScrollPane">
                <TableView fx:id="linksTable">
-
                </TableView>
+               <ScrollPane/>
             </TitledPane>
          </panes>
       </Accordion>
