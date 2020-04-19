@@ -69,6 +69,7 @@ public class MainController implements Initializable {
         // Create tables for nodes and links
         createAttributeTables();
 
+        // TODO: Correct attribute values acquisition, do I need to create an Observable Node object?
         for (Node node : network.getNodes().values()) {
             // Add to drop menu
             nodesTable.getItems().add(network.getNodes().values().toString());
@@ -83,6 +84,10 @@ public class MainController implements Initializable {
     }
 
     private void createAttributeTables() {
+        // Clear TableViews
+        nodesTable.getItems().clear();
+        linksTable.getItems().clear();
+
         // Create Table columns
         TableColumn<String, Node> nodeIdColumn = new TableColumn<>("id");
         TableColumn<String, Node> xCoordColumn = new TableColumn<>("x");
@@ -100,6 +105,7 @@ public class MainController implements Initializable {
         TableColumn<String, Node> freespeedColumn = new TableColumn<>("freespeed");
         TableColumn<String, Node> permlanesColumn = new TableColumn<>("perm-lanes");
 
+        //TODO Create Node and Link class containing Property -> PropertyValueFactory works with reflection, this doesn't work
         // Property-matching value for each cell
         nodeIdColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         xCoordColumn.setCellValueFactory(new PropertyValueFactory<>("x"));
