@@ -15,13 +15,12 @@ import java.util.Optional;
 
 import static com.sun.javafx.util.Utils.*;
 
-//import static com.sun.javafx.PlatformUtil.*;
-
 public class Main extends Application {
+
     public static void main(String[] args) {
 
-        if(isWindows() || isMac() || isUnix()) {
-            System.setProperty("javafx.platform" , "Desktop");
+        if (isWindows() || isMac() || isUnix()) {
+            System.setProperty("javafx.platform", "Desktop");
         }
 
         // define service for desktop - to cache the map

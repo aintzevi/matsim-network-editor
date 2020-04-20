@@ -13,14 +13,11 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.control.Accordion?>
 <?import javafx.scene.control.TitledPane?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.image.Image?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.ScrollPane?>
-<BorderPane fx:id="mainPane" minWidth="300.0" prefHeight="450.0" prefWidth="650.0"
+<BorderPane fx:id="mainPane" prefHeight="550.0" minWidth="300.0" maxWidth="1250.0" prefWidth="1250.0"
             xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controllers.MainController">
    <top>
@@ -53,14 +50,14 @@
       </MenuBar>
    </top>
    <left>
-      <ToolBar orientation="VERTICAL" fx:id="toolbar">
+      <ToolBar orientation="VERTICAL" fx:id="toolbar" prefWidth="40.0">
          <Button>a</Button>
          <Button>b</Button>
          <Button>c</Button>
       </ToolBar>
    </left>
    <right>
-      <Accordion minWidth="200.00" maxWidth="200.00">
+      <Accordion minWidth="200.00" prefWidth="200.00">
          <panes>
             <TitledPane fx:id="nodesPane" text="Nodes">
                <ScrollPane fx:id="nodesScrollPane" fitToWidth="true"  fitToHeight="true">
@@ -78,9 +75,9 @@
       </Accordion>
    </right>
    <center>
-      <AnchorPane fx:id="centerPanel">
+      <AnchorPane fx:id="centerPanel" prefHeight="450.0" prefWidth="1010.0">
          <!-- Anchors to extend to parent size -->
-         <MapView fx:id="mapView" prefHeight="450.0" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" xmlns="http://javafx.com/javafx/11.0.1"
+         <MapView fx:id="mapView" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" xmlns="http://javafx.com/javafx/11.0.1"
                   xmlns:fx="http://javafx.com/fxml/1"/>
       </AnchorPane>
    </center>
