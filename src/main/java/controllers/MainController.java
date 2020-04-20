@@ -1,5 +1,6 @@
 package controllers;
 
+import com.gluonhq.maps.MapLayer;
 import com.gluonhq.maps.MapView;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -48,7 +49,16 @@ public class MainController implements Initializable {
 
 
     public void initialize(URL url, ResourceBundle resourceBundle) {
-//        mapView.minHeight(mainPane.getScene().getHeight());
+        mapView.setZoom(12.0);
+        mapView.setCenter(48.1351, 11.5820);
+        MapLayer mapLayer = new MapLayer();
+        mapLayer.autosize();
+
+/*        MapPoint point = new MapPoint(37.396256,-121.953847);
+        Node icon = new Circle(5, Color.BLUE);
+        Point2D mapPoint = baseMap.getMapPoint(point.getLatitude(), point.getLongitude());
+        icon.setTranslateX(mapPoint.getX());
+        icon.setTranslateY(mapPoint.getY());*/
     }
 
     public void handleMenuExit() {
