@@ -61,26 +61,30 @@ public class MainController implements Initializable {
         fileChooser.setTitle("Import from file");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("xlm file", "*.xml"));
         File importedFile = fileChooser.showOpenDialog(this.menuBar.getScene().getWindow());
-        System.out.println(importedFile.getName());
-        Network network = NetworkUtils.createNetwork();
+        if (importedFile != null) {
+            System.out.println(importedFile.getName());
+            Network network = NetworkUtils.createNetwork();
 
-        new MatsimNetworkReader(network).readFile(importedFile.getPath());
+            new MatsimNetworkReader(network).readFile(importedFile.getPath());
 
-        // Create tables for nodes and links
-        createAttributeTables();
+            // Create tables for nodes and links
+            createAttributeTables();
 
-        // TODO: Correct attribute values acquisition, do I need to create an Observable Node object?
-        for (Node node : network.getNodes().values()) {
-            // Add to drop menu
-            nodesTable.getItems().add(network.getNodes().values().toString());
+            // TODO: Correct attribute values acquisition, do I need to create an Observable Node object?
+            for (Node node : network.getNodes().values()) {
+                // Add to drop menu
+                nodesTable.getItems().add(network.getNodes().values().toString());
+            }
+
+            for (Link link : network.getLinks().values()) {
+                // Add to drop menu
+                linksTable.getItems().add(network.getLinks().values().toString());
+            }
+
+            System.out.println(network.getNodes().values().toArray()[0]);
         }
-
-        for (Link link : network.getLinks().values()) {
-            // Add to drop menu
-            linksTable.getItems().add(network.getLinks().values().toString());
-        }
-
-        System.out.println(network.getNodes().values().toArray()[0]);
+        else
+            System.out.println("Import cancelled");
     }
 
     private void createAttributeTables() {
