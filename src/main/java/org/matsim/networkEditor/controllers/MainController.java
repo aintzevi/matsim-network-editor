@@ -44,6 +44,10 @@ import com.sothawo.mapjfx.event.MapViewEvent;
 import com.sothawo.mapjfx.event.MarkerEvent;
 import com.sothawo.mapjfx.offline.OfflineCache;
 
+import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.networkEditor.elements.ExtendedNetwork;
 import org.slf4j.Logger;
@@ -86,6 +90,8 @@ public class MainController {
     private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 
     private ExtendedNetwork extendedNetwork = null;
+    private Node selectedNode = null;
+    private Link selectedLink = null;
 
     private static final Coordinate coordGermanyNorth = new Coordinate(55.05863889, 8.417527778);
     private static final Coordinate coordGermanySouth = new Coordinate(47.27166667, 10.17405556);
@@ -150,6 +156,18 @@ public class MainController {
     /** contents of link pane */
     @FXML
     private VBox vboxLinks;
+
+    @FXML
+    private Button nodeEditButton;
+
+    @FXML
+    private Button nodeDeleteButton;
+
+    @FXML
+    private Button linkEditButton;
+
+    @FXML
+    private Button linkDeleteButton;
 
     /**
      * the MapView containing the map
@@ -328,6 +346,12 @@ public class MainController {
         buttonRedo.setGraphic(new ImageView(imageRedo));
         Image imageSettings = new Image(getClass().getResourceAsStream("/icons/settings.png"), 18, 18, true, true);
         buttonSettings.setGraphic(new ImageView(imageSettings));
+        Image imageDelete = new Image(getClass().getResourceAsStream("/icons/delete.png"), 18, 18, true, true);
+        nodeDeleteButton.setGraphic(new ImageView(imageDelete));
+        linkDeleteButton.setGraphic(new ImageView(imageDelete));
+        Image imageEdit = new Image(getClass().getResourceAsStream("/icons/edit.png"), 18, 18, true, true);
+        nodeEditButton.setGraphic(new ImageView(imageEdit));
+        linkEditButton.setGraphic(new ImageView(imageEdit));
 
         // file chooser
         buttonImport.setOnAction(event -> locateFile());
@@ -335,9 +359,18 @@ public class MainController {
         buttonUndo.setOnAction(event -> actionUndo());
         buttonRedo.setOnAction(event -> actionRedo());
         buttonSave.setOnAction(event -> saveFile());
+        nodeDeleteButton.setOnAction(event -> deleteSelectedNode());
+        nodeEditButton.setOnAction(event -> editSelectedNode());
+        linkDeleteButton.setOnAction(event -> deleteSelectedLink());
+        linkEditButton.setOnAction(event -> editSelectedLink());
+
         // Undo and Redo initially dissabled
         buttonUndo.setDisable(true);
         buttonRedo.setDisable(true);
+        nodeDeleteButton.setDisable(true);
+        nodeEditButton.setDisable(true);
+        linkDeleteButton.setDisable(true);
+        linkEditButton.setDisable(true);
         // Disable Save button before a network is created
         buttonSave.setDisable(true);
 
@@ -424,7 +457,7 @@ public class MainController {
     protected void initTransparentWelcome() {
         final Label label = new Label("Create or Import Network to continue...");
         label.setStyle(
-                "-fx-text-fill: white; -fx-font-size: 35; -fx-font-family: Open Sans -fx-padding: 0 0 20 0; -fx-text-alignment: center");
+                "-fx-text-fill: white; -fx-font-size: 26; -fx-font-family: Open Sans -fx-padding: 0 0 20 0; -fx-text-alignment: center");
         StackPane.setAlignment(label, Pos.CENTER);
         glassPane.getChildren().addAll(label);
         glassPane.setStyle("-fx-background-color: rgba(38,50,56,0.7)");
@@ -451,6 +484,8 @@ public class MainController {
         if (selectedFile != null) {
             if (this.extendedNetwork != null) {
                 this.extendedNetwork.clear();
+                this.selectedNode = null;
+                this.selectedLink = null;
             }
             this.extendedNetwork = new ExtendedNetwork(selectedFile.getPath(), this.vboxNetwork, this.vboxNodes,
                     this.vboxLinks, this.mapView);
@@ -542,15 +577,48 @@ public class MainController {
             Double cellSizeValue = Double.valueOf(list.get(2));
             if (this.extendedNetwork != null) {
                 this.extendedNetwork.clear();
+                this.selectedNode = null;
+                this.selectedLink = null;
             }
             this.extendedNetwork = new ExtendedNetwork(nameValue, null, cellSizeValue, capacityValue, vboxNetwork,
                     vboxNodes, vboxLinks, mapView);
+            initializeTableListeners();
+
             // Enable save button and make glasspane invisible
             buttonSave.setDisable(false);
             glassPane.setVisible(false);
 
         });
         return result;
+    }
+
+    public void initializeTableListeners() {
+        // Add listeners to tableviews
+        this.extendedNetwork.getNodeTable().getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldSelection, newSelection) -> {
+                    if (newSelection != null) {
+                        this.selectedNode = this.extendedNetwork.getNodeTable().getSelectionModel().getSelectedItem();
+                        nodeDeleteButton.setDisable(false);
+                        nodeEditButton.setDisable(false);
+                    } else {
+                        this.selectedNode = null;
+                        nodeDeleteButton.setDisable(true);
+                        nodeEditButton.setDisable(true);
+                    }
+                });
+
+        this.extendedNetwork.getLinkTable().getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldSelection, newSelection) -> {
+                    if (newSelection != null) {
+                        this.selectedLink = this.extendedNetwork.getLinkTable().getSelectionModel().getSelectedItem();
+                        linkDeleteButton.setDisable(false);
+                        linkEditButton.setDisable(false);
+                    } else {
+                        this.selectedLink = null;
+                        linkDeleteButton.setDisable(true);
+                        linkEditButton.setDisable(true);
+                    }
+                });
     }
 
     private void addLinkDialog(String linkID, String nodeADescr, String nodeBDescr) {
@@ -637,7 +705,6 @@ public class MainController {
         });
 
         Optional<List<String>> result = dialog.showAndWait();
-        ArrayList<Double> listDoubles = null;
         result.ifPresent(list -> {
 
             System.out.println("Created link-> LinkId:" + linkID + ", From Node:" + nodeADescr + ", To Node:"
@@ -836,7 +903,7 @@ public class MainController {
         });
 
         mapView.addEventHandler(MapViewEvent.MAP_POINTER_MOVED, event -> {
-            logger.debug("pointer moved to " + event.getCoordinate());
+            // logger.debug("pointer moved to " + event.getCoordinate());
             labelCursor.setText("Cursor at: " + event.getCoordinate().toString());
         });
 
@@ -921,5 +988,255 @@ public class MainController {
             return false;
         }
         return true;
+    }
+
+    private void deleteSelectedNode() {
+        if (this.selectedNode != null) {
+            this.extendedNetwork.removeNode(this.selectedNode.getId().toString());
+            this.selectedNode = null;
+            nodeDeleteButton.setDisable(true);
+            nodeEditButton.setDisable(true);
+
+        }
+    }
+
+    private void deleteSelectedLink() {
+        if (this.selectedLink != null) {
+            this.extendedNetwork.removeLink(this.selectedLink.getId().toString());
+            this.selectedLink = null;
+            linkDeleteButton.setDisable(true);
+            linkEditButton.setDisable(true);
+        }
+    }
+
+    private void editSelectedNode() {
+        if (this.selectedNode != null) {
+            // Pop up dialog to edit node information
+
+            Dialog<List<String>> dialog = new Dialog<>();
+            dialog.setTitle("Edit node");
+            dialog.setHeaderText("Edit the node's attributes");
+
+            // Set the button types
+            ButtonType saveButtonType = new ButtonType("Save", ButtonData.OK_DONE);
+            dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+
+            // Create the attributes labels and fields.
+            GridPane grid = new GridPane();
+            grid.setHgap(10);
+            grid.setVgap(10);
+            grid.setPadding(new Insets(20, 150, 10, 30));
+            Coord coord = this.selectedNode.getCoord();
+
+            // Default value for faster creation (and debugging)
+            TextField coordinateX = new TextField(Double.toString(coord.getX()));
+            TextField coordinateY = new TextField(Double.toString(coord.getY()));
+
+            grid.add(new Label("Node ID:"), 0, 0);
+            grid.add(new Label(this.selectedNode.getId().toString()), 1, 0);
+            grid.add(new Label("Coordinate X:"), 0, 1);
+            grid.add(coordinateX, 1, 1);
+            grid.add(new Label("Coordinate Y:"), 0, 2);
+            grid.add(coordinateY, 1, 2);
+
+            Label message = new Label("Edit the above fields and click save.");
+            message.setTextFill(Color.GRAY);
+            grid.add(message, 0, 7, 2, 1);
+
+            // Enable/Disable button
+            javafx.scene.Node createButton = dialog.getDialogPane().lookupButton(saveButtonType);
+            createButton.setDisable(false);
+
+            Pattern numPattern = Pattern.compile("-?\\d+(\\.\\d+)?");
+
+            final ChangeListener createButtonListener = new ChangeListener<String>() {
+                @Override
+                public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                    Boolean disable = newValue.trim().isEmpty();
+                    if (!disable) {
+                        if (!numPattern.matcher(newValue).matches()) {
+                            message.setText("One or more values are not numbers!");
+                            message.setTextFill(Color.RED);
+                            disable = true;
+                        } else {
+                            message.setText("Please fill in all the above fields.");
+                            message.setTextFill(Color.GRAY);
+                        }
+                    }
+                    createButton.setDisable(disable);
+                }
+            };
+
+            coordinateX.textProperty().addListener(createButtonListener);
+            coordinateY.textProperty().addListener(createButtonListener);
+
+            dialog.getDialogPane().setContent(grid);
+
+            // Convert the result to list when the create button is clicked.
+            dialog.setResultConverter(dialogButton -> {
+                if (dialogButton == saveButtonType) {
+                    return new ArrayList<String>(Arrays.asList(coordinateX.getText(), coordinateY.getText()));
+                }
+                return null;
+            });
+
+            Optional<List<String>> result = dialog.showAndWait();
+            result.ifPresent(list -> {
+
+                System.out.println("Edited node-> NodeId:" + this.selectedNode.getId().toString() + ", New X:"
+                        + list.get(0) + ", New Y:" + list.get(1));
+
+                Double coordX = Double.parseDouble(list.get(0));
+                Double coordY = Double.parseDouble(list.get(1));
+                Coord newCoord = new Coord(coordX, coordY);
+                this.extendedNetwork.editNode(this.selectedNode.getId().toString(), newCoord);
+                this.selectedNode = null;
+                nodeDeleteButton.setDisable(true);
+                nodeEditButton.setDisable(true);
+                dialog.close();
+            });
+            this.selectedNode = null;
+            nodeDeleteButton.setDisable(true);
+            nodeEditButton.setDisable(true);
+
+        }
+
+    }
+
+    private void editSelectedLink() {
+        if (this.selectedLink != null) {
+            // Pop up dialog to edit node information
+
+            Dialog<List<String>> dialog = new Dialog<>();
+            dialog.setTitle("Edit node");
+            dialog.setHeaderText("Edit the node's attributes");
+
+            // Set the button types
+            ButtonType saveButtonType = new ButtonType("Save", ButtonData.OK_DONE);
+            dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+
+            // Create the attributes labels and fields.
+            GridPane grid = new GridPane();
+            grid.setHgap(10);
+            grid.setVgap(10);
+            grid.setPadding(new Insets(20, 150, 10, 30));
+
+            // Default value for faster creation (and debugging)
+            TextField fromNode = new TextField(this.selectedLink.getFromNode().getId().toString());
+            TextField toNode = new TextField(this.selectedLink.getToNode().getId().toString());
+            TextField length = new TextField(Double.toString(this.selectedLink.getLength()));
+            TextField freeSpeed = new TextField(Double.toString(this.selectedLink.getFreespeed()));
+            TextField capacity = new TextField(Double.toString(this.selectedLink.getCapacity()));
+            TextField numOfLanes = new TextField(Double.toString(this.selectedLink.getNumberOfLanes()));
+
+            grid.add(new Label("Link ID:"), 0, 0);
+            grid.add(new Label(this.selectedLink.getId().toString()), 1, 0);
+            grid.add(new Label("From Node:"), 0, 1);
+            grid.add(fromNode, 1, 1);
+            grid.add(new Label("To Node:"), 0, 2);
+            grid.add(toNode, 1, 2);
+            grid.add(new Label("Length:"), 0, 3);
+            grid.add(length, 1, 3);
+            grid.add(new Label("FreeSpeed"), 0, 4);
+            grid.add(freeSpeed, 1, 4);
+            grid.add(new Label("Capacity:"), 0, 5);
+            grid.add(capacity, 1, 5);
+            grid.add(new Label("#Lanes"), 0, 6);
+            grid.add(numOfLanes, 1, 6);
+
+            Label message = new Label("Edit the above fields and click save.");
+            message.setTextFill(Color.GRAY);
+            grid.add(message, 0, 7, 2, 1);
+
+            // Enable/Disable button
+            javafx.scene.Node createButton = dialog.getDialogPane().lookupButton(saveButtonType);
+            createButton.setDisable(false);
+
+            Pattern numPattern = Pattern.compile("-?\\d+(\\.\\d+)?");
+
+            final ChangeListener createButtonListener = new ChangeListener<String>() {
+                @Override
+                public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                    Boolean disable = newValue.trim().isEmpty();
+                    if (!disable) {
+                        if (!numPattern.matcher(newValue).matches()) {
+                            message.setText("One or more values are not numbers!");
+                            message.setTextFill(Color.RED);
+                            disable = true;
+                        } else {
+                            message.setText("Please fill in all the above fields.");
+                            message.setTextFill(Color.GRAY);
+                        }
+                    }
+                    createButton.setDisable(disable);
+                }
+            };
+
+            final ChangeListener createButtonListenerWithNodeCheck = new ChangeListener<String>() {
+                @Override
+                public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                    Boolean disable = newValue.trim().isEmpty();
+                    if (!disable) {
+                        if (!numPattern.matcher(newValue).matches()) {
+                            message.setText("One or more values are not numbers!");
+                            message.setTextFill(Color.RED);
+                            disable = true;
+                        } else if (!extendedNetwork.getNetwork().getNodes()
+                                .containsKey(Id.create(newValue, Node.class))) {
+                            message.setText("From/To Node doesn't exist.");
+                            message.setTextFill(Color.RED);
+                            disable = true;
+                        } else {
+                            message.setText("Please fill in all the above fields.");
+                            message.setTextFill(Color.GRAY);
+                        }
+                    }
+                    createButton.setDisable(disable);
+                }
+            };
+
+            length.textProperty().addListener(createButtonListener);
+            freeSpeed.textProperty().addListener(createButtonListener);
+            capacity.textProperty().addListener(createButtonListener);
+            numOfLanes.textProperty().addListener(createButtonListener);
+            fromNode.textProperty().addListener(createButtonListenerWithNodeCheck);
+            toNode.textProperty().addListener(createButtonListenerWithNodeCheck);
+
+            dialog.getDialogPane().setContent(grid);
+
+            // Convert the result to list when the create button is clicked.
+            dialog.setResultConverter(dialogButton -> {
+                if (dialogButton == saveButtonType) {
+                    return new ArrayList<String>(Arrays.asList(fromNode.getText(), toNode.getText(), length.getText(),
+                            freeSpeed.getText(), capacity.getText(), numOfLanes.getText()));
+                }
+                return null;
+            });
+
+            Optional<List<String>> result = dialog.showAndWait();
+            result.ifPresent(list -> {
+
+                System.out.println("Edited link-> NodeId:" + this.selectedLink.getId().toString() + ", FromNode:"
+                        + list.get(0) + ", ToNode:" + list.get(1) + ", Length:" + list.get(2) + ", FreeSpeed:"
+                        + list.get(3) + ", Capacity" + list.get(4) + ", #Lanes" + list.get(5));
+
+                this.extendedNetwork.editLink(this.selectedLink.getId().toString(), list.get(0), list.get(1),
+                        Double.parseDouble(list.get(2)), Double.parseDouble(list.get(3)), Double.parseDouble(list.get(4)), Double.parseDouble(list.get(5)));
+                
+                this.extendedNetwork.getLinkTable().sort(); // TODO This needs to be rechecked
+                this.extendedNetwork.getLinkTable().refresh();
+                this.selectedLink = null;
+
+                
+                linkDeleteButton.setDisable(true);
+                linkEditButton.setDisable(true);
+                dialog.close();
+            });
+            this.selectedLink = null;
+            linkDeleteButton.setDisable(true);
+            linkEditButton.setDisable(true);
+
+        }
+
     }
 }

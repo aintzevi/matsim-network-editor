@@ -76,14 +76,28 @@
                         <TitledPane fx:id="optionsNodes" animated="true" text="Nodes">
                             <content>
                                 <VBox fx:id="vboxNodes" spacing="10.0">
-                                    <children></children>
+                                    <children>
+                                        <ToolBar>
+                                            <Label text="Select a node to edit or delete" style="-fx-text-fill: gray;"/>
+                                            <Pane HBox.hgrow="ALWAYS" />
+                                            <Button fx:id="nodeEditButton"/>
+                                            <Button fx:id="nodeDeleteButton"/>
+                                        </ToolBar>
+                                    </children>
                                 </VBox>
                             </content>
                         </TitledPane>
                         <TitledPane fx:id="optionsLinks" animated="true" text="Links">
                             <content>
                                 <VBox fx:id="vboxLinks" spacing="10.0">
-                                    <children></children>
+                                    <children>
+                                        <ToolBar>
+                                            <Label text="Select a link to edit or delete" style="-fx-text-fill: gray;"/>
+                                            <Pane HBox.hgrow="ALWAYS" />
+                                            <Button fx:id="linkEditButton"/>
+                                            <Button fx:id="linkDeleteButton"/>
+                                        </ToolBar>
+                                    </children>
                                 </VBox>
                             </content>
                         </TitledPane>

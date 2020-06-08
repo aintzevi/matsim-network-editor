@@ -101,6 +101,7 @@ public class ExtendedNetwork {
     private void initializeTableViews() {
         this.networkInfo = new NetworkInfo(this.network);
         ArrayList<javafx.scene.Node> networkInfoNodes=  this.networkInfo.getAll();
+        this.vBoxNetWork.getChildren().clear();
         for (javafx.scene.Node node: networkInfoNodes){
             this.vBoxNetWork.getChildren().add(node);
         }
@@ -170,7 +171,9 @@ public class ExtendedNetwork {
         });
 
         // Clear nodes box in case it contains previous data
-        this.vBoxNodes.getChildren().clear();
+        if (vBoxNodes.getChildren().size() > 1){
+            this.vBoxNodes.getChildren().remove(1);
+        }
         this.vBoxNodes.getChildren().add(this.nodeTable);
         this.nodeTable.getColumns().addAll(idColumn, coordx, coordy,inLinks,outLinks);
 
@@ -272,7 +275,9 @@ public class ExtendedNetwork {
 
 
         // Clear nodes box in case it contains previous data
-        this.vBoxLinks.getChildren().clear();
+        if (vBoxLinks.getChildren().size() > 1){
+            this.vBoxLinks.getChildren().remove(1);
+        }
         this.vBoxLinks.getChildren().add(this.linkTable);
         this.linkTable.getColumns().addAll(idColumnLink, fromNodeColumn, toNodeColumn, lengthColumn, capacityColumn,
                 freeSpeedColumn, nofLanesColumn,allowedModes,flowCapacity);
@@ -301,6 +306,31 @@ public class ExtendedNetwork {
         return max;
     }
 
+    public void editNode(String id, Coord newCoord){
+        Node node = this.network.getNodes().get(Id.create(id, Node.class));
+        // Coord newCoord = new Coord(newCoordinate.getLatitude(),newCoordinate.getLongitude(), 0.0);
+        Coord currentCoord = node.getCoord();
+        if (newCoord.getX() != currentCoord.getX() || newCoord.getY() != currentCoord.getY()){
+            node.setCoord(newCoord);
+            mapView.removeMarker(this.nodeMarkers.get(node.getId()));
+            this.nodeMarkers.remove(node.getId());
+            Set<Id<Link>> inlinks = node.getInLinks().keySet();
+            Set<Id<Link>> outlinks = node.getOutLinks().keySet();
+            HashSet<Id<Link>> merged = new HashSet<Id<Link>>() {
+                {
+                    addAll(inlinks);
+                    addAll(outlinks);
+                }
+            };
+            for (Id<Link> idlink : merged) {
+                mapView.removeCoordinateLine(this.linkLines.get(idlink));
+                this.linkLines.remove(idlink);
+            }
+            paintToMap();
+        }
+        
+    }
+
     public boolean addLink(String id, Coordinate nodeA, Coordinate nodeB, double length, double freespeed,
             double capacity, double numLanes) {
         // TODO Check if link id already exists and other checks
@@ -314,7 +344,7 @@ public class ExtendedNetwork {
         }
         return false;
     }
-
+        
     public boolean addLink(Coordinate nodeA, Coordinate nodeB, double length, double freespeed, double capacity, double numLanes){
         int max = findMaxLinkId();
         return addLink(String.valueOf(max + 1), nodeA, nodeB, length, freespeed, capacity, numLanes); 
@@ -343,6 +373,32 @@ public class ExtendedNetwork {
             return true;
         }
         return false;
+    }
+
+    public Boolean editLink(String id, String newFromNode, String newToNode, double length, double freespeed, double capacity, double numLanes){
+        Link link = this.network.getLinks().get(Id.create(id, Link.class));
+        if (link.getFromNode().getId().toString() != newFromNode || link.getToNode().getId().toString()!=newToNode){
+            Id<Node> newFromNodeId = Id.create(newFromNode, Node.class);
+            Id<Node> newToNodeId = Id.create(newToNode, Node.class);
+            if (this.network.getNodes().containsKey(newFromNodeId) && this.network.getNodes().containsKey(newToNodeId))
+            {
+                removeLink(id);
+                addLink(id,newFromNode, newToNode, length, freespeed, capacity, numLanes);
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        else if (link.getLength()!=length || link.getCapacity() != capacity || link.getNumberOfLanes()!=numLanes || link.getFreespeed()!=freespeed){
+            link.setLength(length);
+            link.setCapacity(capacity);
+            link.setFreespeed(freespeed);
+            link.setNumberOfLanes(numLanes);
+            paintToMap();
+            return true;
+        }
+        return true;
     }
 
     public boolean removeNode(String id) {
@@ -422,6 +478,7 @@ public class ExtendedNetwork {
         ObservableList<Node> nodeData = FXCollections.observableArrayList(this.network.getNodes().values());
         this.nodeTable.getItems().clear();
         this.nodeTable.setItems(nodeData);
+        this.nodeTable.refresh();
         createNodesMarkers(nodeData);
     }
 
@@ -441,6 +498,7 @@ public class ExtendedNetwork {
         ObservableList<Link> linkData = FXCollections.observableArrayList(this.network.getLinks().values());
         this.linkTable.getItems().clear();
         this.linkTable.setItems(linkData);
+        this.linkTable.refresh();
         createlinkLines(linkData);
     }
 
@@ -480,6 +538,14 @@ public class ExtendedNetwork {
         return this.network;
     }
 
+    public TableView<Node> getNodeTable(){
+        return this.nodeTable;
+    }
+
+    public TableView<Link> getLinkTable(){
+        return this.linkTable;
+    }
+
     public void clear() {
         this.nodeTable = new TableView<>();
         this.linkTable = new TableView<>();
@@ -498,5 +564,7 @@ public class ExtendedNetwork {
         this.linkLines = new HashMap<>();
 
     }
+
+    
 
 }
