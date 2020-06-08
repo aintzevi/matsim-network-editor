@@ -4,63 +4,52 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.example</groupId>
-    <artifactId>MATSimNetworkEditor</artifactId>
+    <groupId>org.sakrifor</groupId>
+    <artifactId>DemoMatsim</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <dependencies>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-base</artifactId>
-            <version>14-ea+8</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-graphics</artifactId>
-            <version>14-ea+4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-controls</artifactId>
-            <version>14-ea+4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-fxml</artifactId>
-            <version>14-ea+4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-web</artifactId>
-            <version>14-ea+8</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-swing</artifactId>
-            <version>14-ea+8</version>
-        </dependency>
-        <dependency>
-            <groupId>io.github.agentsoz</groupId>
-            <artifactId>bdi-matsim</artifactId>
-            <version>3.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.gluonhq</groupId>
-            <artifactId>maps</artifactId>
-            <version>1.0.4</version>
-        </dependency>
-        <dependency>
-            <groupId>com.gluonhq</groupId>
-            <artifactId>charm-down-plugin-display</artifactId>
-            <version>3.8.6</version>
-        </dependency>
-    </dependencies>
+
     <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>11</maven.compiler.release>
-        <javafx.version>14</javafx.version>
+        <!--release:-->
+        <matsim.version>11.0</matsim.version>
+
+        <!--weekly "release" (recommended):-->
+        <!--<matsim.version>0.11.0-2019w01-SNAPSHOT</matsim.version>-->
+
+        <!--development head:-->
+        <!--<matsim.version>12.0-SNAPSHOT</matsim.version>-->
     </properties>
+
+    <repositories>
+        <!--Note that in general repositories are not transitive, so they need to be repeated at every level where needed.-->
+        <repository>
+            <!-- Geotools is not on Maven central -->
+            <id>osgeo</id>
+            <name>Geotools repository</name>
+            <!--<url>http://download.osgeo.org/webdav/geotools</url>-->
+            <url>https://repo.osgeo.org/repository/release/</url>
+        </repository>
+        <repository>
+            <!-- For MATSim releases: -->
+            <id>matsim</id>
+            <url>https://dl.bintray.com/matsim/matsim</url>
+        </repository>
+        <repository>
+            <!-- For MATSim monthly snapshots: -->
+            <id>bintray-matsim-eth-matsim</id>
+            <name>bintray</name>
+            <url>https://dl.bintray.com/matsim-eth/matsim</url>
+        </repository>
+        <repository>
+            <!-- For MATSim snapshots: -->
+            <id>ojo-snapshots</id>
+            <url>http://oss.jfrog.org/libs-snapshot</url>
+        </repository>
+        <repository>
+            <!-- For SBB Extension -->
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
@@ -69,10 +58,101 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <release>${maven.compiler.release}</release>
+                    <source>11</source>
+                    <target>11</target>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.sothawo</groupId>
+            <artifactId>mapjfx</artifactId>
+            <version>2.14.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.30</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.agentsoz</groupId>
+            <artifactId>bdi-matsim</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+        <!--MATSim core:-->
+        <dependency>
+            <groupId>org.matsim</groupId>
+            <artifactId>matsim</artifactId>
+            <version>${matsim.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>guava</artifactId>
+                    <groupId>com.google.guava</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- to get MatsimTestUtils -->
+        <dependency>
+            <groupId>org.matsim</groupId>
+            <artifactId>matsim</artifactId>
+            <type>test-jar</type>
+            <exclusions>
+                <exclusion>
+                    <artifactId>guava</artifactId>
+                    <groupId>com.google.guava</groupId>
+                </exclusion>
+            </exclusions>
+            <version>${matsim.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!--to get ExamplesUtils:-->
+        <dependency>
+            <groupId>org.matsim</groupId>
+            <artifactId>matsim-examples</artifactId>
+            <version>${matsim.version}</version>
+        </dependency>
+
+        <!-- Include some MATSim extensions -->
+        <dependency>
+            <groupId>org.matsim.contrib</groupId>
+            <artifactId>minibus</artifactId>
+            <version>${matsim.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.matsim.contrib</groupId>
+            <artifactId>otfvis</artifactId>
+            <version>${matsim.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.matsim.contrib</groupId>
+            <artifactId>roadpricing</artifactId>
+            <version>${matsim.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.matsim.contrib</groupId>
+            <artifactId>taxi</artifactId>
+            <version>${matsim.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.matsim.contrib</groupId>
+            <artifactId>av</artifactId>
+            <version>${matsim.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.matsim.contrib</groupId>
+            <artifactId>freight</artifactId>
+            <version>${matsim.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.matsim.contrib</groupId>
+            <artifactId>bicycle</artifactId>
+            <version>${matsim.version}</version>
+        </dependency>
+    </dependencies>
+
+
 </project>
