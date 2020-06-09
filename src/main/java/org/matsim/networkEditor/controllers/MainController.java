@@ -489,6 +489,8 @@ public class MainController {
             }
             this.extendedNetwork = new ExtendedNetwork(selectedFile.getPath(), this.vboxNetwork, this.vboxNodes,
                     this.vboxLinks, this.mapView);
+
+            initializeTableListeners();
             // Enable save button and make glasspane invisible
             buttonSave.setDisable(false);
             glassPane.setVisible(false);
