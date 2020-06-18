@@ -44,11 +44,13 @@ import com.sothawo.mapjfx.event.MapViewEvent;
 import com.sothawo.mapjfx.event.MarkerEvent;
 import com.sothawo.mapjfx.offline.OfflineCache;
 
+import javafx.scene.control.*;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.networkEditor.elements.ExtendedNetwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,21 +60,9 @@ import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Accordion;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.Slider;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TitledPane;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -137,23 +127,33 @@ public class MainController {
     /** button to open the general settings. */
     private Button buttonSettings;
 
-    /** map options pane in leftPanel */
+    /**
+     * map options pane in leftPanel
+     */
     @FXML
     private TitledPane optionsMapType;
 
-    /** map options pane in leftPanel */
+    /**
+     * map options pane in leftPanel
+     */
     @FXML
     private TitledPane optionsNetwork;
 
-    /** contents of network pane */
+    /**
+     * contents of network pane
+     */
     @FXML
     private VBox vboxNetwork;
 
-    /** contents of node pane */
+    /**
+     * contents of node pane
+     */
     @FXML
     private VBox vboxNodes;
 
-    /** contents of link pane */
+    /**
+     * contents of link pane
+     */
     @FXML
     private VBox vboxLinks;
 
@@ -501,8 +501,8 @@ public class MainController {
     private Object createNetworkDialog() {
 
         if (extendedNetwork != null) {
-            if (showSaveAlert("Create new network",
-                    "Are you sure you want to create new network without saving?") == false) {
+            if (!showSaveAlert("Create new network",
+                    "Are you sure you want to create new network without saving?")) {
                 return null;
             }
         }
@@ -523,30 +523,66 @@ public class MainController {
         grid.setPadding(new Insets(20, 150, 10, 30));
 
         TextField networkName = new TextField("New Network");
-        TextField capacity = new TextField("1.0");
-        TextField effectiveCellSize = new TextField("7.5");
+        ComboBox<String> coordinateOptions = new ComboBox<>();
+        TextField epsgCode = new TextField("000");
+
+        // Coordinate dropdown options
+        coordinateOptions.getItems().addAll(TransformationFactory.DHDN_GK4, TransformationFactory.GK4,
+                TransformationFactory.WGS84);
+        coordinateOptions.setPromptText("Select coordinates");
 
         grid.add(new Label("Network name:"), 0, 0);
-        grid.add(new Label("Link capacity:"), 0, 1);
-        grid.add(new Label("Effective cell size:"), 0, 2);
+        grid.add(new Label("Coordinate system:"), 0, 1);
+        grid.add(new Label("EPSG code:"), 0, 2);
+        Label message = new Label("Please fill in all the above fields or use the defaults.");
+        message.setTextFill(Color.GRAY);
+        grid.add(message, 0, 3, 2, 1);
+
         grid.add(networkName, 1, 0);
-        grid.add(capacity, 1, 1);
-        grid.add(effectiveCellSize, 1, 2);
+        grid.add(coordinateOptions, 1, 1);
+        grid.add(epsgCode, 1, 2);
 
         // Enable/Disable button bind on effectiveCellSize
         javafx.scene.Node createButton = dialog.getDialogPane().lookupButton(createButtonType);
         createButton.setDisable(false);
+
+        // Pattern for non-negative integers
+        final Pattern numPattern = Pattern.compile("\\d+");
+
+        final ChangeListener createButtonListenerEPSG = new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                Boolean disable = newValue.trim().isEmpty();
+                if (!disable) {
+                    if (!numPattern.matcher(newValue).matches()) {
+                        message.setText("One or more values are not numbers!");
+                        message.setTextFill(Color.RED);
+                        disable = true;
+                    } else {
+                        message.setText("Please fill in all the above fields or use the defaults.");
+                        message.setTextFill(Color.GRAY);
+                    }
+                }
+                createButton.setDisable(disable);
+            }
+        };
+
         final ChangeListener createButtonListener = new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 Boolean disable = newValue.trim().isEmpty();
+                if (!disable) {
+                    message.setText("Please fill in all the above fields or use the defaults.");
+                    message.setTextFill(Color.GRAY);
+                }
                 createButton.setDisable(disable);
             }
         };
+
         // Do some validation (using the Java 8 lambda syntax).
-        effectiveCellSize.textProperty().addListener(createButtonListener);
         networkName.textProperty().addListener(createButtonListener);
-        capacity.textProperty().addListener(createButtonListener);
+        coordinateOptions.valueProperty().addListener(createButtonListener);
+        epsgCode.textProperty().addListener(createButtonListenerEPSG);
 
         dialog.getDialogPane().setContent(grid);
 
@@ -557,32 +593,31 @@ public class MainController {
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == createButtonType) {
                 return new ArrayList<String>(
-                        Arrays.asList(networkName.getText(), capacity.getText(), effectiveCellSize.getText()));
+                        Arrays.asList(networkName.getText(), coordinateOptions.getValue(), epsgCode.getText()));
             }
             return null;
         });
 
         Optional<List<String>> result = dialog.showAndWait();
-
         result.ifPresent(list -> {
-            System.out.println("Network name = " + list.get(0) + "Capacity = " + list.get(1)
-                    + ", Effective Cell Size = " + list.get(2));
-
-            Pattern pattern = Pattern.compile("-?\\d+(\\.\\d+)?");
+            System.out.println("Network name = " + list.get(0) + ", Coordinate System = " + list.get(1)
+                    + ", EPSG Code = " + list.get(2));
 
             // If capacity and cell sizes are not numbers, show the creation dialog again
-            if (pattern.matcher(list.get(1)).matches() == false || pattern.matcher(list.get(2)).matches() == false)
+            if (numPattern.matcher(list.get(2)).matches() == false) {
                 createNetworkDialog();
+            }
 
             String nameValue = list.get(0);
-            Double capacityValue = Double.valueOf(list.get(1));
-            Double cellSizeValue = Double.valueOf(list.get(2));
+            String coordinateValue = list.get(1);
+            String epsgCodeValue = list.get(2);
             if (this.extendedNetwork != null) {
                 this.extendedNetwork.clear();
                 this.selectedNode = null;
                 this.selectedLink = null;
             }
-            this.extendedNetwork = new ExtendedNetwork(nameValue, null, cellSizeValue, capacityValue, vboxNetwork,
+            // TODO Pass the coordinate system/ EPSG code to the extended network
+            this.extendedNetwork = new ExtendedNetwork(nameValue, null, null, null, vboxNetwork,
                     vboxNodes, vboxLinks, mapView);
             initializeTableListeners();
 
@@ -1224,12 +1259,12 @@ public class MainController {
 
                 this.extendedNetwork.editLink(this.selectedLink.getId().toString(), list.get(0), list.get(1),
                         Double.parseDouble(list.get(2)), Double.parseDouble(list.get(3)), Double.parseDouble(list.get(4)), Double.parseDouble(list.get(5)));
-                
+
                 this.extendedNetwork.getLinkTable().sort(); // TODO This needs to be rechecked
                 this.extendedNetwork.getLinkTable().refresh();
                 this.selectedLink = null;
 
-                
+
                 linkDeleteButton.setDisable(true);
                 linkEditButton.setDisable(true);
                 dialog.close();
