@@ -77,6 +77,12 @@
             <version>1.7.30</version>
         </dependency>
         <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>15-ea+6</version>
+        </dependency>
+
+        <dependency>
             <groupId>io.github.agentsoz</groupId>
             <artifactId>bdi-matsim</artifactId>
             <version>3.0.0</version>
