@@ -467,6 +467,7 @@ public class MainController {
 
     @FXML
     protected void locateFile() {
+        // Create network to set Coordinate system, then
 
         if (extendedNetwork != null) {
             if (showSaveAlert("Import new network", "Are you sure you want to import without saving?") == false) {
@@ -474,27 +475,130 @@ public class MainController {
             }
         }
 
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle("Choose your .xml file with your network");
-        chooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("XML Files", "*.xml"),
-                new FileChooser.ExtensionFilter("GZ Files", "*.gz"));
+        // Pop up dialog to add network information
+        Dialog<List<String>> dialog = new Dialog<>();
+        dialog.setTitle("Set coordinate system of the importing network");
+        dialog.setHeaderText("Pick a system or give EPSG code:");
 
-        File selectedFile = chooser.showOpenDialog(new Stage());
+        // Set the button types
+        ButtonType importButtonType = new ButtonType("Import", ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(importButtonType, ButtonType.CANCEL);
 
-        if (selectedFile != null) {
+        // Create the attributes labels and fields.
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 30));
+
+        ComboBox<String> coordinateOptions = new ComboBox<>();
+        TextField epsgCode = new TextField("000");
+
+        // Coordinate dropdown options
+        coordinateOptions.getItems().addAll(TransformationFactory.DHDN_GK4, TransformationFactory.GK4,
+                TransformationFactory.WGS84);
+        coordinateOptions.setPromptText("Select coordinates");
+
+        grid.add(new Label("Coordinate system:"), 0, 0);
+        grid.add(new Label("EPSG code:"), 0, 1);
+        Label message = new Label("Please fill in one of the above fields or use the defaults.");
+        message.setTextFill(Color.GRAY);
+        grid.add(message, 0, 2, 2, 1);
+
+        grid.add(coordinateOptions, 1, 0);
+        grid.add(epsgCode, 1, 1);
+
+        // Enable/Disable button
+        javafx.scene.Node createButton = dialog.getDialogPane().lookupButton(importButtonType);
+        createButton.setDisable(false);
+
+        // Pattern for non-negative integers
+        final Pattern numPattern = Pattern.compile("\\d+");
+
+        final ChangeListener createButtonListenerEPSG = new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                Boolean disable = newValue.trim().isEmpty();
+                if (!disable) {
+                    if (!numPattern.matcher(newValue).matches()) {
+                        message.setText("One or more values are not numbers!");
+                        message.setTextFill(Color.RED);
+                        disable = true;
+                    } else {
+                        message.setText("Please fill in all the above fields or use the defaults.");
+                        message.setTextFill(Color.GRAY);
+                    }
+                }
+                createButton.setDisable(disable);
+            }
+        };
+
+        final ChangeListener createButtonListener = new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                Boolean disable = newValue.trim().isEmpty();
+                if (!disable) {
+                    message.setText("Please fill in all the above fields or use the defaults.");
+                    message.setTextFill(Color.GRAY);
+                }
+                createButton.setDisable(disable);
+            }
+        };
+
+        // Do some validation (using the Java 8 lambda syntax).
+        coordinateOptions.valueProperty().addListener(createButtonListener);
+        epsgCode.textProperty().addListener(createButtonListenerEPSG);
+
+        dialog.getDialogPane().setContent(grid);
+
+        // Convert the result to list when the create button is clicked.
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == importButtonType) {
+                FileChooser chooser = new FileChooser();
+                chooser.setTitle("Choose your .xml file with your network");
+                chooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("XML Files", "*.xml"),
+                        new FileChooser.ExtensionFilter("GZ Files", "*.gz"));
+
+                File selectedFile = chooser.showOpenDialog(new Stage());
+
+                if (selectedFile != null) {
+                    // TODO If cancel the xml import file, should show the previous dialog again
+                    if (this.extendedNetwork != null) {
+                        this.extendedNetwork.clear();
+                        this.selectedNode = null;
+                        this.selectedLink = null;
+                    }
+                    this.extendedNetwork = new ExtendedNetwork(selectedFile.getPath(), this.vboxNetwork, this.vboxNodes,
+                            this.vboxLinks, this.mapView);
+
+                    initializeTableListeners();
+                    // Enable save button and make glasspane invisible
+                    buttonSave.setDisable(false);
+                    glassPane.setVisible(false);
+                }
+
+                return new ArrayList<String>(
+                        Arrays.asList(coordinateOptions.getValue(), epsgCode.getText()));
+            }
+            return null;
+        });
+
+        Optional<List<String>> result = dialog.showAndWait();
+        result.ifPresent(list -> {
+            System.out.println("Coordinate System = " + list.get(0) + ", EPSG Code = " + list.get(1));
+
+            // If not numbers, show the creation dialog again
+            if (numPattern.matcher(list.get(1)).matches() == false) {
+                createNetworkDialog();
+            }
+
+            String coordinateValue = list.get(0);
+            String epsgCodeValue = list.get(1);
             if (this.extendedNetwork != null) {
                 this.extendedNetwork.clear();
                 this.selectedNode = null;
                 this.selectedLink = null;
             }
-            this.extendedNetwork = new ExtendedNetwork(selectedFile.getPath(), this.vboxNetwork, this.vboxNodes,
-                    this.vboxLinks, this.mapView);
-
-            initializeTableListeners();
-            // Enable save button and make glasspane invisible
-            buttonSave.setDisable(false);
-            glassPane.setVisible(false);
-        }
+        });
     }
 
     @FXML
