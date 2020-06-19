@@ -18,11 +18,9 @@ package org.matsim.networkEditor.controllers;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -44,6 +42,7 @@ import com.sothawo.mapjfx.event.MapViewEvent;
 import com.sothawo.mapjfx.event.MarkerEvent;
 import com.sothawo.mapjfx.offline.OfflineCache;
 
+import javafx.event.ActionEvent;
 import javafx.scene.control.*;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -354,7 +353,7 @@ public class MainController {
         linkEditButton.setGraphic(new ImageView(imageEdit));
 
         // file chooser
-        buttonImport.setOnAction(event -> locateFile());
+        buttonImport.setOnAction(event -> importNetworkDialog());
         buttonCreate.setOnAction(event -> createNetworkDialog());
         buttonUndo.setOnAction(event -> actionUndo());
         buttonRedo.setOnAction(event -> actionRedo());
@@ -457,7 +456,7 @@ public class MainController {
     protected void initTransparentWelcome() {
         final Label label = new Label("Create or Import Network to continue...");
         label.setStyle(
-                "-fx-text-fill: white; -fx-font-size: 26; -fx-font-family: Open Sans -fx-padding: 0 0 20 0; -fx-text-alignment: center");
+                "-fx-text-fill: white; -fx-font-size: 26; -fx-font-family: Open Sans; -fx-padding: 0 0 20 0; -fx-text-alignment: center");
         StackPane.setAlignment(label, Pos.CENTER);
         glassPane.getChildren().addAll(label);
         glassPane.setStyle("-fx-background-color: rgba(38,50,56,0.7)");
@@ -466,23 +465,28 @@ public class MainController {
     }
 
     @FXML
-    protected void locateFile() {
+    protected Object importNetworkDialog() {
         // Create network to set Coordinate system, then
 
         if (extendedNetwork != null) {
-            if (showSaveAlert("Import new network", "Are you sure you want to import without saving?") == false) {
-                return;
+            if (!showSaveAlert("Import new network", "Are you sure you want to import without saving?")) {
+                return null;
             }
         }
+        showImportOptionsDialog();
+        return null;
+    }
 
+    private boolean showImportOptionsDialog() {
         // Pop up dialog to add network information
         Dialog<List<String>> dialog = new Dialog<>();
         dialog.setTitle("Set coordinate system of the importing network");
         dialog.setHeaderText("Pick a system or give EPSG code:");
 
         // Set the button types
-        ButtonType importButtonType = new ButtonType("Import", ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(importButtonType, ButtonType.CANCEL);
+        ButtonType buttonTypeImport = new ButtonType("Import", ButtonData.OK_DONE);
+        ButtonType buttonTypeCancel = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(buttonTypeImport, buttonTypeCancel);
 
         // Create the attributes labels and fields.
         GridPane grid = new GridPane();
@@ -508,8 +512,8 @@ public class MainController {
         grid.add(epsgCode, 1, 1);
 
         // Enable/Disable button
-        javafx.scene.Node createButton = dialog.getDialogPane().lookupButton(importButtonType);
-        createButton.setDisable(false);
+        javafx.scene.Node importButton = dialog.getDialogPane().lookupButton(buttonTypeImport);
+        importButton.setDisable(false);
 
         // Pattern for non-negative integers
         final Pattern numPattern = Pattern.compile("\\d+");
@@ -528,7 +532,7 @@ public class MainController {
                         message.setTextFill(Color.GRAY);
                     }
                 }
-                createButton.setDisable(disable);
+                importButton.setDisable(disable);
             }
         };
 
@@ -540,7 +544,7 @@ public class MainController {
                     message.setText("Please fill in all the above fields or use the defaults.");
                     message.setTextFill(Color.GRAY);
                 }
-                createButton.setDisable(disable);
+                importButton.setDisable(disable);
             }
         };
 
@@ -552,43 +556,42 @@ public class MainController {
 
         // Convert the result to list when the create button is clicked.
         dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == importButtonType) {
-                FileChooser chooser = new FileChooser();
-                chooser.setTitle("Choose your .xml file with your network");
-                chooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("XML Files", "*.xml"),
-                        new FileChooser.ExtensionFilter("GZ Files", "*.gz"));
-
-                File selectedFile = chooser.showOpenDialog(new Stage());
-
-                if (selectedFile != null) {
-                    // TODO If cancel the xml import file, should show the previous dialog again
-                    if (this.extendedNetwork != null) {
-                        this.extendedNetwork.clear();
-                        this.selectedNode = null;
-                        this.selectedLink = null;
-                    }
-                    this.extendedNetwork = new ExtendedNetwork(selectedFile.getPath(), this.vboxNetwork, this.vboxNodes,
-                            this.vboxLinks, this.mapView);
-
-                    initializeTableListeners();
-                    // Enable save button and make glasspane invisible
-                    buttonSave.setDisable(false);
-                    glassPane.setVisible(false);
-                }
-
+            if (dialogButton == buttonTypeImport) {
                 return new ArrayList<String>(
                         Arrays.asList(coordinateOptions.getValue(), epsgCode.getText()));
             }
             return null;
         });
 
+        importButton.addEventFilter(ActionEvent.ACTION, (event) -> {
+            event.consume();
+            if (this.locateFile() == false) {
+                if (showImportOptionsDialog()) {
+                    locateFile();
+                } else {
+                    dialog.close();
+                }
+            }
+            else {
+                dialog.close();
+            }
+        });
+
+        javafx.scene.Node cancelButton = dialog.getDialogPane().lookupButton(buttonTypeCancel);
+
+        cancelButton.addEventFilter(ActionEvent.ACTION, (event) -> {
+            event.consume();
+            dialog.close();
+        });
+
         Optional<List<String>> result = dialog.showAndWait();
-        result.ifPresent(list -> {
+        result.ifPresent(list ->
+        {
             System.out.println("Coordinate System = " + list.get(0) + ", EPSG Code = " + list.get(1));
 
-            // If not numbers, show the creation dialog again
+            // If not numbers, show the dialog again
             if (numPattern.matcher(list.get(1)).matches() == false) {
-                createNetworkDialog();
+                importNetworkDialog();
             }
 
             String coordinateValue = list.get(0);
@@ -598,7 +601,9 @@ public class MainController {
                 this.selectedNode = null;
                 this.selectedLink = null;
             }
+
         });
+        return false;
     }
 
     @FXML
@@ -1121,6 +1126,7 @@ public class MainController {
         Optional<ButtonType> result = alert.showAndWait();
 
         if (result.get() == buttonTypeSave) {
+            // Handle cancel at the saving stage, show the save promt again
             if (this.saveFile() == false) {
                 if (showSaveAlert(title, headerText) == false)
                     return false;
@@ -1129,6 +1135,36 @@ public class MainController {
             return false;
         }
         return true;
+    }
+
+    private boolean importFile(String coordinateOptions, String epsgCode) {
+        return false;
+    }
+
+    protected boolean locateFile() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Choose your .xml file with your network");
+        chooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("XML Files", "*.xml"),
+                new FileChooser.ExtensionFilter("GZ Files", "*.gz"));
+
+        File selectedFile = chooser.showOpenDialog(new Stage());
+        // TODO Add coordinateOptions and epsgCode to the newly created extended network
+        if (selectedFile != null) {
+            if (this.extendedNetwork != null) {
+                this.extendedNetwork.clear();
+                this.selectedNode = null;
+                this.selectedLink = null;
+            }
+            this.extendedNetwork = new ExtendedNetwork(selectedFile.getPath(), this.vboxNetwork, this.vboxNodes,
+                    this.vboxLinks, this.mapView);
+
+            initializeTableListeners();
+            // Enable save button and make glasspane invisible
+            buttonSave.setDisable(false);
+            glassPane.setVisible(false);
+            return true;
+        }
+        return false;
     }
 
     private void deleteSelectedNode() {
