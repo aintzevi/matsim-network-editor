@@ -43,6 +43,7 @@ public class ExtendedNetwork {
     private TableView<Node> nodeTable = null;
     private TableView<Link> linkTable = null;
     private NetworkInfo networkInfo = null;
+    private String coordinateSystem = null;
 
     public ExtendedNetwork() {
         this.network = NetworkUtils.createNetwork();
@@ -52,6 +53,7 @@ public class ExtendedNetwork {
         this.linkLines = new HashMap<>();
     }
 
+    // TODO Add coordinate system here - pick from textfield or dropdown?
     public ExtendedNetwork(String name, Double effectiveLaneWidth, Double effectiveCellSize, Double capPeriod, VBox vBoxNetWork,
             VBox vBoxNodes, VBox vBoxLinks, MapView mapView) {
         this.network = NetworkUtils.createNetwork();
@@ -76,7 +78,8 @@ public class ExtendedNetwork {
         initializeMapElementLists(vBoxNetWork, vBoxNodes, vBoxLinks, mapView);
         this.network = NetworkUtils.createNetwork();
         this.networkPath = networkPath;
-        new MatsimNetworkReader(this.network).readFile(networkPath);
+        System.out.println("--------------------------READER---------------------------------------");
+        new MatsimNetworkReader("EPSG: 32633", "EPSG: 3857", this.network).readFile(networkPath);
         initializeTableViews();
         paintToMap();
     }
@@ -544,6 +547,14 @@ public class ExtendedNetwork {
 
     public TableView<Link> getLinkTable(){
         return this.linkTable;
+    }
+
+    public String getCoordinateSystem() {
+        return this.coordinateSystem;
+    }
+
+    public void setCoordinateSystem(String coordinateSystem) {
+        this.coordinateSystem = coordinateSystem;
     }
 
     public void clear() {
