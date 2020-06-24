@@ -12,6 +12,11 @@ import com.sothawo.mapjfx.CoordinateLine;
 import com.sothawo.mapjfx.MapView;
 import com.sothawo.mapjfx.Marker;
 
+import javafx.geometry.Insets;
+import javafx.scene.control.Label;
+import javafx.scene.control.TitledPane;
+import javafx.scene.layout.GridPane;
+import javafx.util.Pair;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -69,6 +74,9 @@ public class ExtendedNetwork {
         if (capPeriod != null) {
             this.network.setCapacityPeriod(capPeriod);
         }
+        if (coordinateSystem != null) {
+            StringBuilder str = new StringBuilder(coordinateSystem);
+        }
         initializeMapElementLists(vBoxNetWork, vBoxNodes, vBoxLinks, mapView);
         initializeTableViews();
         paintToMap();
@@ -103,11 +111,20 @@ public class ExtendedNetwork {
 
     private void initializeTableViews() {
         this.networkInfo = new NetworkInfo(this.network);
-        ArrayList<javafx.scene.Node> networkInfoNodes=  this.networkInfo.getAll();
+        ArrayList<Pair<javafx.scene.Node, javafx.scene.Node>> networkInfoNodes=  this.networkInfo.getAll();
+
         this.vBoxNetWork.getChildren().clear();
-        for (javafx.scene.Node node: networkInfoNodes){
-            this.vBoxNetWork.getChildren().add(node);
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+//        grid.setPadding(new Insets(20, 150, 10, 30));
+
+        for (int i = 0; i < networkInfoNodes.size() ; i++) {
+            grid.add(networkInfoNodes.get(i).getKey(), 0, i);
+            grid.add(networkInfoNodes.get(i).getValue(), 2, i);
         }
+        this.vBoxNetWork.getChildren().add(grid);
+
 
         this.nodeTable = new TableView<>();
         this.nodeTable.setEditable(false);
