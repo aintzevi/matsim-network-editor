@@ -2,6 +2,7 @@ package org.matsim.networkEditor.visualElements;
 
 import java.util.ArrayList;
 
+import javafx.util.Pair;
 import org.matsim.api.core.v01.network.Network;
 
 import javafx.scene.Node;
@@ -14,26 +15,33 @@ public class NetworkInfo {
     Label capacity = new Label("Capacity Period:");
     Label effectiveLaneWidth = new Label("Effective Lane Width:");
     Label effectiveCellSize = new Label("Effective Cell Size:");
-    ArrayList<Node> nodes = new ArrayList<>();
+    Label nameValue = new Label();
+    Label numOfNodesValue = new Label();
+    Label numOfLinksValue = new Label();
+    Label capacityValue = new Label();
+    Label effectiveLaneWidthValue = new Label();
+    Label effectiveCellSizeValue = new Label();
+    ArrayList<Pair<Node, Node>> nodes = new ArrayList<>();
 
 
-    public NetworkInfo(Network network){
+    public NetworkInfo(Network network) {
         toDefault();
-        name.setText(name.getText() + network.getName());
-        numOfNodes.setText(numOfNodes.getText() + network.getNodes().size());
-        numOfLinks.setText(numOfLinks.getText() + network.getLinks().size());
-        capacity.setText(capacity.getText() + network.getCapacityPeriod());
-        effectiveLaneWidth.setText(effectiveLaneWidth.getText() + network.getEffectiveLaneWidth());
-        effectiveCellSize.setText(effectiveCellSize.getText() + network.getEffectiveCellSize());
-        nodes.add(name);
-        nodes.add(numOfNodes);
-        nodes.add(numOfLinks);
-        nodes.add(capacity);
-        nodes.add(effectiveLaneWidth);
-        nodes.add(effectiveCellSize);
+        nameValue.setText(network.getName());
+        numOfNodesValue.setText(String.valueOf(network.getNodes().size()));
+        numOfLinksValue.setText(String.valueOf(network.getLinks().size()));
+        capacityValue.setText(String.valueOf(network.getCapacityPeriod()));
+        effectiveLaneWidthValue.setText(String.valueOf(network.getEffectiveLaneWidth()));
+        effectiveCellSizeValue.setText(String.valueOf(network.getEffectiveCellSize()));
+
+        nodes.add(new Pair<>(name, nameValue));
+        nodes.add(new Pair<>(numOfNodes, numOfNodesValue));
+        nodes.add(new Pair<>(numOfLinks, numOfLinksValue));
+        nodes.add(new Pair<>(capacity, capacityValue));
+        nodes.add(new Pair<>(effectiveLaneWidth, effectiveLaneWidthValue));
+        nodes.add(new Pair<>(effectiveCellSize, effectiveCellSizeValue));
     }
 
-    public void toDefault(){
+    public void toDefault() {
         name.setText("Name: ");
         numOfNodes.setText("#Nodes: ");
         numOfLinks.setText("#Links: ");
@@ -42,19 +50,19 @@ public class NetworkInfo {
         effectiveCellSize.setText("Effective Cell Size: ");
     }
 
-    public void update(Network network){
+    public void update(Network network) {
         toDefault();
-        name.setText(name.getText() + network.getName());
-        numOfNodes.setText(numOfNodes.getText() + network.getNodes().size());
-        numOfLinks.setText(numOfLinks.getText() + network.getLinks().size());
-        capacity.setText(capacity.getText() + network.getCapacityPeriod());
-        effectiveLaneWidth.setText(effectiveLaneWidth.getText() + network.getEffectiveLaneWidth());
-        effectiveCellSize.setText(effectiveCellSize.getText() + network.getEffectiveCellSize());
+        nameValue.setText(network.getName());
+        numOfNodesValue.setText(String.valueOf(network.getNodes().size()));
+        numOfLinksValue.setText(String.valueOf(network.getLinks().size()));
+        capacityValue.setText(String.valueOf(network.getCapacityPeriod()));
+        effectiveLaneWidthValue.setText(String.valueOf(network.getEffectiveLaneWidth()));
+        effectiveCellSizeValue.setText(String.valueOf(network.getEffectiveCellSize()));
     }
 
-    public ArrayList<Node> getAll(){
+    public ArrayList<Pair<Node, Node>> getAll() {
         return nodes;
     }
 
-    
+
 }

@@ -12,6 +12,11 @@ import com.sothawo.mapjfx.CoordinateLine;
 import com.sothawo.mapjfx.MapView;
 import com.sothawo.mapjfx.Marker;
 
+import javafx.geometry.Insets;
+import javafx.scene.control.Label;
+import javafx.scene.control.TitledPane;
+import javafx.scene.layout.GridPane;
+import javafx.util.Pair;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -43,6 +48,7 @@ public class ExtendedNetwork {
     private TableView<Node> nodeTable = null;
     private TableView<Link> linkTable = null;
     private NetworkInfo networkInfo = null;
+    private String coordinateSystem = null;
 
     public ExtendedNetwork() {
         this.network = NetworkUtils.createNetwork();
@@ -52,6 +58,7 @@ public class ExtendedNetwork {
         this.linkLines = new HashMap<>();
     }
 
+    // TODO Add coordinate system here - pick from textfield or dropdown?
     public ExtendedNetwork(String name, Double effectiveLaneWidth, Double effectiveCellSize, Double capPeriod, VBox vBoxNetWork,
             VBox vBoxNodes, VBox vBoxLinks, MapView mapView) {
         this.network = NetworkUtils.createNetwork();
@@ -67,6 +74,9 @@ public class ExtendedNetwork {
         if (capPeriod != null) {
             this.network.setCapacityPeriod(capPeriod);
         }
+        if (coordinateSystem != null) {
+            StringBuilder str = new StringBuilder(coordinateSystem);
+        }
         initializeMapElementLists(vBoxNetWork, vBoxNodes, vBoxLinks, mapView);
         initializeTableViews();
         paintToMap();
@@ -76,7 +86,8 @@ public class ExtendedNetwork {
         initializeMapElementLists(vBoxNetWork, vBoxNodes, vBoxLinks, mapView);
         this.network = NetworkUtils.createNetwork();
         this.networkPath = networkPath;
-        new MatsimNetworkReader(this.network).readFile(networkPath);
+        System.out.println("--------------------------READER---------------------------------------");
+        new MatsimNetworkReader("EPSG: 32633", "EPSG: 3857", this.network).readFile(networkPath);
         initializeTableViews();
         paintToMap();
     }
@@ -100,11 +111,20 @@ public class ExtendedNetwork {
 
     private void initializeTableViews() {
         this.networkInfo = new NetworkInfo(this.network);
-        ArrayList<javafx.scene.Node> networkInfoNodes=  this.networkInfo.getAll();
+        ArrayList<Pair<javafx.scene.Node, javafx.scene.Node>> networkInfoNodes=  this.networkInfo.getAll();
+
         this.vBoxNetWork.getChildren().clear();
-        for (javafx.scene.Node node: networkInfoNodes){
-            this.vBoxNetWork.getChildren().add(node);
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+//        grid.setPadding(new Insets(20, 150, 10, 30));
+
+        for (int i = 0; i < networkInfoNodes.size() ; i++) {
+            grid.add(networkInfoNodes.get(i).getKey(), 0, i);
+            grid.add(networkInfoNodes.get(i).getValue(), 2, i);
         }
+        this.vBoxNetWork.getChildren().add(grid);
+
 
         this.nodeTable = new TableView<>();
         this.nodeTable.setEditable(false);
@@ -544,6 +564,14 @@ public class ExtendedNetwork {
 
     public TableView<Link> getLinkTable(){
         return this.linkTable;
+    }
+
+    public String getCoordinateSystem() {
+        return this.coordinateSystem;
+    }
+
+    public void setCoordinateSystem(String coordinateSystem) {
+        this.coordinateSystem = coordinateSystem;
     }
 
     public void clear() {
