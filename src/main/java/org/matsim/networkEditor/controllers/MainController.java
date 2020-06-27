@@ -799,12 +799,12 @@ public class MainController {
         grid.add(new Label(nodeADescr), 1, 1);
         grid.add(new Label("To Node:"), 0, 2);
         grid.add(new Label(nodeBDescr), 1, 2);
-
         grid.add(new Label("Length:"), 0, 3);
         grid.add(new Label("Free Speed:"), 0, 4);
         grid.add(new Label("Capacity:"), 0, 5);
         grid.add(new Label("# Lanes:"), 0, 6);
         grid.add(new Label("Bidirectional"), 0, 7);
+
         Label message = new Label("Please fill in all the above fields or use the defaults.");
         message.setTextFill(Color.GRAY);
         grid.add(message, 0, 8, 2, 1);
@@ -863,18 +863,17 @@ public class MainController {
                     + nodeBDescr + ", Length:" + list.get(0) + ", Free Speed:" + list.get(1) + ", Capacity:"
                     + list.get(2) + ", #Lanes:" + list.get(3) + ", Bidirectional:" + list.get(4));
 
-            Double dLength = Double.parseDouble(list.get(0));
-            Double dFreeSpeed = Double.parseDouble(list.get(1));
-            Double dCapacity = Double.parseDouble(list.get(2));
-            Double dLanes = Double.parseDouble(list.get(3));
-            Boolean bidirIsSelected = Boolean.parseBoolean(list.get(4));
+            double dLength = Double.parseDouble(list.get(0));
+            double dFreeSpeed = Double.parseDouble(list.get(1));
+            double dCapacity = Double.parseDouble(list.get(2));
+            double dLanes = Double.parseDouble(list.get(3));
+            boolean isBidirectional = Boolean.parseBoolean(list.get(4));
+
 
             this.extendedNetwork.addLink(linkID, firstNodeMarker.getPosition(), secondNodeMarker.getPosition(), dLength,
                     dFreeSpeed, dCapacity, dLanes);
-            // TODO add offset for different links so that they both are visible at the same time
-            if (bidirIsSelected)
-                this.extendedNetwork.addLink(secondNodeMarker.getPosition(), firstNodeMarker.getPosition(), dLength,
-                    dFreeSpeed, dCapacity, dLanes);
+            if (isBidirectional)
+                this.extendedNetwork.addLink(secondNodeMarker.getPosition(), firstNodeMarker.getPosition(), dLength, dFreeSpeed, dCapacity, dLanes);
             dialog.close();
         });
     }
@@ -1317,6 +1316,8 @@ public class MainController {
             TextField freeSpeed = new TextField(Double.toString(this.selectedLink.getFreespeed()));
             TextField capacity = new TextField(Double.toString(this.selectedLink.getCapacity()));
             TextField numOfLanes = new TextField(Double.toString(this.selectedLink.getNumberOfLanes()));
+            CheckBox bidirectionalCheckBox = new CheckBox();
+//            bidirectionalCheckBox.setSelected(true);
 
             grid.add(new Label("Link ID:"), 0, 0);
             grid.add(new Label(this.selectedLink.getId().toString()), 1, 0);
@@ -1332,10 +1333,12 @@ public class MainController {
             grid.add(capacity, 1, 5);
             grid.add(new Label("#Lanes"), 0, 6);
             grid.add(numOfLanes, 1, 6);
+            grid.add(new Label("Bidirectional"), 0, 7);
+            grid.add(bidirectionalCheckBox, 1, 7);
 
             Label message = new Label("Edit the above fields and click save.");
             message.setTextFill(Color.GRAY);
-            grid.add(message, 0, 7, 2, 1);
+            grid.add(message, 0, 8, 2, 1);
 
             // Enable/Disable button
             javafx.scene.Node createButton = dialog.getDialogPane().lookupButton(saveButtonType);
@@ -1397,7 +1400,7 @@ public class MainController {
             dialog.setResultConverter(dialogButton -> {
                 if (dialogButton == saveButtonType) {
                     return new ArrayList<String>(Arrays.asList(fromNode.getText(), toNode.getText(), length.getText(),
-                            freeSpeed.getText(), capacity.getText(), numOfLanes.getText()));
+                            freeSpeed.getText(), capacity.getText(), numOfLanes.getText(), String.valueOf(bidirectionalCheckBox.isSelected())));
                 }
                 return null;
             });
@@ -1405,17 +1408,26 @@ public class MainController {
             Optional<List<String>> result = dialog.showAndWait();
             result.ifPresent(list -> {
 
-                System.out.println("Edited link-> NodeId:" + this.selectedLink.getId().toString() + ", FromNode:"
-                        + list.get(0) + ", ToNode:" + list.get(1) + ", Length:" + list.get(2) + ", FreeSpeed:"
-                        + list.get(3) + ", Capacity" + list.get(4) + ", #Lanes" + list.get(5));
+                System.out.println("Edited link-> NodeId: " + this.selectedLink.getId().toString() + ", FromNode: "
+                        + list.get(0) + ", ToNode: " + list.get(1) + ", Length: " + list.get(2) + ", FreeSpeed: "
+                        + list.get(3) + ", Capacity: " + list.get(4) + ", #Lanes: " + list.get(5) + ", Bidirectional: " + list.get(6));
 
-                this.extendedNetwork.editLink(this.selectedLink.getId().toString(), list.get(0), list.get(1),
-                        Double.parseDouble(list.get(2)), Double.parseDouble(list.get(3)), Double.parseDouble(list.get(4)), Double.parseDouble(list.get(5)));
+                String newFromNode = list.get(0);
+                String newToNode = list.get(1);
+                double newLength = Double.parseDouble(list.get(2));
+                double newFreeSpeed = Double.parseDouble(list.get(3));
+                double newCapacity = Double.parseDouble(list.get(4));
+                double newLanes = Double.parseDouble(list.get(5));
+                boolean isBidirectional = Boolean.parseBoolean(list.get(6));
+
+                // TODO Check if second link already exists, in order to display checkbox as checked or not.
+                // TODO If the link exists, and the box is unchecked, delete the second link
+                this.extendedNetwork.editLink(this.selectedLink.getId().toString(), newFromNode, newToNode,
+                        newLength, newFreeSpeed, newCapacity, newLanes, isBidirectional);
 
                 this.extendedNetwork.getLinkTable().sort(); // TODO This needs to be rechecked
                 this.extendedNetwork.getLinkTable().refresh();
                 this.selectedLink = null;
-
 
                 linkDeleteButton.setDisable(true);
                 linkEditButton.setDisable(true);

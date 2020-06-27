@@ -12,9 +12,7 @@ import com.sothawo.mapjfx.CoordinateLine;
 import com.sothawo.mapjfx.MapView;
 import com.sothawo.mapjfx.Marker;
 
-import javafx.geometry.Insets;
-import javafx.scene.control.Label;
-import javafx.scene.control.TitledPane;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.util.Pair;
 import org.matsim.api.core.v01.Coord;
@@ -30,8 +28,6 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.util.Callback;
@@ -117,14 +113,12 @@ public class ExtendedNetwork {
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
-//        grid.setPadding(new Insets(20, 150, 10, 30));
 
         for (int i = 0; i < networkInfoNodes.size() ; i++) {
             grid.add(networkInfoNodes.get(i).getKey(), 0, i);
             grid.add(networkInfoNodes.get(i).getValue(), 2, i);
         }
         this.vBoxNetWork.getChildren().add(grid);
-
 
         this.nodeTable = new TableView<>();
         this.nodeTable.setEditable(false);
@@ -367,7 +361,7 @@ public class ExtendedNetwork {
         
     public boolean addLink(Coordinate nodeA, Coordinate nodeB, double length, double freespeed, double capacity, double numLanes){
         int max = findMaxLinkId();
-        return addLink(String.valueOf(max + 1), nodeA, nodeB, length, freespeed, capacity, numLanes); 
+        return addLink(String.valueOf(max + 1), nodeA, nodeB, length, freespeed, capacity, numLanes);
     }
 
     public int findMaxLinkId(){
@@ -395,7 +389,7 @@ public class ExtendedNetwork {
         return false;
     }
 
-    public Boolean editLink(String id, String newFromNode, String newToNode, double length, double freespeed, double capacity, double numLanes){
+    public Boolean editLink(String id, String newFromNode, String newToNode, double length, double freespeed, double capacity, double numLanes, boolean isBidirectional){
         Link link = this.network.getLinks().get(Id.create(id, Link.class));
         if (link.getFromNode().getId().toString() != newFromNode || link.getToNode().getId().toString()!=newToNode){
             Id<Node> newFromNodeId = Id.create(newFromNode, Node.class);
@@ -404,6 +398,9 @@ public class ExtendedNetwork {
             {
                 removeLink(id);
                 addLink(id,newFromNode, newToNode, length, freespeed, capacity, numLanes);
+                if (isBidirectional) {
+                    addLink(String.valueOf(Id.create(findMaxLinkId() + 1, Link.class)), newToNode, newFromNode, length, freespeed, capacity, numLanes);
+                }
                 return true;
             }
             else{
