@@ -496,7 +496,7 @@ public class MainController {
         grid.setPadding(new Insets(20, 150, 10, 30));
 
         ComboBox<String> coordinateOptions = new ComboBox<>();
-        TextField epsgCode = new TextField("000");
+        TextField epsgCode = new TextField("32633");
 
         // Coordinate dropdown options
         coordinateOptions.getItems().addAll(TransformationFactory.DHDN_GK4, TransformationFactory.GK4,
@@ -869,10 +869,10 @@ public class MainController {
             double dLanes = Double.parseDouble(list.get(3));
             boolean isBidirectional = Boolean.parseBoolean(list.get(4));
 
-
-            this.extendedNetwork.addLink(linkID, firstNodeMarker.getPosition(), secondNodeMarker.getPosition(), dLength,
+            if (!this.extendedNetwork.containsLink(firstNodeMarker.getPosition(), secondNodeMarker.getPosition()))
+                this.extendedNetwork.addLink(linkID, firstNodeMarker.getPosition(), secondNodeMarker.getPosition(), dLength,
                     dFreeSpeed, dCapacity, dLanes);
-            if (isBidirectional)
+            if (isBidirectional && !this.extendedNetwork.containsLink(secondNodeMarker.getPosition(), firstNodeMarker.getPosition()))
                 this.extendedNetwork.addLink(secondNodeMarker.getPosition(), firstNodeMarker.getPosition(), dLength, dFreeSpeed, dCapacity, dLanes);
             dialog.close();
         });
