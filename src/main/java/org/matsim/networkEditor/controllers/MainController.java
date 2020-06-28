@@ -869,6 +869,7 @@ public class MainController {
             double dLanes = Double.parseDouble(list.get(3));
             boolean isBidirectional = Boolean.parseBoolean(list.get(4));
 
+            // TODO bugfix addlinks, some don't show. is contains correct?
             if (!this.extendedNetwork.containsLink(firstNodeMarker.getPosition(), secondNodeMarker.getPosition()))
                 this.extendedNetwork.addLink(linkID, firstNodeMarker.getPosition(), secondNodeMarker.getPosition(), dLength,
                     dFreeSpeed, dCapacity, dLanes);
@@ -920,6 +921,7 @@ public class MainController {
         ButtonType saveButtonType = new ButtonType("Save", ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
 
+        // Create the attributes labels and fields.
         // Create the attributes labels and fields.
         GridPane grid = new GridPane();
         grid.setHgap(10);
@@ -1317,7 +1319,6 @@ public class MainController {
             TextField capacity = new TextField(Double.toString(this.selectedLink.getCapacity()));
             TextField numOfLanes = new TextField(Double.toString(this.selectedLink.getNumberOfLanes()));
             CheckBox bidirectionalCheckBox = new CheckBox();
-//            bidirectionalCheckBox.setSelected(true);
 
             grid.add(new Label("Link ID:"), 0, 0);
             grid.add(new Label(this.selectedLink.getId().toString()), 1, 0);
@@ -1420,8 +1421,10 @@ public class MainController {
                 double newLanes = Double.parseDouble(list.get(5));
                 boolean isBidirectional = Boolean.parseBoolean(list.get(6));
 
-                // TODO Check if second link already exists, in order to display checkbox as checked or not.
-                // TODO If the link exists, and the box is unchecked, delete the second link
+                // TODO Check correctness
+                if (this.extendedNetwork.containsLink(this.selectedLink.getToNode().getId(), this.selectedLink.getFromNode().getId())) {
+                    this.extendedNetwork.removeLink(this.selectedLink.getToNode().getId().toString(), this.selectedLink.getFromNode().getId().toString());
+                }
                 this.extendedNetwork.editLink(this.selectedLink.getId().toString(), newFromNode, newToNode,
                         newLength, newFreeSpeed, newCapacity, newLanes, isBidirectional);
 

@@ -22,6 +22,8 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
+import org.matsim.core.utils.geometry.CoordinateTransformation;
+import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.networkEditor.visualElements.NetworkInfo;
 
 import javafx.beans.property.SimpleStringProperty;
@@ -391,15 +393,19 @@ public class ExtendedNetwork {
 
     public Boolean editLink(String id, String newFromNode, String newToNode, double length, double freespeed, double capacity, double numLanes, boolean isBidirectional){
         Link link = this.network.getLinks().get(Id.create(id, Link.class));
-        if (link.getFromNode().getId().toString() != newFromNode || link.getToNode().getId().toString()!=newToNode){
+        if (!link.getFromNode().getId().toString().equals(newFromNode) || !link.getToNode().getId().toString().equals(newToNode)){
             Id<Node> newFromNodeId = Id.create(newFromNode, Node.class);
             Id<Node> newToNodeId = Id.create(newToNode, Node.class);
+
             if (this.network.getNodes().containsKey(newFromNodeId) && this.network.getNodes().containsKey(newToNodeId))
             {
-                removeLink(id);
-                addLink(id,newFromNode, newToNode, length, freespeed, capacity, numLanes);
-                if (isBidirectional) {
-                    addLink(String.valueOf(Id.create(findMaxLinkId() + 1, Link.class)), newToNode, newFromNode, length, freespeed, capacity, numLanes);
+                if (this.containsLink(newFromNodeId, newToNodeId)) {
+                    removeLink(id);
+                    addLink(id,newFromNode, newToNode, length, freespeed, capacity, numLanes);
+                }
+                // TODO bugfix
+                if (isBidirectional && !this.containsLink(newToNodeId, newFromNodeId)) {
+                    addLink(Id.create(findMaxLinkId() + 1, Link.class).toString(), newToNode, newFromNode, length, freespeed, capacity, numLanes);
                 }
                 return true;
             }
@@ -587,9 +593,25 @@ public class ExtendedNetwork {
 
         this.nodeMarkers = new HashMap<>();
         this.linkLines = new HashMap<>();
-
     }
 
-    
+    public boolean containsLink(Coordinate coordFrom, Coordinate coordTo) {
+        for (Link link : this.network.getLinks().values())
+            if ((link.getFromNode().getCoord().getX() == coordFrom.getLatitude() &&
+                    link.getFromNode().getCoord().getY() == coordFrom.getLongitude()) ||
+                    (link.getToNode().getCoord().getX() == coordTo.getLatitude() &&
+                    link.getToNode().getCoord().getY() == coordTo.getLongitude())) {
+                return true;
+            }
+        return false;
+    }
+
+    public boolean containsLink(Id<Node> nodeFrom, Id<Node> nodeTo) {
+        for (Link link : this.network.getLinks().values())
+            if (link.getFromNode().getId() == nodeFrom && link.getToNode().getId() == nodeTo) {
+                return true;
+            }
+        return false;
+    }
 
 }
