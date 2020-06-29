@@ -12,9 +12,7 @@ import com.sothawo.mapjfx.CoordinateLine;
 import com.sothawo.mapjfx.MapView;
 import com.sothawo.mapjfx.Marker;
 
-import javafx.geometry.Insets;
-import javafx.scene.control.Label;
-import javafx.scene.control.TitledPane;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.util.Pair;
 import org.matsim.api.core.v01.Coord;
@@ -24,14 +22,14 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
+import org.matsim.core.utils.geometry.CoordinateTransformation;
+import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.networkEditor.visualElements.NetworkInfo;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.util.Callback;
@@ -117,14 +115,12 @@ public class ExtendedNetwork {
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
-//        grid.setPadding(new Insets(20, 150, 10, 30));
 
         for (int i = 0; i < networkInfoNodes.size() ; i++) {
             grid.add(networkInfoNodes.get(i).getKey(), 0, i);
             grid.add(networkInfoNodes.get(i).getValue(), 2, i);
         }
         this.vBoxNetWork.getChildren().add(grid);
-
 
         this.nodeTable = new TableView<>();
         this.nodeTable.setEditable(false);
@@ -367,7 +363,7 @@ public class ExtendedNetwork {
         
     public boolean addLink(Coordinate nodeA, Coordinate nodeB, double length, double freespeed, double capacity, double numLanes){
         int max = findMaxLinkId();
-        return addLink(String.valueOf(max + 1), nodeA, nodeB, length, freespeed, capacity, numLanes); 
+        return addLink(String.valueOf(max + 1), nodeA, nodeB, length, freespeed, capacity, numLanes);
     }
 
     public int findMaxLinkId(){
@@ -395,22 +391,22 @@ public class ExtendedNetwork {
         return false;
     }
 
-    public Boolean editLink(String id, String newFromNode, String newToNode, double length, double freespeed, double capacity, double numLanes){
+    public Boolean editLink(String id, String newFromNode, String newToNode, double length, double freespeed, double capacity, double numLanes) {
         Link link = this.network.getLinks().get(Id.create(id, Link.class));
-        if (link.getFromNode().getId().toString() != newFromNode || link.getToNode().getId().toString()!=newToNode){
+        if (!link.getFromNode().getId().toString().equals(newFromNode) || !link.getToNode().getId().toString().equals(newToNode)) {
             Id<Node> newFromNodeId = Id.create(newFromNode, Node.class);
             Id<Node> newToNodeId = Id.create(newToNode, Node.class);
-            if (this.network.getNodes().containsKey(newFromNodeId) && this.network.getNodes().containsKey(newToNodeId))
-            {
-                removeLink(id);
-                addLink(id,newFromNode, newToNode, length, freespeed, capacity, numLanes);
+
+            if (this.network.getNodes().containsKey(newFromNodeId) && this.network.getNodes().containsKey(newToNodeId)) {
+                if (this.containsLink(newFromNodeId, newToNodeId)) {
+                    removeLink(id);
+                    addLink(id, newFromNode, newToNode, length, freespeed, capacity, numLanes);
+                }
                 return true;
-            }
-            else{
+            } else {
                 return false;
             }
-        }
-        else if (link.getLength()!=length || link.getCapacity() != capacity || link.getNumberOfLanes()!=numLanes || link.getFreespeed()!=freespeed){
+        } else if (link.getLength() != length || link.getCapacity() != capacity || link.getNumberOfLanes() != numLanes || link.getFreespeed() != freespeed) {
             link.setLength(length);
             link.setCapacity(capacity);
             link.setFreespeed(freespeed);
@@ -590,9 +586,25 @@ public class ExtendedNetwork {
 
         this.nodeMarkers = new HashMap<>();
         this.linkLines = new HashMap<>();
-
     }
 
-    
+    public boolean containsLink(Coordinate coordFrom, Coordinate coordTo) {
+        for (Link link : this.network.getLinks().values())
+            if ((link.getFromNode().getCoord().getX() == coordFrom.getLatitude() &&
+                    link.getFromNode().getCoord().getY() == coordFrom.getLongitude()) ||
+                    (link.getToNode().getCoord().getX() == coordTo.getLatitude() &&
+                    link.getToNode().getCoord().getY() == coordTo.getLongitude())) {
+                return true;
+            }
+        return false;
+    }
+
+    public boolean containsLink(Id<Node> nodeFrom, Id<Node> nodeTo) {
+        for (Link link : this.network.getLinks().values())
+            if (link.getFromNode().getId() == nodeFrom && link.getToNode().getId() == nodeTo) {
+                return true;
+            }
+        return false;
+    }
 
 }
