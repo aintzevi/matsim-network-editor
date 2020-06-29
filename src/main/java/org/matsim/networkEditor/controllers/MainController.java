@@ -869,12 +869,31 @@ public class MainController {
             double dLanes = Double.parseDouble(list.get(3));
             boolean isBidirectional = Boolean.parseBoolean(list.get(4));
 
-            // TODO bugfix addlinks, some don't show. is contains correct?
-            if (!this.extendedNetwork.containsLink(firstNodeMarker.getPosition(), secondNodeMarker.getPosition()))
+            if (!this.extendedNetwork.containsLink(firstNodeMarker.getPosition(), secondNodeMarker.getPosition())) {
                 this.extendedNetwork.addLink(linkID, firstNodeMarker.getPosition(), secondNodeMarker.getPosition(), dLength,
-                    dFreeSpeed, dCapacity, dLanes);
-            if (isBidirectional && !this.extendedNetwork.containsLink(secondNodeMarker.getPosition(), firstNodeMarker.getPosition()))
-                this.extendedNetwork.addLink(secondNodeMarker.getPosition(), firstNodeMarker.getPosition(), dLength, dFreeSpeed, dCapacity, dLanes);
+                        dFreeSpeed, dCapacity, dLanes);
+                if (isBidirectional) {
+                    if (!this.extendedNetwork.containsLink(secondNodeMarker.getPosition(), firstNodeMarker.getPosition())) {
+                        this.extendedNetwork.addLink(secondNodeMarker.getPosition(), firstNodeMarker.getPosition(), dLength, dFreeSpeed, dCapacity, dLanes);
+                    }
+//                    else {
+//                        Alert alert = new Alert(AlertType.INFORMATION);
+//                        alert.setTitle("Cannot add link");
+//                        alert.setHeaderText(null);
+//                        alert.setContentText("Reverse link already exists!");
+//
+//                        alert.showAndWait();
+//                    }
+
+                }
+            } else {
+                Alert alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Cannot add link");
+                alert.setHeaderText(null);
+                alert.setContentText("Link already exists!");
+
+                alert.showAndWait();
+            }
             dialog.close();
         });
     }
@@ -1422,13 +1441,30 @@ public class MainController {
                 boolean isBidirectional = Boolean.parseBoolean(list.get(6));
 
                 // TODO Check correctness
-                if (this.extendedNetwork.containsLink(this.selectedLink.getToNode().getId(), this.selectedLink.getFromNode().getId())) {
-                    this.extendedNetwork.removeLink(this.selectedLink.getToNode().getId().toString(), this.selectedLink.getFromNode().getId().toString());
+                if (!isBidirectional) {
+                    if (this.extendedNetwork.containsLink(this.selectedLink.getToNode().getId(), this.selectedLink.getFromNode().getId())) {
+                        this.extendedNetwork.removeLink(this.selectedLink.getToNode().getId().toString(), this.selectedLink.getFromNode().getId().toString());
+                    }
+                } else {
+                    if (!this.extendedNetwork.containsLink(this.selectedLink.getToNode().getId(), this.selectedLink.getFromNode().getId())) {
+                        this.extendedNetwork.addLink(String.valueOf(this.extendedNetwork.findMaxLinkId() + 1), newToNode, newFromNode, newLength, newFreeSpeed, newCapacity, newLanes);
+                    }
+                    // TODO Edit one of the two links => changes reflect to the other direction?
+//                    else {
+//                        Alert alert = new Alert(AlertType.INFORMATION);
+//                        alert.setTitle("Cannot add link");
+//                        alert.setHeaderText(null);
+//                        alert.setContentText("Reverse link already exists!");
+//
+//                        alert.showAndWait();
+//                    }
                 }
-                this.extendedNetwork.editLink(this.selectedLink.getId().toString(), newFromNode, newToNode,
-                        newLength, newFreeSpeed, newCapacity, newLanes, isBidirectional);
 
-                this.extendedNetwork.getLinkTable().sort(); // TODO This needs to be rechecked
+                this.extendedNetwork.editLink(this.selectedLink.getId().toString(), newFromNode, newToNode,
+                        newLength, newFreeSpeed, newCapacity, newLanes);
+
+                // TODO This needs to be rechecked
+                this.extendedNetwork.getLinkTable().sort();
                 this.extendedNetwork.getLinkTable().refresh();
                 this.selectedLink = null;
 

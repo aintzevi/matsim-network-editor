@@ -391,29 +391,22 @@ public class ExtendedNetwork {
         return false;
     }
 
-    public Boolean editLink(String id, String newFromNode, String newToNode, double length, double freespeed, double capacity, double numLanes, boolean isBidirectional){
+    public Boolean editLink(String id, String newFromNode, String newToNode, double length, double freespeed, double capacity, double numLanes) {
         Link link = this.network.getLinks().get(Id.create(id, Link.class));
-        if (!link.getFromNode().getId().toString().equals(newFromNode) || !link.getToNode().getId().toString().equals(newToNode)){
+        if (!link.getFromNode().getId().toString().equals(newFromNode) || !link.getToNode().getId().toString().equals(newToNode)) {
             Id<Node> newFromNodeId = Id.create(newFromNode, Node.class);
             Id<Node> newToNodeId = Id.create(newToNode, Node.class);
 
-            if (this.network.getNodes().containsKey(newFromNodeId) && this.network.getNodes().containsKey(newToNodeId))
-            {
+            if (this.network.getNodes().containsKey(newFromNodeId) && this.network.getNodes().containsKey(newToNodeId)) {
                 if (this.containsLink(newFromNodeId, newToNodeId)) {
                     removeLink(id);
-                    addLink(id,newFromNode, newToNode, length, freespeed, capacity, numLanes);
-                }
-                // TODO bugfix
-                if (isBidirectional && !this.containsLink(newToNodeId, newFromNodeId)) {
-                    addLink(Id.create(findMaxLinkId() + 1, Link.class).toString(), newToNode, newFromNode, length, freespeed, capacity, numLanes);
+                    addLink(id, newFromNode, newToNode, length, freespeed, capacity, numLanes);
                 }
                 return true;
-            }
-            else{
+            } else {
                 return false;
             }
-        }
-        else if (link.getLength()!=length || link.getCapacity() != capacity || link.getNumberOfLanes()!=numLanes || link.getFreespeed()!=freespeed){
+        } else if (link.getLength() != length || link.getCapacity() != capacity || link.getNumberOfLanes() != numLanes || link.getFreespeed() != freespeed) {
             link.setLength(length);
             link.setCapacity(capacity);
             link.setFreespeed(freespeed);
