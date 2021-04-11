@@ -156,6 +156,12 @@ public class MainController {
     @FXML
     private VBox vboxLinks;
 
+    /**
+     * contents of validation pane
+     */
+    @FXML
+    private VBox vboxValidation;
+
     @FXML
     private Button nodeEditButton;
 
@@ -167,6 +173,13 @@ public class MainController {
 
     @FXML
     private Button linkDeleteButton;
+
+    @FXML
+    private Button validationRunButton;
+
+    @FXML
+    private Button validationEditButton;
+
 
     /**
      * the MapView containing the map
@@ -270,6 +283,10 @@ public class MainController {
         Image imageEdit = new Image(getClass().getResourceAsStream("/icons/edit.png"), 18, 18, true, true);
         nodeEditButton.setGraphic(new ImageView(imageEdit));
         linkEditButton.setGraphic(new ImageView(imageEdit));
+        validationEditButton.setGraphic(new ImageView(imageEdit));
+        Image imageCheckmark = new Image(getClass().getResourceAsStream("/icons/checkmark.png"), 18, 18, true, true);
+        validationRunButton.setGraphic(new ImageView(imageCheckmark));
+
 
         // file chooser
         buttonImport.setOnAction(event -> importNetworkDialog());

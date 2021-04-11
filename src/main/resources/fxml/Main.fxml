@@ -103,10 +103,14 @@
                         </TitledPane>
                         <TitledPane fx:id="validation" animated="true" text="Validation">
                             <content>
-                                <VBox spacing="10.0">
+                                <VBox fx:id="vboxValidation" spacing="10.0">
                                     <children>
-                                        <Label text="validation" />
-                                        <TextField fx:id="validationText" prefWidth="120.0" promptText="milliseconds" />
+                                        <ToolBar>
+                                            <Label text="Select a warning/error to fix" style="-fx-text-fill: gray;"/>
+                                            <Pane HBox.hgrow="ALWAYS" />
+                                            <Button fx:id="validationRunButton"/>
+                                            <Button fx:id="validationEditButton"/>
+                                        </ToolBar>
                                     </children>
                                 </VBox>
                             </content>
