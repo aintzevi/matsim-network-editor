@@ -127,16 +127,16 @@ public class MainController {
     private Button buttonSettings;
 
     /**
-     * map options pane in leftPanel
-     */
-    @FXML
-    private TitledPane optionsMapType;
-
-    /**
-     * map options pane in leftPanel
+     * map options pane in rightPanel
      */
     @FXML
     private TitledPane optionsNetwork;
+
+    /**
+     * validation pane in rightPanel
+     */
+    @FXML
+    private TitledPane validation;
 
     /**
      * contents of network pane
@@ -196,18 +196,8 @@ public class MainController {
     @FXML
     private Accordion rightControls;
 
-    /**
-     * for editing the animation duration
-     */
     @FXML
-    private TextField animationDuration;
-
-    /**
-     * the BIng Maps API Key.
-     */
-    @FXML
-    private TextField bingMapsApiKey;
-
+    private TextField validationText;
     /**
      * label to display cursor's coordinates.
      */
@@ -225,78 +215,6 @@ public class MainController {
      */
     @FXML
     private Label labelEvent;
-
-    /**
-     * RadioButton for MapStyle OSM
-     */
-    @FXML
-    private RadioButton radioMsOSM;
-
-    /**
-     * RadioButton for MapStyle Stamen Watercolor
-     */
-    @FXML
-    private RadioButton radioMsSTW;
-
-    /**
-     * RadioButton for MapStyle Bing Roads
-     */
-    @FXML
-    private RadioButton radioMsBR;
-
-    /**
-     * RadioButton for MapStyle Bing Roads - dark
-     */
-    @FXML
-    private RadioButton radioMsCd;
-
-    /**
-     * RadioButton for MapStyle Bing Roads - grayscale
-     */
-    @FXML
-    private RadioButton radioMsCg;
-
-    /**
-     * RadioButton for MapStyle Bing Roads - light
-     */
-    @FXML
-    private RadioButton radioMsCl;
-
-    /**
-     * RadioButton for MapStyle Bing Aerial
-     */
-    @FXML
-    private RadioButton radioMsBA;
-
-    /**
-     * RadioButton for MapStyle Bing Aerial with Label
-     */
-    @FXML
-    private RadioButton radioMsBAwL;
-
-    /**
-     * RadioButton for MapStyle WMS.
-     */
-    @FXML
-    private RadioButton radioMsWMS;
-
-    /**
-     * RadioButton for MapStyle XYZ
-     */
-    @FXML
-    private RadioButton radioMsXYZ;
-
-    /**
-     * ToggleGroup for the MapStyle radios
-     */
-    @FXML
-    private ToggleGroup mapTypeGroup;
-
-    /**
-     * Check Button for constraining th extent.
-     */
-    @FXML
-    private CheckBox checkConstrainGermany;
 
     /**
      * params for the WMS server.
@@ -383,21 +301,6 @@ public class MainController {
         buttonZoom.setOnAction(event -> mapView.setZoom(zoomDefault));
         sliderZoom.valueProperty().bindBidirectional(mapView.zoomProperty());
 
-        // add a listener to the animationDuration field and make sure we only accept
-        // int values
-        animationDuration.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue.isEmpty()) {
-                mapView.setAnimationDuration(0);
-            } else {
-                try {
-                    mapView.setAnimationDuration(Integer.parseInt(newValue));
-                } catch (NumberFormatException e) {
-                    animationDuration.setText(oldValue);
-                }
-            }
-        });
-        animationDuration.setText("500");
-
         // watch the MapView's initialized property to finish initialization
         mapView.initializedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
@@ -405,46 +308,10 @@ public class MainController {
             }
         });
 
-        // observe the map type radiobuttons
-        mapTypeGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
-            logger.debug("map type toggled to {}", newValue.toString());
-            MapType mapType = MapType.OSM;
-            if (newValue == radioMsOSM) {
-                mapType = MapType.OSM;
-            } else if (newValue == radioMsBR) {
-                mapType = MapType.BINGMAPS_ROAD;
-            } else if (newValue == radioMsCd) {
-                mapType = MapType.BINGMAPS_CANVAS_DARK;
-            } else if (newValue == radioMsCg) {
-                mapType = MapType.BINGMAPS_CANVAS_GRAY;
-            } else if (newValue == radioMsCl) {
-                mapType = MapType.BINGMAPS_CANVAS_LIGHT;
-            } else if (newValue == radioMsBA) {
-                mapType = MapType.BINGMAPS_AERIAL;
-            } else if (newValue == radioMsBAwL) {
-                mapType = MapType.BINGMAPS_AERIAL_WITH_LABELS;
-            } else if (newValue == radioMsWMS) {
-                mapView.setWMSParam(wmsParam);
-                mapType = MapType.WMS;
-            } else if (newValue == radioMsXYZ) {
-                mapView.setXYZParam(xyzParams);
-                mapType = MapType.XYZ;
-            }
-            mapView.setBingMapsApiKey(bingMapsApiKey.getText());
-            mapView.setMapType(mapType);
-        });
-        mapTypeGroup.selectToggle(radioMsOSM);
+        mapView.setMapType(MapType.OSM);
 
         setupEventHandlers();
 
-        // add the constrain listener
-        checkConstrainGermany.selectedProperty().addListener(((observable, oldValue, newValue) -> {
-            if (newValue) {
-                mapView.constrainExtent(extentGermany);
-            } else {
-                mapView.clearConstrainExtent();
-            }
-        }));
 
         // finally initialize the map view
         logger.trace("start map initialization");
@@ -1016,8 +883,7 @@ public class MainController {
             this.extendedNetwork.removeNode(marker.getPosition());
         });
 
-        // TODO for this to work, create a node with an invisible label first, then make
-        // it visible here
+        // TODO for this to work, create a node with an invisible label first, then make it visible here
         // Handler to show node info on click
         mapView.addEventHandler(MarkerEvent.MARKER_ENTERED, event -> {
             event.consume();

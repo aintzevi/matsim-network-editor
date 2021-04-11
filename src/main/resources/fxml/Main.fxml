@@ -101,35 +101,12 @@
                                 </VBox>
                             </content>
                         </TitledPane>
-                        <TitledPane fx:id="optionsMapType" animated="true" text="Map Style">
-                            <content>
-                                <VBox spacing="10.0">
-                                    <fx:define>
-                                        <ToggleGroup fx:id="mapTypeGroup" />
-                                    </fx:define>
-                                    <children>
-                                        <RadioButton fx:id="radioMsOSM" text="OSM" toggleGroup="$mapTypeGroup" />
-                                        <RadioButton fx:id="radioMsWMS" text="WMS terrestris OSM" toggleGroup="$mapTypeGroup" />
-                                        <RadioButton fx:id="radioMsXYZ" text="XYZ source" toggleGroup="$mapTypeGroup" />
-                                        <RadioButton fx:id="radioMsBR" text="Bing Roads" toggleGroup="$mapTypeGroup" />
-                                        <RadioButton fx:id="radioMsCd" text="Bing Roads - dark" toggleGroup="$mapTypeGroup" />
-                                        <RadioButton fx:id="radioMsCg" text="Bing Roads - grayscale" toggleGroup="$mapTypeGroup" />
-                                        <RadioButton fx:id="radioMsCl" text="Bing Roads - light" toggleGroup="$mapTypeGroup" />
-                                        <RadioButton fx:id="radioMsBA" text="Bing Aerial" toggleGroup="$mapTypeGroup" />
-                                        <RadioButton fx:id="radioMsBAwL" text="Bing Aerial with Labels" toggleGroup="$mapTypeGroup" />
-                                    </children>
-                                </VBox>
-                            </content>
-                        </TitledPane>
-                        <TitledPane fx:id="optionsMisc" animated="true" text="Misc">
+                        <TitledPane fx:id="validation" animated="true" text="Validation">
                             <content>
                                 <VBox spacing="10.0">
                                     <children>
-                                        <Label text="animation duration" />
-                                        <TextField fx:id="animationDuration" prefWidth="120.0" promptText="milliseconds" />
-                                        <Label text="Bing Maps API-Key" />
-                                        <TextField fx:id="bingMapsApiKey" prefWidth="120.0" promptText="API-Key" />
-                                        <CheckBox fx:id="checkConstrainGermany" text="constrain to Germany" maxWidth="Infinity" />
+                                        <Label text="validation" />
+                                        <TextField fx:id="validationText" prefWidth="120.0" promptText="milliseconds" />
                                     </children>
                                 </VBox>
                             </content>
