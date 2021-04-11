@@ -876,14 +876,14 @@ public class MainController {
                     if (!this.extendedNetwork.containsLink(secondNodeMarker.getPosition(), firstNodeMarker.getPosition())) {
                         this.extendedNetwork.addLink(secondNodeMarker.getPosition(), firstNodeMarker.getPosition(), dLength, dFreeSpeed, dCapacity, dLanes);
                     }
-//                    else {
-//                        Alert alert = new Alert(AlertType.INFORMATION);
-//                        alert.setTitle("Cannot add link");
-//                        alert.setHeaderText(null);
-//                        alert.setContentText("Reverse link already exists!");
-//
-//                        alert.showAndWait();
-//                    }
+                    else {
+                        Alert alert = new Alert(AlertType.INFORMATION);
+                        alert.setTitle("Cannot add link");
+                        alert.setHeaderText(null);
+                        alert.setContentText("Reverse link already exists!");
+
+                        alert.showAndWait();
+                    }
 
                 }
             } else {
@@ -1450,14 +1450,14 @@ public class MainController {
                         this.extendedNetwork.addLink(String.valueOf(this.extendedNetwork.findMaxLinkId() + 1), newToNode, newFromNode, newLength, newFreeSpeed, newCapacity, newLanes);
                     }
                     // TODO Edit one of the two links => changes reflect to the other direction?
-//                    else {
-//                        Alert alert = new Alert(AlertType.INFORMATION);
-//                        alert.setTitle("Cannot add link");
-//                        alert.setHeaderText(null);
-//                        alert.setContentText("Reverse link already exists!");
-//
-//                        alert.showAndWait();
-//                    }
+                    else {
+                        Alert alert = new Alert(AlertType.INFORMATION);
+                        alert.setTitle("Cannot add link");
+                        alert.setHeaderText(null);
+                        alert.setContentText("Reverse link already exists!");
+
+                        alert.showAndWait();
+                    }
                 }
 
                 this.extendedNetwork.editLink(this.selectedLink.getId().toString(), newFromNode, newToNode,

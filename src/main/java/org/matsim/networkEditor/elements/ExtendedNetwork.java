@@ -591,7 +591,7 @@ public class ExtendedNetwork {
     public boolean containsLink(Coordinate coordFrom, Coordinate coordTo) {
         for (Link link : this.network.getLinks().values())
             if ((link.getFromNode().getCoord().getX() == coordFrom.getLatitude() &&
-                    link.getFromNode().getCoord().getY() == coordFrom.getLongitude()) ||
+                    link.getFromNode().getCoord().getY() == coordFrom.getLongitude()) &&
                     (link.getToNode().getCoord().getX() == coordTo.getLatitude() &&
                     link.getToNode().getCoord().getY() == coordTo.getLongitude())) {
                 return true;
