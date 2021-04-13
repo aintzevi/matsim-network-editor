@@ -180,6 +180,8 @@ public class MainController {
     @FXML
     private Button validationEditButton;
 
+    @FXML
+    private Button validationDeleteButton;
 
     /**
      * the MapView containing the map
@@ -768,7 +770,6 @@ public class MainController {
 
                         alert.showAndWait();
                     }
-
                 }
             } else {
                 Alert alert = new Alert(AlertType.INFORMATION);

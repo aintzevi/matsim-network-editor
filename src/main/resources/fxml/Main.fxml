@@ -110,6 +110,7 @@
                                             <Pane HBox.hgrow="ALWAYS" />
                                             <Button fx:id="validationRunButton"/>
                                             <Button fx:id="validationEditButton"/>
+                                            <Button fx:id="validationDeleteButton"/>
                                         </ToolBar>
                                     </children>
                                 </VBox>
