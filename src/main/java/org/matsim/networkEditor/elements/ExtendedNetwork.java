@@ -500,7 +500,7 @@ public class ExtendedNetwork {
         for (Node node : data) {
             if (!this.nodeMarkers.containsKey(node.getId())) {
                 Coordinate coordinate = new Coordinate(node.getCoord().getX(), node.getCoord().getY());
-                Marker marker = new Marker(getClass().getResource("/icons/node-icon.png"), -3, -8)
+                Marker marker = new Marker(getClass().getResource("/icons/node.png"), -3, -8)
                         .setPosition(coordinate).setVisible(true);
                 nodeMarkers.put(node.getId(), marker);
                 mapView.addMarker(marker);
