@@ -79,6 +79,7 @@ public class MainController {
     private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 
     private ExtendedNetwork extendedNetwork = null;
+    /** Keeping track of the selected node and link for editing/deleting purposes */
     private Node selectedNode = null;
     private Link selectedLink = null;
 
@@ -88,137 +89,113 @@ public class MainController {
     private static final Coordinate coordGermanyEast = new Coordinate(51.27277778, 15.04361111);
     private static final Extent extentGermany = Extent.forCoordinates(coordGermanyNorth, coordGermanySouth,
             coordGermanyWest, coordGermanyEast);
-    /**
-     * default settings values (zoom and center coordinates).
-     */
+
+    // Default settings values (zoom and center coordinates set to Munich).
     private int zoomDefault = 14;
-    // Map center coordinates, set to Munich
     private Coordinate coordCenter = new Coordinate(48.1351, 11.5820);
 
-    // Save nodes for link addition
+    /** To keep track of the nodes for link addition */
     private Marker firstNodeMarker = null;
     private Marker secondNodeMarker = null;
 
-    @FXML
     /** button to import network.xml */
+    @FXML
     private Button buttonImport;
 
-    @FXML
     /** button to create new network */
+    @FXML
     private Button buttonCreate;
 
-    @FXML
     /** button to save file */
-    private Button buttonSave;
     @FXML
+    private Button buttonSave;
+
     /** button to undo action */
+    @FXML
     private Button buttonUndo;
 
-    @FXML
     /** button to redo action */
+    @FXML
     private Button buttonRedo;
 
-    @FXML
     /** button to set the map's zoom. */
+    @FXML
     private Button buttonZoom;
 
-    @FXML
     /** button to open the general settings. */
+    @FXML
     private Button buttonSettings;
 
-    /**
-     * map options pane in rightPanel
-     */
+    /** Right panel with info and options for the map */
     @FXML
     private TitledPane optionsNetwork;
 
-    /**
-     * validation pane in rightPanel
-     */
+    /** Validation pane in rightPanel */
     @FXML
     private TitledPane validation;
 
-    /**
-     * contents of network pane
-     */
+    /** content box of the network pane */
     @FXML
     private VBox vboxNetwork;
 
-    /**
-     * contents of node pane
-     */
+    /** content box of node pane */
     @FXML
     private VBox vboxNodes;
 
-    /**
-     * contents of link pane
-     */
+    /** contents box of link pane */
     @FXML
     private VBox vboxLinks;
 
+    /** button to edit selected node */
     @FXML
     private Button nodeEditButton;
 
+    /** button to delete selected node */
     @FXML
     private Button nodeDeleteButton;
 
+    /** button to edit selected link */
     @FXML
     private Button linkEditButton;
 
+    /** button to delete selected link */
     @FXML
     private Button linkDeleteButton;
 
-    /**
-     * the MapView containing the map
-     */
+    /** the MapView containing the map */
     @FXML
     private MapView mapView;
 
+    /** Glasspane sitting over the map when opening the application */
     @FXML
     private StackPane glassPane;
 
-    /**
-     * the box containing the top controls, must be enabled when mapView is
-     * initialized
-     */
+    /** the box containing the top controls, must be enabled when mapView is initialized */
     @FXML
     private HBox topControls;
 
-    /**
-     * Slider to change the zoom value
-     */
+    /** Slider to change the zoom value */
     @FXML
     private Slider sliderZoom;
 
-    /**
-     * Accordion for all the different options
-     */
+    /** Accordion for all the different network information and controls */
     @FXML
     private Accordion rightControls;
 
-    @FXML
-    private TextField validationText;
-    /**
-     * label to display cursor's coordinates.
-     */
+    /** label to display cursor's coordinates at the bottom of the application */
     @FXML
     private Label labelCursor;
 
-    /**
-     * label to display selected node information.
-     */
+    /** label to display selected node information at the bottom of the application*/
     @FXML
     private Label labelNode;
 
-    /**
-     * label to display the last event.
-     */
+    /** label to display the last event at the bottom of the application */
     @FXML
     private Label labelEvent;
 
-    /**
-     * params for the WMS server.
-     */
+    // TODO Check if still relevant for the application
+    /** params for the WMS server. */
     private WMSParam wmsParam = new WMSParam().setUrl("http://ows.terrestris.de/osm/service?").addParam("layers",
             "OSM-WMS");
 
@@ -233,7 +210,7 @@ public class MainController {
     }
 
     /**
-     * called after the fxml is loaded and all objects are created. This is not
+     * Called after the fxml is loaded and all objects are created. This is not
      * called initialize any more, because we need to pass in the projection before
      * initializing.
      *
@@ -249,8 +226,10 @@ public class MainController {
         // set the custom css file for the MapView
         mapView.setCustomMapviewCssURL(getClass().getResource("/custom_mapview.css"));
 
+        // Connect right controls panel with network options panel
         rightControls.setExpandedPane(optionsNetwork);
 
+        // default values for centre of the map and default zoom value, can be changed by the user
         try {
             readFromSettingsFile("./src/main/resources/.settings");
         } catch (IOException e1) {
@@ -277,26 +256,29 @@ public class MainController {
         buttonUndo.setOnAction(event -> actionUndo());
         buttonRedo.setOnAction(event -> actionRedo());
         buttonSave.setOnAction(event -> saveFile());
+        // node and link operations
         nodeDeleteButton.setOnAction(event -> deleteSelectedNode());
         nodeEditButton.setOnAction(event -> editSelectedNode());
         linkDeleteButton.setOnAction(event -> deleteSelectedLink());
         linkEditButton.setOnAction(event -> editSelectedLink());
 
-        // Undo and Redo initially dissabled
+        // Undo and Redo initially disabled
         buttonUndo.setDisable(true);
         buttonRedo.setDisable(true);
+
+        // buttons initially disabled
         nodeDeleteButton.setDisable(true);
         nodeEditButton.setDisable(true);
         linkDeleteButton.setDisable(true);
         linkEditButton.setDisable(true);
-        // Disable Save button before a network is created
+        // disable Save button before a network is created
         buttonSave.setDisable(true);
 
         buttonSettings.setOnAction(event -> openSettings());
-        // set the controls to disabled, this will be changed when the MapView is
-        // intialized
+        // set the controls to disabled, this will be changed when the MapView is initialized
         setControlsDisable(true);
 
+        // TODO check if button changes position when new settings are given by the user
         // wire the zoom button and connect the slider to the map's zoom
         buttonZoom.setOnAction(event -> mapView.setZoom(zoomDefault));
         sliderZoom.valueProperty().bindBidirectional(mapView.zoomProperty());
@@ -846,6 +828,7 @@ public class MainController {
             String coordinatesString = list.get(1);
             List<String> coordinateList = Arrays.asList(coordinatesString.split(",[ ]*"));
 
+            // TODO check this pattern matching because dialog doesn't close because of it if only one of the two values is set
             if (pattern.matcher(list.get(0)).matches() == false
                     || pattern.matcher(coordinateList.get(0)).matches() == false
                     || pattern.matcher(coordinateList.get(1)).matches() == false)
@@ -857,7 +840,10 @@ public class MainController {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            // TODO check if needed here
             mapView.setCenter(coordCenter);
+            mapView.setZoom(zoomDefault);
+            dialog.close();
         });
         return result;
     }
@@ -1248,6 +1234,7 @@ public class MainController {
                 }
             };
 
+            // TODO use this to check on the edited values of the node IDs
             final ChangeListener createButtonListenerWithNodeCheck = new ChangeListener<String>() {
                 @Override
                 public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
@@ -1291,8 +1278,9 @@ public class MainController {
             result.ifPresent(list -> {
 
                 System.out.println("Edited link-> LinkId: " + this.selectedLink.getId().toString() + ", FromNode: "
-                        + this.selectedLink.getFromNode().getId().toString() + ", ToNode: " + this.selectedLink.getToNode().getId().toString() + ", Length: " + list.get(0) + ", FreeSpeed: "
-                        + list.get(1) + ", Capacity: " + list.get(2) + ", #Lanes: " + list.get(3) + ", Bidirectional: " + list.get(4));
+                        + this.selectedLink.getFromNode().getId().toString() + ", ToNode: " + this.selectedLink.getToNode().getId().toString() +
+                        ", Length: " + list.get(0) + ", FreeSpeed: " + list.get(1) + ", Capacity: " + list.get(2) + ", #Lanes: " + list.get(3) +
+                        ", Bidirectional: " + list.get(4));
 
                 double newLength = Double.parseDouble(list.get(0));
                 double newFreeSpeed = Double.parseDouble(list.get(1));
@@ -1307,9 +1295,9 @@ public class MainController {
                     }
                 } else {
                     if (!this.extendedNetwork.containsLink(this.selectedLink.getToNode().getId(), this.selectedLink.getFromNode().getId())) {
-                        this.extendedNetwork.addLink(String.valueOf(this.extendedNetwork.findMaxLinkId() + 1), this.selectedLink.getToNode().getId().toString(), this.selectedLink.getFromNode().getId().toString(), newLength, newFreeSpeed, newCapacity, newLanes);
+                        this.extendedNetwork.addLink(String.valueOf(this.extendedNetwork.findMaxLinkId() + 1), this.selectedLink.getToNode().getId().toString(),
+                                this.selectedLink.getFromNode().getId().toString(), newLength, newFreeSpeed, newCapacity, newLanes);
                     }
-                    // TODO Edit one of the two links => changes reflect to the other direction?
                     else {
                         Alert alert = new Alert(AlertType.INFORMATION);
                         alert.setTitle("Cannot add link");
@@ -1320,8 +1308,8 @@ public class MainController {
                     }
                 }
 
-                this.extendedNetwork.editLink(this.selectedLink.getId().toString(), this.selectedLink.getFromNode().getId().toString(), this.selectedLink.getToNode().getId().toString(),
-                        newLength, newFreeSpeed, newCapacity, newLanes);
+                this.extendedNetwork.editLink(this.selectedLink.getId().toString(), this.selectedLink.getFromNode().getId().toString(),
+                        this.selectedLink.getToNode().getId().toString(), newLength, newFreeSpeed, newCapacity, newLanes);
 
                 // TODO This needs to be rechecked
                 this.extendedNetwork.getLinkTable().sort();
@@ -1332,11 +1320,10 @@ public class MainController {
                 linkEditButton.setDisable(true);
                 dialog.close();
             });
+
             this.selectedLink = null;
             linkDeleteButton.setDisable(true);
             linkEditButton.setDisable(true);
-
         }
-
     }
 }
