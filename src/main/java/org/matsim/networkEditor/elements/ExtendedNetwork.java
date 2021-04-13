@@ -22,8 +22,6 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
-import org.matsim.core.utils.geometry.CoordinateTransformation;
-import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.networkEditor.visualElements.NetworkInfo;
 
 import javafx.beans.property.SimpleStringProperty;
@@ -502,7 +500,7 @@ public class ExtendedNetwork {
         for (Node node : data) {
             if (!this.nodeMarkers.containsKey(node.getId())) {
                 Coordinate coordinate = new Coordinate(node.getCoord().getX(), node.getCoord().getY());
-                Marker marker = new Marker(getClass().getResource("/icons/node-icon.png"), -3, -8)
+                Marker marker = new Marker(getClass().getResource("/icons/node.png"), -3, -8)
                         .setPosition(coordinate).setVisible(true);
                 nodeMarkers.put(node.getId(), marker);
                 mapView.addMarker(marker);
