@@ -511,17 +511,20 @@ public class MainController {
 
         TextField networkName = new TextField("New Network");
         ComboBox<String> coordinateOptions = new ComboBox<>();
-        TextField epsgCode = new TextField("000");
 
         // Coordinate dropdown options
         coordinateOptions.getItems().addAll(TransformationFactory.DHDN_GK4, TransformationFactory.GK4,
-                TransformationFactory.WGS84);
-        coordinateOptions.setPromptText("Select coordinates");
+                TransformationFactory.WGS84, "Custom");
+        coordinateOptions.setValue("Custom");
+
+        // Set the WGS84 as default, let it editable, since the Custom option is chosen in the dropdown
+        TextField epsgCode = new TextField();
+        epsgCode.setPromptText("4326");
 
         grid.add(new Label("Network name:"), 0, 0);
         grid.add(new Label("Coordinate system:"), 0, 1);
         grid.add(new Label("EPSG code:"), 0, 2);
-        Label message = new Label("Please fill in all the above fields or use the defaults.");
+        Label message = new Label("Please fill in one of the above fields.");
         message.setTextFill(Color.GRAY);
         grid.add(message, 0, 3, 2, 1);
 
@@ -546,7 +549,7 @@ public class MainController {
                         message.setTextFill(Color.RED);
                         disable = true;
                     } else {
-                        message.setText("Please fill in all the above fields or use the defaults.");
+                        message.setText("Please fill in one of the above fields.");
                         message.setTextFill(Color.GRAY);
                     }
                 }
@@ -559,8 +562,14 @@ public class MainController {
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 Boolean disable = newValue.trim().isEmpty();
                 if (!disable) {
-                    message.setText("Please fill in all the above fields or use the defaults.");
+                    message.setText("Please fill in one of the above fields.");
                     message.setTextFill(Color.GRAY);
+                }
+                // Disable the EPSG textfield unless the drop-down option is set to "Custom"
+                if (!newValue.equals("Custom")) {
+                    epsgCode.setDisable(true);
+                } else {
+                    epsgCode.setDisable(false);
                 }
                 createButton.setDisable(disable);
             }
