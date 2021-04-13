@@ -1197,8 +1197,6 @@ public class MainController {
             grid.setPadding(new Insets(20, 150, 10, 30));
 
             // Default value for faster creation (and debugging)
-            TextField fromNode = new TextField(this.selectedLink.getFromNode().getId().toString());
-            TextField toNode = new TextField(this.selectedLink.getToNode().getId().toString());
             TextField length = new TextField(Double.toString(this.selectedLink.getLength()));
             TextField freeSpeed = new TextField(Double.toString(this.selectedLink.getFreespeed()));
             TextField capacity = new TextField(Double.toString(this.selectedLink.getCapacity()));
@@ -1208,9 +1206,9 @@ public class MainController {
             grid.add(new Label("Link ID:"), 0, 0);
             grid.add(new Label(this.selectedLink.getId().toString()), 1, 0);
             grid.add(new Label("From Node:"), 0, 1);
-            grid.add(fromNode, 1, 1);
+            grid.add(new Label(this.selectedLink.getFromNode().getId().toString()), 1, 1);
             grid.add(new Label("To Node:"), 0, 2);
-            grid.add(toNode, 1, 2);
+            grid.add(new Label(this.selectedLink.getToNode().getId().toString()), 1, 2);
             grid.add(new Label("Length:"), 0, 3);
             grid.add(length, 1, 3);
             grid.add(new Label("FreeSpeed"), 0, 4);
@@ -1277,16 +1275,14 @@ public class MainController {
             freeSpeed.textProperty().addListener(createButtonListener);
             capacity.textProperty().addListener(createButtonListener);
             numOfLanes.textProperty().addListener(createButtonListener);
-            fromNode.textProperty().addListener(createButtonListenerWithNodeCheck);
-            toNode.textProperty().addListener(createButtonListenerWithNodeCheck);
 
             dialog.getDialogPane().setContent(grid);
 
             // Convert the result to list when the create button is clicked.
             dialog.setResultConverter(dialogButton -> {
                 if (dialogButton == saveButtonType) {
-                    return new ArrayList<String>(Arrays.asList(fromNode.getText(), toNode.getText(), length.getText(),
-                            freeSpeed.getText(), capacity.getText(), numOfLanes.getText(), String.valueOf(bidirectionalCheckBox.isSelected())));
+                    return new ArrayList<String>(Arrays.asList(length.getText(), freeSpeed.getText(), capacity.getText(),
+                            numOfLanes.getText(), String.valueOf(bidirectionalCheckBox.isSelected())));
                 }
                 return null;
             });
@@ -1294,17 +1290,15 @@ public class MainController {
             Optional<List<String>> result = dialog.showAndWait();
             result.ifPresent(list -> {
 
-                System.out.println("Edited link-> NodeId: " + this.selectedLink.getId().toString() + ", FromNode: "
-                        + list.get(0) + ", ToNode: " + list.get(1) + ", Length: " + list.get(2) + ", FreeSpeed: "
-                        + list.get(3) + ", Capacity: " + list.get(4) + ", #Lanes: " + list.get(5) + ", Bidirectional: " + list.get(6));
+                System.out.println("Edited link-> LinkId: " + this.selectedLink.getId().toString() + ", FromNode: "
+                        + this.selectedLink.getFromNode().getId().toString() + ", ToNode: " + this.selectedLink.getToNode().getId().toString() + ", Length: " + list.get(0) + ", FreeSpeed: "
+                        + list.get(1) + ", Capacity: " + list.get(2) + ", #Lanes: " + list.get(3) + ", Bidirectional: " + list.get(4));
 
-                String newFromNode = list.get(0);
-                String newToNode = list.get(1);
-                double newLength = Double.parseDouble(list.get(2));
-                double newFreeSpeed = Double.parseDouble(list.get(3));
-                double newCapacity = Double.parseDouble(list.get(4));
-                double newLanes = Double.parseDouble(list.get(5));
-                boolean isBidirectional = Boolean.parseBoolean(list.get(6));
+                double newLength = Double.parseDouble(list.get(0));
+                double newFreeSpeed = Double.parseDouble(list.get(1));
+                double newCapacity = Double.parseDouble(list.get(2));
+                double newLanes = Double.parseDouble(list.get(3));
+                boolean isBidirectional = Boolean.parseBoolean(list.get(4));
 
                 // TODO Check correctness
                 if (!isBidirectional) {
@@ -1313,7 +1307,7 @@ public class MainController {
                     }
                 } else {
                     if (!this.extendedNetwork.containsLink(this.selectedLink.getToNode().getId(), this.selectedLink.getFromNode().getId())) {
-                        this.extendedNetwork.addLink(String.valueOf(this.extendedNetwork.findMaxLinkId() + 1), newToNode, newFromNode, newLength, newFreeSpeed, newCapacity, newLanes);
+                        this.extendedNetwork.addLink(String.valueOf(this.extendedNetwork.findMaxLinkId() + 1), this.selectedLink.getToNode().getId().toString(), this.selectedLink.getFromNode().getId().toString(), newLength, newFreeSpeed, newCapacity, newLanes);
                     }
                     // TODO Edit one of the two links => changes reflect to the other direction?
                     else {
@@ -1326,7 +1320,7 @@ public class MainController {
                     }
                 }
 
-                this.extendedNetwork.editLink(this.selectedLink.getId().toString(), newFromNode, newToNode,
+                this.extendedNetwork.editLink(this.selectedLink.getId().toString(), this.selectedLink.getFromNode().getId().toString(), this.selectedLink.getToNode().getId().toString(),
                         newLength, newFreeSpeed, newCapacity, newLanes);
 
                 // TODO This needs to be rechecked
