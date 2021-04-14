@@ -655,7 +655,7 @@ public class MainController {
 
         // Default value for faster creation (and debugging)
         TextField length = new TextField("10000.00");
-        TextField freeSpeed = new TextField("27.78");
+        TextField freeSpeed = new TextField("13.88");
         TextField capacity = new TextField("36000");
         TextField numOfLanes = new TextField("1");
         CheckBox bidirectionalCheckBox = new CheckBox();
