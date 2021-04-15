@@ -316,10 +316,8 @@ public class MainController {
 
     @FXML
     protected Object importNetworkDialog() {
-        // Create network to set Coordinate system, then
-
         if (extendedNetwork != null) {
-            if (!showSaveAlert("Import new network", "Are you sure you want to import without saving?")) {
+            if (!showSaveAlert("Import network", "Are you sure you want to continue without saving?")) {
                 return null;
             }
         }
