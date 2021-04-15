@@ -54,7 +54,6 @@ public class ExtendedNetwork {
         this.linkLines = new HashMap<>();
     }
 
-    // TODO Add coordinate system here - pick from textfield or dropdown?
     public ExtendedNetwork(String name, Double effectiveLaneWidth, Double effectiveCellSize, Double capPeriod, VBox vBoxNetWork,
             VBox vBoxNodes, VBox vBoxLinks, MapView mapView) {
         this.network = NetworkUtils.createNetwork();
@@ -83,7 +82,8 @@ public class ExtendedNetwork {
         this.network = NetworkUtils.createNetwork();
         this.networkPath = networkPath;
         System.out.println("--------------------------READER---------------------------------------");
-        new MatsimNetworkReader("EPSG: 32633", "EPSG: 3857", this.network).readFile(networkPath);
+        // Target is the default for our map, therefore WGS84
+        new MatsimNetworkReader(coordinateSystem, "EPSG: 4326", this.network).readFile(networkPath);
         initializeTableViews();
         paintToMap();
     }
