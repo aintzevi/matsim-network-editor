@@ -138,8 +138,8 @@ public class ExtendedNetwork {
         coordx.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Node, Coord>, ObservableValue<String>>() {
             @Override
             public ObservableValue<String> call(TableColumn.CellDataFeatures<Node, Coord> p) {
-
-                return new SimpleStringProperty(Double.toString(p.getValue().getCoord().getX()));
+                // Swap X with Y to match MATSim notation
+                return new SimpleStringProperty(Double.toString(p.getValue().getCoord().getY()));
             }
         });
 
@@ -148,7 +148,8 @@ public class ExtendedNetwork {
         coordy.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Node, Coord>, ObservableValue<String>>() {
             @Override
             public ObservableValue<String> call(TableColumn.CellDataFeatures<Node, Coord> p) {
-                return new SimpleStringProperty(Double.toString(p.getValue().getCoord().getY()));
+                // Swap X with Y to match MATSim notation
+                return new SimpleStringProperty(Double.toString(p.getValue().getCoord().getX()));
             }
         });
 
@@ -300,7 +301,8 @@ public class ExtendedNetwork {
 
     public void addNode(String id, Coordinate coordinate) {
         // TODO Check if node id already exists
-        Coord coord = new Coord(coordinate.getLatitude(), coordinate.getLongitude(), 0.0);
+        // Swapped Lat and Long to match MATSim
+        Coord coord = new Coord(coordinate.getLongitude(), coordinate.getLatitude(), 0.0);
         NetworkUtils.createAndAddNode(this.network, Id.create(id, Node.class), coord);
         paintToMap();
     }
@@ -322,7 +324,6 @@ public class ExtendedNetwork {
 
     public void editNode(String id, Coord newCoord){
         Node node = this.network.getNodes().get(Id.create(id, Node.class));
-        // Coord newCoord = new Coord(newCoordinate.getLatitude(),newCoordinate.getLongitude(), 0.0);
         Coord currentCoord = node.getCoord();
         if (newCoord.getX() != currentCoord.getX() || newCoord.getY() != currentCoord.getY()){
             node.setCoord(newCoord);
@@ -463,7 +464,8 @@ public class ExtendedNetwork {
     }
 
     private Node findNodeByCoordinate(Coordinate coordinate) {
-        Coord coord = new Coord(coordinate.getLatitude(), coordinate.getLongitude(), 0.0);
+        // Swap Lat and Long to match MATSim notation
+        Coord coord = new Coord(coordinate.getLongitude(), coordinate.getLatitude(), 0.0);
         for (Entry<Id<Node>, ? extends Node> entry : this.network.getNodes().entrySet()) {
             Coord entryCoord = entry.getValue().getCoord();
             if (entryCoord.getX() == coord.getX() && entryCoord.getY() == coord.getY()) {
@@ -499,7 +501,8 @@ public class ExtendedNetwork {
     private void createNodesMarkers(ObservableList<Node> data) {
         for (Node node : data) {
             if (!this.nodeMarkers.containsKey(node.getId())) {
-                Coordinate coordinate = new Coordinate(node.getCoord().getX(), node.getCoord().getY());
+                // Swapped X and Y to match MATSim notation
+                Coordinate coordinate = new Coordinate(node.getCoord().getY(), node.getCoord().getX());
                 Marker marker = new Marker(getClass().getResource("/icons/node.png"), -3, -8)
                         .setPosition(coordinate).setVisible(true);
                 nodeMarkers.put(node.getId(), marker);
@@ -520,10 +523,11 @@ public class ExtendedNetwork {
 
         for (Link link : data) {
             if (!this.linkLines.containsKey(link.getId())) {
-                Coordinate coordinateFrom = new Coordinate(link.getFromNode().getCoord().getX(),
-                        link.getFromNode().getCoord().getY());
-                Coordinate coordinateTo = new Coordinate(link.getToNode().getCoord().getX(),
-                        link.getToNode().getCoord().getY());
+                // Swap
+                Coordinate coordinateFrom = new Coordinate(link.getFromNode().getCoord().getY(),
+                        link.getFromNode().getCoord().getX());
+                Coordinate coordinateTo = new Coordinate(link.getToNode().getCoord().getY(),
+                        link.getToNode().getCoord().getX());
                 List<Coordinate> coordinates = new ArrayList<Coordinate>() {
                     {
                         add(coordinateFrom);
@@ -586,12 +590,13 @@ public class ExtendedNetwork {
         this.linkLines = new HashMap<>();
     }
 
-    public boolean containsLink(Coordinate coordFrom, Coordinate coordTo) {
+    public boolean containsLink(Coordinate coordinateFrom, Coordinate coordinateTo) {
         for (Link link : this.network.getLinks().values())
-            if ((link.getFromNode().getCoord().getX() == coordFrom.getLatitude() &&
-                    link.getFromNode().getCoord().getY() == coordFrom.getLongitude()) &&
-                    (link.getToNode().getCoord().getX() == coordTo.getLatitude() &&
-                    link.getToNode().getCoord().getY() == coordTo.getLongitude())) {
+            // Swap X and Y to match MATSim notation
+            if ((link.getFromNode().getCoord().getY() == coordinateFrom.getLatitude() &&
+                    link.getFromNode().getCoord().getX() == coordinateFrom.getLongitude()) &&
+                    (link.getToNode().getCoord().getY() == coordinateTo.getLatitude() &&
+                    link.getToNode().getCoord().getX() == coordinateTo.getLongitude())) {
                 return true;
             }
         return false;
