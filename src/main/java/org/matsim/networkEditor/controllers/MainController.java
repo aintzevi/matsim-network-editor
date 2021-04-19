@@ -1150,8 +1150,9 @@ public class MainController {
             Coord coord = this.selectedNode.getCoord();
 
             // Default value for faster creation (and debugging)
-            TextField coordinateX = new TextField(Double.toString(coord.getX()));
-            TextField coordinateY = new TextField(Double.toString(coord.getY()));
+            // Swap X and Y to match MATSim notation
+            TextField coordinateX = new TextField(Double.toString(coord.getY()));
+            TextField coordinateY = new TextField(Double.toString(coord.getX()));
 
             grid.add(new Label("Node ID:"), 0, 0);
             grid.add(new Label(this.selectedNode.getId().toString()), 1, 0);
@@ -1209,7 +1210,8 @@ public class MainController {
 
                 Double coordX = Double.parseDouble(list.get(0));
                 Double coordY = Double.parseDouble(list.get(1));
-                Coord newCoord = new Coord(coordX, coordY);
+                // Swap X and Y to match MATSim notation
+                Coord newCoord = new Coord(coordY, coordX);
                 this.extendedNetwork.editNode(this.selectedNode.getId().toString(), newCoord);
                 this.selectedNode = null;
                 nodeDeleteButton.setDisable(true);
