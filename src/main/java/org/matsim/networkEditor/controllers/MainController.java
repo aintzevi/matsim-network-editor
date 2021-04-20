@@ -695,6 +695,7 @@ public class MainController {
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 30));
 
+        // TODO Change default length value to the actual distance between the two nodes.
         // Default value for faster creation (and debugging)
         TextField length = new TextField("10000.00");
         TextField freeSpeed = new TextField("13.88");
@@ -768,7 +769,7 @@ public class MainController {
 
         Optional<List<String>> result = dialog.showAndWait();
         result.ifPresent(list -> {
-
+            // Node descriptions here have the form "Id -> x: y: " e.g. "2 -> x: 11.586334449768067 y: 48.135529608558556" (x, y in MATSim notation)
             System.out.println("Created link-> LinkId:" + linkID + ", From Node:" + nodeADescr + ", To Node:"
                     + nodeBDescr + ", Length:" + list.get(0) + ", Free Speed:" + list.get(1) + ", Capacity:"
                     + list.get(2) + ", #Lanes:" + list.get(3) + ", Bidirectional:" + list.get(4));
