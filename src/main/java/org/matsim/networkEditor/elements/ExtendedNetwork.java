@@ -1,10 +1,6 @@
 package org.matsim.networkEditor.elements;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.Map.Entry;
 
 import com.sothawo.mapjfx.Coordinate;
@@ -308,18 +304,16 @@ public class ExtendedNetwork {
     }
 
     public void addNode(Coordinate coordinate) {
-        int max = findMaxNodeId();
-        addNode(String.valueOf(max + 1), coordinate);
+        String newId = createNewNodeId();
+        addNode(newId, coordinate);
     }
-    public int findMaxNodeId(){
-        int max = 0;
-        for (Id<Node> id : this.network.getNodes().keySet()) {
-            int intID = Integer.parseInt(id.toString());
-            if (intID > max) {
-                max = intID;
-            }
-        }
-        return max;
+
+    public String createNewNodeId() {
+        // TODO find a way to work on random number clashes
+        Random rand = new Random();
+        int upperBound = Integer.MAX_VALUE;
+
+        return "node_" + rand.nextInt(upperBound);
     }
 
     public void editNode(String id, Coord newCoord){
@@ -361,19 +355,16 @@ public class ExtendedNetwork {
     }
         
     public boolean addLink(Coordinate nodeA, Coordinate nodeB, double length, double freespeed, double capacity, double numLanes){
-        int max = findMaxLinkId();
-        return addLink(String.valueOf(max + 1), nodeA, nodeB, length, freespeed, capacity, numLanes);
+        String newId = createNewLinkId();
+        return addLink(newId, nodeA, nodeB, length, freespeed, capacity, numLanes);
     }
 
-    public int findMaxLinkId(){
-        int max = 0;
-        for (Id<Link> id : this.network.getLinks().keySet()) {
-            int intID = Integer.parseInt(id.toString());
-            if (intID > max) {
-                max = intID;
-            }
-        }
-        return max;
+    public String createNewLinkId() {
+        // TODO find a way to work on random number clashes
+        Random rand = new Random();
+        int upperBound = Integer.MAX_VALUE;
+
+        return "link_" + rand.nextInt(upperBound);
     }
 
     public boolean addLink(String id, String nodeAId, String nodeBId, double length, double freespeed, double capacity,
