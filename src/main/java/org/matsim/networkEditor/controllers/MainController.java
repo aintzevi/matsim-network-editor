@@ -950,7 +950,7 @@ public class MainController {
                 secondNodeMarker = event.getMarker();
                 // Coordinate secondNodeCoordinate = secondNodeMarker.getPosition().normalize();
                 labelEvent.setText("Event: second node picked: " + secondNodeMarker.getPosition());
-                String linkID = this.extendedNetwork.createNewLinkId();
+                String linkID = this.extendedNetwork.createLinkId();
                 addLinkDialog(linkID, this.extendedNetwork.getNodeDescr(firstNodeMarker.getPosition()),
                         this.extendedNetwork.getNodeDescr(secondNodeMarker.getPosition()));
                 // Clear markers and coords for next pair
@@ -1358,7 +1358,7 @@ public class MainController {
                     }
                 } else {
                     if (!this.extendedNetwork.containsLink(this.selectedLink.getToNode().getId(), this.selectedLink.getFromNode().getId())) {
-                        this.extendedNetwork.addLink(this.extendedNetwork.createNewLinkId(), this.selectedLink.getToNode().getId().toString(),
+                        this.extendedNetwork.addLink(this.extendedNetwork.createLinkId(), this.selectedLink.getToNode().getId().toString(),
                                 this.selectedLink.getFromNode().getId().toString(), newLength, newFreeSpeed, newCapacity, newLanes);
                     }
                     else {

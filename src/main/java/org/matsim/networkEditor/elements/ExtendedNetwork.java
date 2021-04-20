@@ -1,5 +1,7 @@
 package org.matsim.networkEditor.elements;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -304,16 +306,15 @@ public class ExtendedNetwork {
     }
 
     public void addNode(Coordinate coordinate) {
-        String newId = createNewNodeId();
+        String newId = createNodeId();
         addNode(newId, coordinate);
     }
 
-    public String createNewNodeId() {
-        // TODO find a way to work on random number clashes
-        Random rand = new Random();
-        int upperBound = Integer.MAX_VALUE;
+    public String createNodeId() {
+        Date date = Calendar.getInstance().getTime();
+        DateFormat dateFormat = new SimpleDateFormat("yyyyMMddhhmmss");
 
-        return "node_" + rand.nextInt(upperBound);
+        return "node_" + dateFormat.format(date);
     }
 
     public void editNode(String id, Coord newCoord){
@@ -355,16 +356,15 @@ public class ExtendedNetwork {
     }
         
     public boolean addLink(Coordinate nodeA, Coordinate nodeB, double length, double freespeed, double capacity, double numLanes){
-        String newId = createNewLinkId();
+        String newId = createLinkId();
         return addLink(newId, nodeA, nodeB, length, freespeed, capacity, numLanes);
     }
 
-    public String createNewLinkId() {
-        // TODO find a way to work on random number clashes
-        Random rand = new Random();
-        int upperBound = Integer.MAX_VALUE;
+    public String createLinkId() {
+        Date date = Calendar.getInstance().getTime();
+        DateFormat dateFormat = new SimpleDateFormat("yyyyMMddhhmmss");
 
-        return "link_" + rand.nextInt(upperBound);
+        return "link_" + dateFormat.format(date);
     }
 
     public boolean addLink(String id, String nodeAId, String nodeBId, double length, double freespeed, double capacity,
