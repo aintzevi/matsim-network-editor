@@ -1345,7 +1345,8 @@ public class MainController {
             // Convert the result to list when the create button is clicked.
             dialog.setResultConverter(dialogButton -> {
                 if (dialogButton == saveButtonType) {
-                    return new ArrayList<String>(Arrays.asList(newLinkIdField.getText(), length.getText(), freeSpeed.getText(), capacity.getText(),
+                    // Passing old link too because for some reason selectedLink equals to null after the isBidirectional check
+                    return new ArrayList<String>(Arrays.asList(selectedLink.getId().toString(), newLinkIdField.getText(), length.getText(), freeSpeed.getText(), capacity.getText(),
                             numOfLanes.getText(), String.valueOf(bidirectionalCheckBox.isSelected())));
                 }
                 return null;
@@ -1353,18 +1354,18 @@ public class MainController {
 
             Optional<List<String>> result = dialog.showAndWait();
             result.ifPresent(list -> {
-                String newLinkId = list.get(0);
-                double newLength = Double.parseDouble(list.get(1));
-                double newFreeSpeed = Double.parseDouble(list.get(2));
-                double newCapacity = Double.parseDouble(list.get(3));
-                double newLanes = Double.parseDouble(list.get(4));
-                boolean isBidirectional = Boolean.parseBoolean(list.get(5));
+                String oldLinkId = list.get(0);
+                String newLinkId = list.get(1);
+                double newLength = Double.parseDouble(list.get(2));
+                double newFreeSpeed = Double.parseDouble(list.get(3));
+                double newCapacity = Double.parseDouble(list.get(4));
+                double newLanes = Double.parseDouble(list.get(5));
+                boolean isBidirectional = Boolean.parseBoolean(list.get(6));
 
-                System.out.println("Edited link-> New LinkId: " + newLinkId + ", FromNode: "
+                System.out.println("Edited link-> Old LinkId: " + oldLinkId + "New LinkId: " + newLinkId + ", FromNode: "
                         + this.selectedLink.getFromNode().getId().toString() + ", ToNode: " + this.selectedLink.getToNode().getId().toString() +
                         ", Length: " + newLength + ", FreeSpeed: " + newFreeSpeed + ", Capacity: " + newCapacity + ", #Lanes: " + newLanes +
                         ", Bidirectional: " + isBidirectional);
-
                 // TODO Check correctness
                 if (!isBidirectional) {
                     if (this.extendedNetwork.containsLink(this.selectedLink.getToNode().getId(), this.selectedLink.getFromNode().getId())) {
@@ -1385,8 +1386,7 @@ public class MainController {
                     }
                 }
 
-                this.extendedNetwork.editLink(this.selectedLink.getId().toString(), newLinkId, this.selectedLink.getFromNode().getId().toString(),
-                        this.selectedLink.getToNode().getId().toString(), newLength, newFreeSpeed, newCapacity, newLanes);
+                this.extendedNetwork.editLink(oldLinkId, newLinkId, newLength, newFreeSpeed, newCapacity, newLanes);
 
                 // TODO This needs to be rechecked
                 this.extendedNetwork.getLinkTable().sort();

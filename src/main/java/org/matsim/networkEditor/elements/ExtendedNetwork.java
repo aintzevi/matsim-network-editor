@@ -381,15 +381,14 @@ public class ExtendedNetwork {
         return false;
     }
 
-    public Boolean editLink(String oldId, String newId, String newFromNode, String newToNode, double length, double freespeed, double capacity, double numLanes) {
-        Link link = this.network.getLinks().get(Id.createLinkId(oldId));
+    public Boolean editLink(String oldId, String newId, double length, double freespeed, double capacity, double numLanes) {
+        Link link = this.network.getLinks().get(Id.create(oldId, Link.class));
 
-        // If Id is unchanged, just check for other changed attributes and paint to map again
         if (!newId.equals(oldId)) {
-            if (!this.network.getLinks().containsKey(oldId)) {
-                Link newLink = NetworkUtils.createAndAddLink(this.network, Id.createLinkId(newId), link.getFromNode(), link.getToNode(),
-                        length, freespeed, capacity, numLanes);
-                network.removeLink(Id.createLinkId(oldId));
+            if (!this.network.getLinks().containsKey(Id.create(newId, Link.class))) {
+                Link newLink = NetworkUtils.createAndAddLink(this.network, Id.create(newId, Link.class), link.getFromNode(),
+                        link.getToNode(), length, freespeed, capacity, numLanes);
+                network.removeLink(Id.create(oldId, Link.class));
             }
             else {
                 return false;
@@ -402,7 +401,6 @@ public class ExtendedNetwork {
                 link.setNumberOfLanes(numLanes);
             }
         }
-
         paintToMap();
         return true;
 
