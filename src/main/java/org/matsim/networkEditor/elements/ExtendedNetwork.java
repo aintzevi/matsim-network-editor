@@ -381,30 +381,54 @@ public class ExtendedNetwork {
         return false;
     }
 
-    public Boolean editLink(String id, String newFromNode, String newToNode, double length, double freespeed, double capacity, double numLanes) {
-        Link link = this.network.getLinks().get(Id.create(id, Link.class));
-        if (!link.getFromNode().getId().toString().equals(newFromNode) || !link.getToNode().getId().toString().equals(newToNode)) {
-            Id<Node> newFromNodeId = Id.create(newFromNode, Node.class);
-            Id<Node> newToNodeId = Id.create(newToNode, Node.class);
+    public Boolean editLink(String oldId, String newId, String newFromNode, String newToNode, double length, double freespeed, double capacity, double numLanes) {
+        Link link = this.network.getLinks().get(Id.createLinkId(oldId));
 
-            if (this.network.getNodes().containsKey(newFromNodeId) && this.network.getNodes().containsKey(newToNodeId)) {
-                if (this.containsLink(newFromNodeId, newToNodeId)) {
-                    removeLink(id);
-                    addLink(id, newFromNode, newToNode, length, freespeed, capacity, numLanes);
-                }
-                return true;
-            } else {
+        // If Id is unchanged, just check for other changed attributes and paint to map again
+        if (!newId.equals(oldId)) {
+            if (!this.network.getLinks().containsKey(oldId)) {
+                Link newLink = NetworkUtils.createAndAddLink(this.network, Id.createLinkId(newId), link.getFromNode(), link.getToNode(),
+                        length, freespeed, capacity, numLanes);
+                network.removeLink(Id.createLinkId(oldId));
+            }
+            else {
                 return false;
             }
-        } else if (link.getLength() != length || link.getCapacity() != capacity || link.getNumberOfLanes() != numLanes || link.getFreespeed() != freespeed) {
-            link.setLength(length);
-            link.setCapacity(capacity);
-            link.setFreespeed(freespeed);
-            link.setNumberOfLanes(numLanes);
-            paintToMap();
-            return true;
+        } else {
+            if (link.getLength() != length || link.getCapacity() != capacity || link.getNumberOfLanes() != numLanes || link.getFreespeed() != freespeed) {
+                link.setLength(length);
+                link.setCapacity(capacity);
+                link.setFreespeed(freespeed);
+                link.setNumberOfLanes(numLanes);
+            }
         }
+
+        paintToMap();
         return true;
+
+//        if (!link.getFromNode().getId().toString().equals(newFromNode) || !link.getToNode().getId().toString().equals(newToNode)) {
+//            Id<Node> newFromNodeId = Id.create(newFromNode, Node.class);
+//            Id<Node> newToNodeId = Id.create(newToNode, Node.class);
+//
+//            // TODO use this info to change the in/out links at node
+//            if (this.network.getNodes().containsKey(newFromNodeId) && this.network.getNodes().containsKey(newToNodeId)) {
+//                if (this.containsLink(newFromNodeId, newToNodeId)) {
+//                    removeLink(oldId);
+//                    addLink(oldId, newFromNode, newToNode, length, freespeed, capacity, numLanes);
+//                }
+//                return true;
+//            } else {
+//                return false;
+//            }
+//        } else if (link.getLength() != length || link.getCapacity() != capacity || link.getNumberOfLanes() != numLanes || link.getFreespeed() != freespeed) {
+//            link.setLength(length);
+//            link.setCapacity(capacity);
+//            link.setFreespeed(freespeed);
+//            link.setNumberOfLanes(numLanes);
+//            paintToMap();
+//            return true;
+//        }
+//        return true;
     }
 
     public boolean removeNode(String id) {
@@ -462,7 +486,8 @@ public class ExtendedNetwork {
             if (entryCoord.getX() == coord.getX() && entryCoord.getY() == coord.getY()) {
                 return entry.getValue();
             }
-            // if (entryCoord.equals(coord)) { // This can be used, when network initialized
+            // if (entryCoord.equals(coord)) {
+            // This can be used, when network initialized
             // the Z value is to -Infinity but when a new node was add it goes to 0
             // return entry.getValue();
             // }
