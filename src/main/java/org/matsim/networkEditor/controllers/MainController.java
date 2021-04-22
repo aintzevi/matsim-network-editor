@@ -1298,30 +1298,6 @@ public class MainController {
                 }
             };
 
-            // TODO use this to check on the edited values of the node IDs
-            final ChangeListener createButtonListenerWithNodeCheck = new ChangeListener<String>() {
-                @Override
-                public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                    Boolean disable = newValue.trim().isEmpty();
-                    if (!disable) {
-                        if (!numPattern.matcher(newValue).matches()) {
-                            message.setText("One or more values are not numbers!");
-                            message.setTextFill(Color.RED);
-                            disable = true;
-                        } else if (!extendedNetwork.getNetwork().getNodes()
-                                .containsKey(Id.create(newValue, Node.class))) {
-                            message.setText("From/To Node doesn't exist.");
-                            message.setTextFill(Color.RED);
-                            disable = true;
-                        } else {
-                            message.setText("Please fill in all the above fields.");
-                            message.setTextFill(Color.GRAY);
-                        }
-                    }
-                    createButton.setDisable(disable);
-                }
-            };
-
             final ChangeListener createButtonListenerLink = new ChangeListener<String>() {
                 @Override
                 public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
