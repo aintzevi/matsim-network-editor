@@ -317,28 +317,27 @@ public class ExtendedNetwork {
         return "node_" + dateFormat.format(date);
     }
 
-    public void editNode(String id, Coord newCoord){
-        Node node = this.network.getNodes().get(Id.create(id, Node.class));
+    public void editNode(String oldId, String newId, Coord newCoord){
+        Node node = this.network.getNodes().get(Id.create(oldId, Node.class));
         Coord currentCoord = node.getCoord();
         if (newCoord.getX() != currentCoord.getX() || newCoord.getY() != currentCoord.getY()){
             node.setCoord(newCoord);
             mapView.removeMarker(this.nodeMarkers.get(node.getId()));
             this.nodeMarkers.remove(node.getId());
-            Set<Id<Link>> inlinks = node.getInLinks().keySet();
-            Set<Id<Link>> outlinks = node.getOutLinks().keySet();
-            HashSet<Id<Link>> merged = new HashSet<Id<Link>>() {
+            Set<Id<Link>> inLinks = node.getInLinks().keySet();
+            Set<Id<Link>> outLinks = node.getOutLinks().keySet();
+            HashSet<Id<Link>> merged = new HashSet<>() {
                 {
-                    addAll(inlinks);
-                    addAll(outlinks);
+                    addAll(inLinks);
+                    addAll(outLinks);
                 }
             };
-            for (Id<Link> idlink : merged) {
-                mapView.removeCoordinateLine(this.linkLines.get(idlink));
-                this.linkLines.remove(idlink);
+            for (Id<Link> idLink : merged) {
+                mapView.removeCoordinateLine(this.linkLines.get(idLink));
+                this.linkLines.remove(idLink);
             }
             paintToMap();
         }
-        
     }
 
     public boolean addLink(String id, Coordinate nodeA, Coordinate nodeB, double length, double freespeed,

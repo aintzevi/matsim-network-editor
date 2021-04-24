@@ -1164,12 +1164,13 @@ public class MainController {
             Coord coord = this.selectedNode.getCoord();
 
             // Default value for faster creation (and debugging)
+            TextField newNodeID = new TextField(this.selectedNode.getId().toString());
             // Swap X and Y to match MATSim notation
             TextField coordinateX = new TextField(Double.toString(coord.getY()));
             TextField coordinateY = new TextField(Double.toString(coord.getX()));
 
             grid.add(new Label("Node ID:"), 0, 0);
-            grid.add(new Label(this.selectedNode.getId().toString()), 1, 0);
+            grid.add(newNodeID, 1, 0);
             grid.add(new Label("Coordinate X:"), 0, 1);
             grid.add(coordinateX, 1, 1);
             grid.add(new Label("Coordinate Y:"), 0, 2);
@@ -1203,6 +1204,19 @@ public class MainController {
                 }
             };
 
+            final ChangeListener createButtonListenerNode = new ChangeListener<String>() {
+                @Override
+                public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                    Boolean disable = newValue.trim().isEmpty();
+                    if (disable) {
+                        message.setText("Please fill in all the above fields.");
+                        message.setTextFill(Color.GRAY);
+                    }
+                    createButton.setDisable(disable);
+                }
+            };
+
+            newNodeID.textProperty().addListener(createButtonListenerNode);
             coordinateX.textProperty().addListener(createButtonListener);
             coordinateY.textProperty().addListener(createButtonListener);
 
@@ -1211,7 +1225,7 @@ public class MainController {
             // Convert the result to list when the create button is clicked.
             dialog.setResultConverter(dialogButton -> {
                 if (dialogButton == saveButtonType) {
-                    return new ArrayList<String>(Arrays.asList(coordinateX.getText(), coordinateY.getText()));
+                    return new ArrayList<String>(Arrays.asList(newNodeID.getText(), coordinateX.getText(), coordinateY.getText()));
                 }
                 return null;
             });
@@ -1219,14 +1233,16 @@ public class MainController {
             Optional<List<String>> result = dialog.showAndWait();
             result.ifPresent(list -> {
 
-                System.out.println("Edited node-> NodeId:" + this.selectedNode.getId().toString() + ", New X:"
-                        + list.get(0) + ", New Y:" + list.get(1));
+                String newNode = list.get(0);
+                Double coordX = Double.parseDouble(list.get(1));
+                Double coordY = Double.parseDouble(list.get(2));
 
-                Double coordX = Double.parseDouble(list.get(0));
-                Double coordY = Double.parseDouble(list.get(1));
+                System.out.println("Edited node-> OldNodeID: " + this.selectedNode.getId().toString() + ", NewNodeId:" + newNode + ", New X:"
+                        + coordX + ", New Y:" + coordY);
+
                 // Swap X and Y to match MATSim notation
                 Coord newCoord = new Coord(coordY, coordX);
-                this.extendedNetwork.editNode(this.selectedNode.getId().toString(), newCoord);
+                this.extendedNetwork.editNode(this.selectedNode.getId().toString(), newNode, newCoord);
                 this.selectedNode = null;
                 nodeDeleteButton.setDisable(true);
                 nodeEditButton.setDisable(true);
@@ -1235,9 +1251,7 @@ public class MainController {
             this.selectedNode = null;
             nodeDeleteButton.setDisable(true);
             nodeEditButton.setDisable(true);
-
         }
-
     }
 
     private void editSelectedLink() {
@@ -1372,7 +1386,7 @@ public class MainController {
                 double newLanes = Double.parseDouble(list.get(5));
                 boolean isBidirectional = Boolean.parseBoolean(list.get(6));
 
-                System.out.println("Edited link-> Old LinkId: " + oldLinkId + "New LinkId: " + newLinkId + ", FromNode: "
+                System.out.println("Edited link-> Old LinkId: " + oldLinkId + ", New LinkId: " + newLinkId + ", FromNode: "
                         + this.selectedLink.getFromNode().getId().toString() + ", ToNode: " + this.selectedLink.getToNode().getId().toString() +
                         ", Length: " + newLength + ", FreeSpeed: " + newFreeSpeed + ", Capacity: " + newCapacity + ", #Lanes: " + newLanes +
                         ", Bidirectional: " + isBidirectional);
