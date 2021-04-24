@@ -49,6 +49,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.networkEditor.elements.ExtendedNetwork;
 import org.slf4j.Logger;
@@ -678,7 +679,7 @@ public class MainController {
                 });
     }
 
-    private void addLinkDialog(String nodeADescr, String nodeBDescr) {
+    private void addLinkDialog(Coordinate nodeCoordinateA, Coordinate nodeCoordinateB) {
         // Pop up dialog to add link information
 
         Dialog<List<String>> dialog = new Dialog<>();
@@ -695,10 +696,13 @@ public class MainController {
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 30));
 
-        // TODO Change default length value to the actual distance between the two nodes.
+        // Calculate distance between two coordinates to show as default
+        Double nodesDistance = CoordUtils.calcProjectedEuclideanDistance(CoordUtils.createCoord(nodeCoordinateA.getLatitude(),
+                nodeCoordinateA.getLongitude()), CoordUtils.createCoord(nodeCoordinateB.getLatitude(), nodeCoordinateB.getLongitude()));
+
         // Default value for faster creation (and debugging)
         TextField linkId = new TextField(this.extendedNetwork.createLinkId());
-        TextField length = new TextField("10000.00");
+        TextField length = new TextField(nodesDistance.toString());
         TextField freeSpeed = new TextField("13.88");
         TextField capacity = new TextField("36000");
         TextField numOfLanes = new TextField("1.0");
@@ -708,9 +712,9 @@ public class MainController {
         grid.add(new Label("Link ID:"), 0, 0);
         grid.add(linkId, 1, 0);
         grid.add(new Label("From Node:"), 0, 1);
-        grid.add(new Label(nodeADescr), 1, 1);
+        grid.add(new Label(this.extendedNetwork.getNodeDescr(nodeCoordinateA)), 1, 1);
         grid.add(new Label("To Node:"), 0, 2);
-        grid.add(new Label(nodeBDescr), 1, 2);
+        grid.add(new Label(this.extendedNetwork.getNodeDescr(nodeCoordinateB)), 1, 2);
         grid.add(new Label("Length:"), 0, 3);
         grid.add(length, 1, 3);
         grid.add(new Label("Free Speed:"), 0, 4);
@@ -790,8 +794,8 @@ public class MainController {
             boolean isBidirectional = Boolean.parseBoolean(list.get(5));
 
             // Node descriptions here have the form "Id -> x: y: " e.g. "2 -> x: 11.586334449768067 y: 48.135529608558556" (x, y in MATSim notation)
-            System.out.println("Created link-> LinkId:" + dlinkId + ", From Node:" + nodeADescr + ", To Node:"
-                    + nodeBDescr + ", Length:" + dLength + ", Free Speed:" + dFreeSpeed + ", Capacity:"
+            System.out.println("Created link-> LinkId:" + dlinkId + ", From Node:" + this.extendedNetwork.getNodeDescr(nodeCoordinateA) + ", To Node:"
+                    + this.extendedNetwork.getNodeDescr(nodeCoordinateA) + ", Length:" + dLength + ", Free Speed:" + dFreeSpeed + ", Capacity:"
                     + dCapacity + ", #Lanes:" + dLanes + ", Bidirectional:" + isBidirectional);
 
             if (!this.extendedNetwork.containsLink(firstNodeMarker.getPosition(), secondNodeMarker.getPosition())) {
@@ -964,8 +968,7 @@ public class MainController {
                 secondNodeMarker = event.getMarker();
                 // Coordinate secondNodeCoordinate = secondNodeMarker.getPosition().normalize();
                 labelEvent.setText("Event: second node picked: " + secondNodeMarker.getPosition());
-                addLinkDialog(this.extendedNetwork.getNodeDescr(firstNodeMarker.getPosition()),
-                        this.extendedNetwork.getNodeDescr(secondNodeMarker.getPosition()));
+                addLinkDialog(firstNodeMarker.getPosition(), secondNodeMarker.getPosition());
                 // Clear markers and coords for next pair
                 firstNodeMarker = null;
                 secondNodeMarker = null;
@@ -1256,11 +1259,11 @@ public class MainController {
 
     private void editSelectedLink() {
         if (this.selectedLink != null) {
-            // Pop up dialog to edit node information
+            // Pop up dialog to edit link information
 
             Dialog<List<String>> dialog = new Dialog<>();
-            dialog.setTitle("Edit node");
-            dialog.setHeaderText("Edit the node's attributes");
+            dialog.setTitle("Edit link");
+            dialog.setHeaderText("Edit the link's attributes");
 
             // Set the button types
             ButtonType saveButtonType = new ButtonType("Save", ButtonData.OK_DONE);
