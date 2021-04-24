@@ -49,6 +49,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.networkEditor.elements.ExtendedNetwork;
 import org.slf4j.Logger;
@@ -678,7 +679,7 @@ public class MainController {
                 });
     }
 
-    private void addLinkDialog(String linkID, String nodeADescr, String nodeBDescr) {
+    private void addLinkDialog(String linkID, Coordinate nodeCoordinateA, Coordinate nodeCoordinateB) {
         // Pop up dialog to add link information
 
         Dialog<List<String>> dialog = new Dialog<>();
@@ -695,9 +696,12 @@ public class MainController {
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 30));
 
-        // TODO Change default length value to the actual distance between the two nodes.
+        // Calculate distance between two coordinates to show as default
+        Double nodesDistance = CoordUtils.calcProjectedEuclideanDistance(CoordUtils.createCoord(nodeCoordinateA.getLatitude(),
+                nodeCoordinateA.getLongitude()), CoordUtils.createCoord(nodeCoordinateB.getLatitude(), nodeCoordinateB.getLongitude()));
+
         // Default value for faster creation (and debugging)
-        TextField length = new TextField("10000.00");
+        TextField length = new TextField(nodesDistance.toString());
         TextField freeSpeed = new TextField("13.88");
         TextField capacity = new TextField("36000");
         TextField numOfLanes = new TextField("1");
@@ -707,9 +711,9 @@ public class MainController {
         grid.add(new Label("Link ID:"), 0, 0);
         grid.add(new Label(linkID), 1, 0);
         grid.add(new Label("From Node:"), 0, 1);
-        grid.add(new Label(nodeADescr), 1, 1);
+        grid.add(new Label(this.extendedNetwork.getNodeDescr(nodeCoordinateA)), 1, 1);
         grid.add(new Label("To Node:"), 0, 2);
-        grid.add(new Label(nodeBDescr), 1, 2);
+        grid.add(new Label(this.extendedNetwork.getNodeDescr(nodeCoordinateB)), 1, 2);
         grid.add(new Label("Length:"), 0, 3);
         grid.add(new Label("Free Speed:"), 0, 4);
         grid.add(new Label("Capacity:"), 0, 5);
@@ -770,8 +774,8 @@ public class MainController {
         Optional<List<String>> result = dialog.showAndWait();
         result.ifPresent(list -> {
             // Node descriptions here have the form "Id -> x: y: " e.g. "2 -> x: 11.586334449768067 y: 48.135529608558556" (x, y in MATSim notation)
-            System.out.println("Created link-> LinkId:" + linkID + ", From Node:" + nodeADescr + ", To Node:"
-                    + nodeBDescr + ", Length:" + list.get(0) + ", Free Speed:" + list.get(1) + ", Capacity:"
+            System.out.println("Created link-> LinkId:" + linkID + ", From Node:" + nodeCoordinateA + ", To Node:"
+                    + nodeCoordinateB + ", Length:" + list.get(0) + ", Free Speed:" + list.get(1) + ", Capacity:"
                     + list.get(2) + ", #Lanes:" + list.get(3) + ", Bidirectional:" + list.get(4));
 
             double dLength = Double.parseDouble(list.get(0));
@@ -951,8 +955,7 @@ public class MainController {
                 // Coordinate secondNodeCoordinate = secondNodeMarker.getPosition().normalize();
                 labelEvent.setText("Event: second node picked: " + secondNodeMarker.getPosition());
                 String linkID = String.valueOf(this.extendedNetwork.findMaxLinkId() + 1);
-                addLinkDialog(linkID, this.extendedNetwork.getNodeDescr(firstNodeMarker.getPosition()),
-                        this.extendedNetwork.getNodeDescr(secondNodeMarker.getPosition()));
+                addLinkDialog(linkID, firstNodeMarker.getPosition(), secondNodeMarker.getPosition());
                 // Clear markers and coords for next pair
                 firstNodeMarker = null;
                 secondNodeMarker = null;
