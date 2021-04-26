@@ -1,10 +1,8 @@
 package org.matsim.networkEditor.elements;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.Map.Entry;
 
 import com.sothawo.mapjfx.Coordinate;
@@ -308,42 +306,38 @@ public class ExtendedNetwork {
     }
 
     public void addNode(Coordinate coordinate) {
-        int max = findMaxNodeId();
-        addNode(String.valueOf(max + 1), coordinate);
-    }
-    public int findMaxNodeId(){
-        int max = 0;
-        for (Id<Node> id : this.network.getNodes().keySet()) {
-            int intID = Integer.parseInt(id.toString());
-            if (intID > max) {
-                max = intID;
-            }
-        }
-        return max;
+        String newId = createNodeId();
+        addNode(newId, coordinate);
     }
 
-    public void editNode(String id, Coord newCoord){
-        Node node = this.network.getNodes().get(Id.create(id, Node.class));
+    public String createNodeId() {
+        Date date = Calendar.getInstance().getTime();
+        DateFormat dateFormat = new SimpleDateFormat("yyyyMMddhhmmss");
+
+        return "node_" + dateFormat.format(date);
+    }
+
+    public void editNode(String oldId, String newId, Coord newCoord){
+        Node node = this.network.getNodes().get(Id.create(oldId, Node.class));
         Coord currentCoord = node.getCoord();
         if (newCoord.getX() != currentCoord.getX() || newCoord.getY() != currentCoord.getY()){
             node.setCoord(newCoord);
             mapView.removeMarker(this.nodeMarkers.get(node.getId()));
             this.nodeMarkers.remove(node.getId());
-            Set<Id<Link>> inlinks = node.getInLinks().keySet();
-            Set<Id<Link>> outlinks = node.getOutLinks().keySet();
-            HashSet<Id<Link>> merged = new HashSet<Id<Link>>() {
+            Set<Id<Link>> inLinks = node.getInLinks().keySet();
+            Set<Id<Link>> outLinks = node.getOutLinks().keySet();
+            HashSet<Id<Link>> merged = new HashSet<>() {
                 {
-                    addAll(inlinks);
-                    addAll(outlinks);
+                    addAll(inLinks);
+                    addAll(outLinks);
                 }
             };
-            for (Id<Link> idlink : merged) {
-                mapView.removeCoordinateLine(this.linkLines.get(idlink));
-                this.linkLines.remove(idlink);
+            for (Id<Link> idLink : merged) {
+                mapView.removeCoordinateLine(this.linkLines.get(idLink));
+                this.linkLines.remove(idLink);
             }
             paintToMap();
         }
-        
     }
 
     public boolean addLink(String id, Coordinate nodeA, Coordinate nodeB, double length, double freespeed,
@@ -361,19 +355,15 @@ public class ExtendedNetwork {
     }
         
     public boolean addLink(Coordinate nodeA, Coordinate nodeB, double length, double freespeed, double capacity, double numLanes){
-        int max = findMaxLinkId();
-        return addLink(String.valueOf(max + 1), nodeA, nodeB, length, freespeed, capacity, numLanes);
+        String newId = createLinkId();
+        return addLink(newId, nodeA, nodeB, length, freespeed, capacity, numLanes);
     }
 
-    public int findMaxLinkId(){
-        int max = 0;
-        for (Id<Link> id : this.network.getLinks().keySet()) {
-            int intID = Integer.parseInt(id.toString());
-            if (intID > max) {
-                max = intID;
-            }
-        }
-        return max;
+    public String createLinkId() {
+        Date date = Calendar.getInstance().getTime();
+        DateFormat dateFormat = new SimpleDateFormat("yyyyMMddhhmmss");
+
+        return "link_" + dateFormat.format(date);
     }
 
     public boolean addLink(String id, String nodeAId, String nodeBId, double length, double freespeed, double capacity,
@@ -390,30 +380,52 @@ public class ExtendedNetwork {
         return false;
     }
 
-    public Boolean editLink(String id, String newFromNode, String newToNode, double length, double freespeed, double capacity, double numLanes) {
-        Link link = this.network.getLinks().get(Id.create(id, Link.class));
-        if (!link.getFromNode().getId().toString().equals(newFromNode) || !link.getToNode().getId().toString().equals(newToNode)) {
-            Id<Node> newFromNodeId = Id.create(newFromNode, Node.class);
-            Id<Node> newToNodeId = Id.create(newToNode, Node.class);
+    public Boolean editLink(String oldId, String newId, double length, double freespeed, double capacity, double numLanes) {
+        Link link = this.network.getLinks().get(Id.create(oldId, Link.class));
 
-            if (this.network.getNodes().containsKey(newFromNodeId) && this.network.getNodes().containsKey(newToNodeId)) {
-                if (this.containsLink(newFromNodeId, newToNodeId)) {
-                    removeLink(id);
-                    addLink(id, newFromNode, newToNode, length, freespeed, capacity, numLanes);
-                }
-                return true;
-            } else {
+        if (!newId.equals(oldId)) {
+            if (!this.network.getLinks().containsKey(Id.create(newId, Link.class))) {
+                Link newLink = NetworkUtils.createAndAddLink(this.network, Id.create(newId, Link.class), link.getFromNode(),
+                        link.getToNode(), length, freespeed, capacity, numLanes);
+                network.removeLink(Id.create(oldId, Link.class));
+            }
+            else {
                 return false;
             }
-        } else if (link.getLength() != length || link.getCapacity() != capacity || link.getNumberOfLanes() != numLanes || link.getFreespeed() != freespeed) {
-            link.setLength(length);
-            link.setCapacity(capacity);
-            link.setFreespeed(freespeed);
-            link.setNumberOfLanes(numLanes);
-            paintToMap();
-            return true;
+        } else {
+            if (link.getLength() != length || link.getCapacity() != capacity || link.getNumberOfLanes() != numLanes || link.getFreespeed() != freespeed) {
+                link.setLength(length);
+                link.setCapacity(capacity);
+                link.setFreespeed(freespeed);
+                link.setNumberOfLanes(numLanes);
+            }
         }
+        paintToMap();
         return true;
+
+//        if (!link.getFromNode().getId().toString().equals(newFromNode) || !link.getToNode().getId().toString().equals(newToNode)) {
+//            Id<Node> newFromNodeId = Id.create(newFromNode, Node.class);
+//            Id<Node> newToNodeId = Id.create(newToNode, Node.class);
+//
+//            // TODO use this info to change the in/out links at node
+//            if (this.network.getNodes().containsKey(newFromNodeId) && this.network.getNodes().containsKey(newToNodeId)) {
+//                if (this.containsLink(newFromNodeId, newToNodeId)) {
+//                    removeLink(oldId);
+//                    addLink(oldId, newFromNode, newToNode, length, freespeed, capacity, numLanes);
+//                }
+//                return true;
+//            } else {
+//                return false;
+//            }
+//        } else if (link.getLength() != length || link.getCapacity() != capacity || link.getNumberOfLanes() != numLanes || link.getFreespeed() != freespeed) {
+//            link.setLength(length);
+//            link.setCapacity(capacity);
+//            link.setFreespeed(freespeed);
+//            link.setNumberOfLanes(numLanes);
+//            paintToMap();
+//            return true;
+//        }
+//        return true;
     }
 
     public boolean removeNode(String id) {
@@ -471,7 +483,8 @@ public class ExtendedNetwork {
             if (entryCoord.getX() == coord.getX() && entryCoord.getY() == coord.getY()) {
                 return entry.getValue();
             }
-            // if (entryCoord.equals(coord)) { // This can be used, when network initialized
+            // if (entryCoord.equals(coord)) {
+            // This can be used, when network initialized
             // the Z value is to -Infinity but when a new node was add it goes to 0
             // return entry.getValue();
             // }
