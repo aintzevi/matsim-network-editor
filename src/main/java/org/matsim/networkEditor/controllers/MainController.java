@@ -679,7 +679,7 @@ public class MainController {
                 });
     }
 
-    private void addLinkDialog(String linkID, Coordinate nodeCoordinateA, Coordinate nodeCoordinateB) {
+    private void addLinkDialog(Coordinate nodeCoordinateA, Coordinate nodeCoordinateB) {
         // Pop up dialog to add link information
 
         Dialog<List<String>> dialog = new Dialog<>();
@@ -701,34 +701,34 @@ public class MainController {
                 nodeCoordinateA.getLongitude()), CoordUtils.createCoord(nodeCoordinateB.getLatitude(), nodeCoordinateB.getLongitude()));
 
         // Default value for faster creation (and debugging)
+        TextField linkId = new TextField(this.extendedNetwork.createLinkId());
         TextField length = new TextField(nodesDistance.toString());
         TextField freeSpeed = new TextField("13.88");
         TextField capacity = new TextField("36000");
-        TextField numOfLanes = new TextField("1");
+        TextField numOfLanes = new TextField("1.0");
         CheckBox bidirectionalCheckBox = new CheckBox();
         bidirectionalCheckBox.setSelected(true);
 
         grid.add(new Label("Link ID:"), 0, 0);
-        grid.add(new Label(linkID), 1, 0);
+        grid.add(linkId, 1, 0);
         grid.add(new Label("From Node:"), 0, 1);
         grid.add(new Label(this.extendedNetwork.getNodeDescr(nodeCoordinateA)), 1, 1);
         grid.add(new Label("To Node:"), 0, 2);
         grid.add(new Label(this.extendedNetwork.getNodeDescr(nodeCoordinateB)), 1, 2);
         grid.add(new Label("Length:"), 0, 3);
+        grid.add(length, 1, 3);
         grid.add(new Label("Free Speed:"), 0, 4);
+        grid.add(freeSpeed, 1, 4);
         grid.add(new Label("Capacity:"), 0, 5);
+        grid.add(capacity, 1, 5);
         grid.add(new Label("# Lanes:"), 0, 6);
+        grid.add(numOfLanes, 1, 6);
         grid.add(new Label("Bidirectional"), 0, 7);
+        grid.add(bidirectionalCheckBox, 1, 7);
 
         Label message = new Label("Please fill in all the above fields or use the defaults.");
         message.setTextFill(Color.GRAY);
         grid.add(message, 0, 8, 2, 1);
-
-        grid.add(length, 1, 3);
-        grid.add(freeSpeed, 1, 4);
-        grid.add(capacity, 1, 5);
-        grid.add(numOfLanes, 1, 6);
-        grid.add(bidirectionalCheckBox, 1, 7);
 
         // Enable/Disable button
         javafx.scene.Node createButton = dialog.getDialogPane().lookupButton(createButtonType);
@@ -754,6 +754,19 @@ public class MainController {
             }
         };
 
+        final ChangeListener createButtonListenerLink = new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                Boolean disable = newValue.trim().isEmpty();
+                if (disable) {
+                    message.setText("Please fill in all the above fields.");
+                    message.setTextFill(Color.GRAY);
+                }
+                createButton.setDisable(disable);
+            }
+        };
+
+        linkId.textProperty().addListener(createButtonListenerLink);
         length.textProperty().addListener(createButtonListener);
         freeSpeed.textProperty().addListener(createButtonListener);
         capacity.textProperty().addListener(createButtonListener);
@@ -765,7 +778,7 @@ public class MainController {
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == createButtonType) {
                 return new ArrayList<String>(
-                        Arrays.asList(length.getText(), freeSpeed.getText(), capacity.getText(), numOfLanes.getText(),
+                        Arrays.asList(linkId.getText(), length.getText(), freeSpeed.getText(), capacity.getText(), numOfLanes.getText(),
                                 String.valueOf(bidirectionalCheckBox.isSelected())));
             }
             return null;
@@ -773,19 +786,20 @@ public class MainController {
 
         Optional<List<String>> result = dialog.showAndWait();
         result.ifPresent(list -> {
-            // Node descriptions here have the form "Id -> x: y: " e.g. "2 -> x: 11.586334449768067 y: 48.135529608558556" (x, y in MATSim notation)
-            System.out.println("Created link-> LinkId:" + linkID + ", From Node:" + nodeCoordinateA + ", To Node:"
-                    + nodeCoordinateB + ", Length:" + list.get(0) + ", Free Speed:" + list.get(1) + ", Capacity:"
-                    + list.get(2) + ", #Lanes:" + list.get(3) + ", Bidirectional:" + list.get(4));
+            String dlinkId = list.get(0);
+            double dLength = Double.parseDouble(list.get(1));
+            double dFreeSpeed = Double.parseDouble(list.get(2));
+            double dCapacity = Double.parseDouble(list.get(3));
+            double dLanes = Double.parseDouble(list.get(4));
+            boolean isBidirectional = Boolean.parseBoolean(list.get(5));
 
-            double dLength = Double.parseDouble(list.get(0));
-            double dFreeSpeed = Double.parseDouble(list.get(1));
-            double dCapacity = Double.parseDouble(list.get(2));
-            double dLanes = Double.parseDouble(list.get(3));
-            boolean isBidirectional = Boolean.parseBoolean(list.get(4));
+            // Node descriptions here have the form "Id -> x: y: " e.g. "2 -> x: 11.586334449768067 y: 48.135529608558556" (x, y in MATSim notation)
+            System.out.println("Created link-> LinkId:" + dlinkId + ", From Node:" + this.extendedNetwork.getNodeDescr(nodeCoordinateA) + ", To Node:"
+                    + this.extendedNetwork.getNodeDescr(nodeCoordinateA) + ", Length:" + dLength + ", Free Speed:" + dFreeSpeed + ", Capacity:"
+                    + dCapacity + ", #Lanes:" + dLanes + ", Bidirectional:" + isBidirectional);
 
             if (!this.extendedNetwork.containsLink(firstNodeMarker.getPosition(), secondNodeMarker.getPosition())) {
-                this.extendedNetwork.addLink(linkID, firstNodeMarker.getPosition(), secondNodeMarker.getPosition(), dLength,
+                this.extendedNetwork.addLink(dlinkId, firstNodeMarker.getPosition(), secondNodeMarker.getPosition(), dLength,
                         dFreeSpeed, dCapacity, dLanes);
                 if (isBidirectional) {
                     if (!this.extendedNetwork.containsLink(secondNodeMarker.getPosition(), firstNodeMarker.getPosition())) {
@@ -954,8 +968,7 @@ public class MainController {
                 secondNodeMarker = event.getMarker();
                 // Coordinate secondNodeCoordinate = secondNodeMarker.getPosition().normalize();
                 labelEvent.setText("Event: second node picked: " + secondNodeMarker.getPosition());
-                String linkID = String.valueOf(this.extendedNetwork.findMaxLinkId() + 1);
-                addLinkDialog(linkID, firstNodeMarker.getPosition(), secondNodeMarker.getPosition());
+                addLinkDialog(firstNodeMarker.getPosition(), secondNodeMarker.getPosition());
                 // Clear markers and coords for next pair
                 firstNodeMarker = null;
                 secondNodeMarker = null;
@@ -1154,12 +1167,13 @@ public class MainController {
             Coord coord = this.selectedNode.getCoord();
 
             // Default value for faster creation (and debugging)
+            TextField newNodeID = new TextField(this.selectedNode.getId().toString());
             // Swap X and Y to match MATSim notation
             TextField coordinateX = new TextField(Double.toString(coord.getY()));
             TextField coordinateY = new TextField(Double.toString(coord.getX()));
 
             grid.add(new Label("Node ID:"), 0, 0);
-            grid.add(new Label(this.selectedNode.getId().toString()), 1, 0);
+            grid.add(newNodeID, 1, 0);
             grid.add(new Label("Coordinate X:"), 0, 1);
             grid.add(coordinateX, 1, 1);
             grid.add(new Label("Coordinate Y:"), 0, 2);
@@ -1193,6 +1207,19 @@ public class MainController {
                 }
             };
 
+            final ChangeListener createButtonListenerNode = new ChangeListener<String>() {
+                @Override
+                public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                    Boolean disable = newValue.trim().isEmpty();
+                    if (disable) {
+                        message.setText("Please fill in all the above fields.");
+                        message.setTextFill(Color.GRAY);
+                    }
+                    createButton.setDisable(disable);
+                }
+            };
+
+            newNodeID.textProperty().addListener(createButtonListenerNode);
             coordinateX.textProperty().addListener(createButtonListener);
             coordinateY.textProperty().addListener(createButtonListener);
 
@@ -1201,7 +1228,7 @@ public class MainController {
             // Convert the result to list when the create button is clicked.
             dialog.setResultConverter(dialogButton -> {
                 if (dialogButton == saveButtonType) {
-                    return new ArrayList<String>(Arrays.asList(coordinateX.getText(), coordinateY.getText()));
+                    return new ArrayList<String>(Arrays.asList(newNodeID.getText(), coordinateX.getText(), coordinateY.getText()));
                 }
                 return null;
             });
@@ -1209,14 +1236,16 @@ public class MainController {
             Optional<List<String>> result = dialog.showAndWait();
             result.ifPresent(list -> {
 
-                System.out.println("Edited node-> NodeId:" + this.selectedNode.getId().toString() + ", New X:"
-                        + list.get(0) + ", New Y:" + list.get(1));
+                String newNode = list.get(0);
+                Double coordX = Double.parseDouble(list.get(1));
+                Double coordY = Double.parseDouble(list.get(2));
 
-                Double coordX = Double.parseDouble(list.get(0));
-                Double coordY = Double.parseDouble(list.get(1));
+                System.out.println("Edited node-> OldNodeID: " + this.selectedNode.getId().toString() + ", NewNodeId:" + newNode + ", New X:"
+                        + coordX + ", New Y:" + coordY);
+
                 // Swap X and Y to match MATSim notation
                 Coord newCoord = new Coord(coordY, coordX);
-                this.extendedNetwork.editNode(this.selectedNode.getId().toString(), newCoord);
+                this.extendedNetwork.editNode(this.selectedNode.getId().toString(), newNode, newCoord);
                 this.selectedNode = null;
                 nodeDeleteButton.setDisable(true);
                 nodeEditButton.setDisable(true);
@@ -1225,18 +1254,16 @@ public class MainController {
             this.selectedNode = null;
             nodeDeleteButton.setDisable(true);
             nodeEditButton.setDisable(true);
-
         }
-
     }
 
     private void editSelectedLink() {
         if (this.selectedLink != null) {
-            // Pop up dialog to edit node information
+            // Pop up dialog to edit link information
 
             Dialog<List<String>> dialog = new Dialog<>();
-            dialog.setTitle("Edit node");
-            dialog.setHeaderText("Edit the node's attributes");
+            dialog.setTitle("Edit link");
+            dialog.setHeaderText("Edit the link's attributes");
 
             // Set the button types
             ButtonType saveButtonType = new ButtonType("Save", ButtonData.OK_DONE);
@@ -1249,6 +1276,7 @@ public class MainController {
             grid.setPadding(new Insets(20, 150, 10, 30));
 
             // Default value for faster creation (and debugging)
+            TextField newLinkIdField = new TextField(this.selectedLink.getId().toString());
             TextField length = new TextField(Double.toString(this.selectedLink.getLength()));
             TextField freeSpeed = new TextField(Double.toString(this.selectedLink.getFreespeed()));
             TextField capacity = new TextField(Double.toString(this.selectedLink.getCapacity()));
@@ -1256,7 +1284,7 @@ public class MainController {
             CheckBox bidirectionalCheckBox = new CheckBox();
 
             grid.add(new Label("Link ID:"), 0, 0);
-            grid.add(new Label(this.selectedLink.getId().toString()), 1, 0);
+            grid.add(newLinkIdField, 1, 0);
             grid.add(new Label("From Node:"), 0, 1);
             grid.add(new Label(this.selectedLink.getFromNode().getId().toString()), 1, 1);
             grid.add(new Label("To Node:"), 0, 2);
@@ -1300,19 +1328,15 @@ public class MainController {
                 }
             };
 
-            // TODO use this to check on the edited values of the node IDs
-            final ChangeListener createButtonListenerWithNodeCheck = new ChangeListener<String>() {
+           /* Pattern positiveNumber = Pattern.compile("\\d*[1-9]\\d*");
+
+            final ChangeListener createButtonListenerLanes = new ChangeListener<String>() {
                 @Override
                 public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                     Boolean disable = newValue.trim().isEmpty();
                     if (!disable) {
-                        if (!numPattern.matcher(newValue).matches()) {
-                            message.setText("One or more values are not numbers!");
-                            message.setTextFill(Color.RED);
-                            disable = true;
-                        } else if (!extendedNetwork.getNetwork().getNodes()
-                                .containsKey(Id.create(newValue, Node.class))) {
-                            message.setText("From/To Node doesn't exist.");
+                        if (!positiveNumber.matcher(newValue).matches()) {
+                            message.setText("The value must be a natural number");
                             message.setTextFill(Color.RED);
                             disable = true;
                         } else {
@@ -1322,19 +1346,34 @@ public class MainController {
                     }
                     createButton.setDisable(disable);
                 }
+            };*/
+
+            final ChangeListener createButtonListenerLink = new ChangeListener<String>() {
+                @Override
+                public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                    Boolean disable = newValue.trim().isEmpty();
+                    if (disable) {
+                        message.setText("Please fill in all the above fields.");
+                        message.setTextFill(Color.GRAY);
+                    }
+                    createButton.setDisable(disable);
+                }
             };
 
+            newLinkIdField.textProperty().addListener(createButtonListenerLink);
             length.textProperty().addListener(createButtonListener);
             freeSpeed.textProperty().addListener(createButtonListener);
             capacity.textProperty().addListener(createButtonListener);
             numOfLanes.textProperty().addListener(createButtonListener);
+//            numOfLanes.textProperty().addListener(createButtonListenerLanes);
 
             dialog.getDialogPane().setContent(grid);
 
             // Convert the result to list when the create button is clicked.
             dialog.setResultConverter(dialogButton -> {
                 if (dialogButton == saveButtonType) {
-                    return new ArrayList<String>(Arrays.asList(length.getText(), freeSpeed.getText(), capacity.getText(),
+                    // Passing old link too because for some reason selectedLink equals to null after the isBidirectional check
+                    return new ArrayList<String>(Arrays.asList(selectedLink.getId().toString(), newLinkIdField.getText(), length.getText(), freeSpeed.getText(), capacity.getText(),
                             numOfLanes.getText(), String.valueOf(bidirectionalCheckBox.isSelected())));
                 }
                 return null;
@@ -1342,18 +1381,18 @@ public class MainController {
 
             Optional<List<String>> result = dialog.showAndWait();
             result.ifPresent(list -> {
+                String oldLinkId = list.get(0);
+                String newLinkId = list.get(1);
+                double newLength = Double.parseDouble(list.get(2));
+                double newFreeSpeed = Double.parseDouble(list.get(3));
+                double newCapacity = Double.parseDouble(list.get(4));
+                double newLanes = Double.parseDouble(list.get(5));
+                boolean isBidirectional = Boolean.parseBoolean(list.get(6));
 
-                System.out.println("Edited link-> LinkId: " + this.selectedLink.getId().toString() + ", FromNode: "
+                System.out.println("Edited link-> Old LinkId: " + oldLinkId + ", New LinkId: " + newLinkId + ", FromNode: "
                         + this.selectedLink.getFromNode().getId().toString() + ", ToNode: " + this.selectedLink.getToNode().getId().toString() +
-                        ", Length: " + list.get(0) + ", FreeSpeed: " + list.get(1) + ", Capacity: " + list.get(2) + ", #Lanes: " + list.get(3) +
-                        ", Bidirectional: " + list.get(4));
-
-                double newLength = Double.parseDouble(list.get(0));
-                double newFreeSpeed = Double.parseDouble(list.get(1));
-                double newCapacity = Double.parseDouble(list.get(2));
-                double newLanes = Double.parseDouble(list.get(3));
-                boolean isBidirectional = Boolean.parseBoolean(list.get(4));
-
+                        ", Length: " + newLength + ", FreeSpeed: " + newFreeSpeed + ", Capacity: " + newCapacity + ", #Lanes: " + newLanes +
+                        ", Bidirectional: " + isBidirectional);
                 // TODO Check correctness
                 if (!isBidirectional) {
                     if (this.extendedNetwork.containsLink(this.selectedLink.getToNode().getId(), this.selectedLink.getFromNode().getId())) {
@@ -1361,7 +1400,7 @@ public class MainController {
                     }
                 } else {
                     if (!this.extendedNetwork.containsLink(this.selectedLink.getToNode().getId(), this.selectedLink.getFromNode().getId())) {
-                        this.extendedNetwork.addLink(String.valueOf(this.extendedNetwork.findMaxLinkId() + 1), this.selectedLink.getToNode().getId().toString(),
+                        this.extendedNetwork.addLink(this.extendedNetwork.createLinkId(), this.selectedLink.getToNode().getId().toString(),
                                 this.selectedLink.getFromNode().getId().toString(), newLength, newFreeSpeed, newCapacity, newLanes);
                     }
                     else {
@@ -1374,8 +1413,8 @@ public class MainController {
                     }
                 }
 
-                this.extendedNetwork.editLink(this.selectedLink.getId().toString(), this.selectedLink.getFromNode().getId().toString(),
-                        this.selectedLink.getToNode().getId().toString(), newLength, newFreeSpeed, newCapacity, newLanes);
+                // TODO if false, show alert to user about link ID existing?
+                this.extendedNetwork.editLink(oldLinkId, newLinkId, newLength, newFreeSpeed, newCapacity, newLanes);
 
                 // TODO This needs to be rechecked
                 this.extendedNetwork.getLinkTable().sort();
