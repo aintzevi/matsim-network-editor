@@ -48,6 +48,7 @@ import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.core.api.internal.MatsimNetworkObject;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
@@ -1478,7 +1479,14 @@ public class MainController {
     }
 
     private void checkDanglingNodes() {
+        ArrayList<Object> list = new ArrayList<>();
+
         // Iterate through nodes, check for ones that don't have in- or outlinks
+        for (Node node : this.extendedNetwork.getNetwork().getNodes().values()) {
+            if (node.getInLinks().isEmpty() || node.getOutLinks().isEmpty()) {
+                list.add(node);
+            }
+        }
     }
 
     private void checkExistingSubnetworks() {
@@ -1486,7 +1494,22 @@ public class MainController {
     }
 
     private void checkBidirectionalLinkAttributes() {
+        ArrayList<Object> list = new ArrayList<>();
+
         // Check if bidirectional links have the same attributes in both directions
+        for (Link linkA : this.extendedNetwork.getNetwork().getLinks().values()) {
+            for (Link linkB : this.extendedNetwork.getNetwork().getLinks().values()) {
+                if (linkA.getFromNode() == linkB.getToNode() && linkA.getToNode() == linkB.getFromNode()) {
+                    if (linkA.getLength() != linkB.getLength() || linkA.getCapacity() != linkB.getCapacity() ||
+                            linkA.getFreespeed() != linkB.getFreespeed() || linkA.getNumberOfLanes() != linkB.getNumberOfLanes() ||
+                            linkA.getAllowedModes() != linkB.getAllowedModes() || linkA.getFlowCapacityPerSec() != linkB.getFlowCapacityPerSec()) {
+                        // TODO Figure out for to show these
+                        list.add(linkA);
+                        list.add(linkB);
+                    }
+                }
+            }
+        }
     }
 
     private void checkAttributeRanges() {
