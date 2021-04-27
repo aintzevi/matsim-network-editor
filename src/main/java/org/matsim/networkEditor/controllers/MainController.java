@@ -83,6 +83,7 @@ public class MainController {
     /** Keeping track of the selected node and link for editing/deleting purposes */
     private Node selectedNode = null;
     private Link selectedLink = null;
+    private Object selectedValidationItem = null;
 
     private static final Coordinate coordGermanyNorth = new Coordinate(55.05863889, 8.417527778);
     private static final Coordinate coordGermanySouth = new Coordinate(47.27166667, 10.17405556);
@@ -270,7 +271,7 @@ public class MainController {
         validationEditButton.setGraphic(new ImageView(imageEdit));
         Image imageCheckmark = new Image(getClass().getResourceAsStream("/icons/checkmark.png"), 18, 18, true, true);
         validationRunButton.setGraphic(new ImageView(imageCheckmark));
-
+        validationDeleteButton.setGraphic(new ImageView(imageDelete));
 
         // file chooser
         buttonImport.setOnAction(event -> importNetworkDialog());
@@ -283,6 +284,9 @@ public class MainController {
         nodeEditButton.setOnAction(event -> editSelectedNode());
         linkDeleteButton.setOnAction(event -> deleteSelectedLink());
         linkEditButton.setOnAction(event -> editSelectedLink());
+        validationRunButton.setOnAction(evert -> runValidation());
+        validationEditButton.setOnAction(evert -> runValidation());
+        validationDeleteButton.setOnAction(evert -> runValidation());
 
         // Undo and Redo initially disabled
         buttonUndo.setDisable(true);
@@ -295,6 +299,9 @@ public class MainController {
         linkEditButton.setDisable(true);
         // disable Save button before a network is created
         buttonSave.setDisable(true);
+        validationRunButton.setDisable(true);
+        validationEditButton.setDisable(true);
+        validationDeleteButton.setDisable(true);
 
         buttonSettings.setOnAction(event -> openSettings());
         // set the controls to disabled, this will be changed when the MapView is initialized
@@ -661,7 +668,7 @@ public class MainController {
             }
 
             this.extendedNetwork = new ExtendedNetwork(nameValue, null, null, null, vboxNetwork,
-                    vboxNodes, vboxLinks, mapView);
+                    vboxNodes, vboxLinks, vboxValidation, mapView);
             this.extendedNetwork.setCoordinateSystem(coordSysOption.toString());
             initializeTableListeners();
             // Enable save button and make glasspane invisible
@@ -673,31 +680,41 @@ public class MainController {
 
     public void initializeTableListeners() {
         // Add listeners to tableviews
-        this.extendedNetwork.getNodeTable().getSelectionModel().selectedItemProperty()
-                .addListener((obs, oldSelection, newSelection) -> {
-                    if (newSelection != null) {
-                        this.selectedNode = this.extendedNetwork.getNodeTable().getSelectionModel().getSelectedItem();
-                        nodeDeleteButton.setDisable(false);
-                        nodeEditButton.setDisable(false);
-                    } else {
-                        this.selectedNode = null;
-                        nodeDeleteButton.setDisable(true);
-                        nodeEditButton.setDisable(true);
-                    }
-                });
+        this.extendedNetwork.getNodeTable().getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                this.selectedNode = this.extendedNetwork.getNodeTable().getSelectionModel().getSelectedItem();
+                nodeDeleteButton.setDisable(false);
+                nodeEditButton.setDisable(false);
+            } else {
+                this.selectedNode = null;
+                nodeDeleteButton.setDisable(true);
+                nodeEditButton.setDisable(true);
+            }
+        });
 
-        this.extendedNetwork.getLinkTable().getSelectionModel().selectedItemProperty()
-                .addListener((obs, oldSelection, newSelection) -> {
-                    if (newSelection != null) {
-                        this.selectedLink = this.extendedNetwork.getLinkTable().getSelectionModel().getSelectedItem();
-                        linkDeleteButton.setDisable(false);
-                        linkEditButton.setDisable(false);
-                    } else {
-                        this.selectedLink = null;
-                        linkDeleteButton.setDisable(true);
-                        linkEditButton.setDisable(true);
-                    }
-                });
+        this.extendedNetwork.getLinkTable().getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                this.selectedLink = this.extendedNetwork.getLinkTable().getSelectionModel().getSelectedItem();
+                linkDeleteButton.setDisable(false);
+                linkEditButton.setDisable(false);
+            } else {
+                this.selectedLink = null;
+                linkDeleteButton.setDisable(true);
+                linkEditButton.setDisable(true);
+            }
+        });
+
+        this.extendedNetwork.getValidationTable().getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                this.selectedValidationItem = this.extendedNetwork.getValidationTable().getSelectionModel().getSelectedItem();
+                validationEditButton.setDisable(false);
+                validationDeleteButton.setDisable(false);
+            } else {
+                this.selectedValidationItem = null;
+                validationEditButton.setDisable(true);
+                validationDeleteButton.setDisable(true);
+            }
+        });
     }
 
     private void addLinkDialog(Coordinate nodeCoordinateA, Coordinate nodeCoordinateB) {
@@ -1138,7 +1155,7 @@ public class MainController {
                 this.extendedNetwork.setCoordinateSystem(coordinateSystem);
             }
             this.extendedNetwork = new ExtendedNetwork(selectedFile.getPath(), this.vboxNetwork, this.vboxNodes,
-                    this.vboxLinks, this.mapView);
+                    this.vboxLinks, this.vboxValidation, this.mapView);
 
             initializeTableListeners();
             // Enable save button and make glasspane invisible
@@ -1452,4 +1469,28 @@ public class MainController {
             linkEditButton.setDisable(true);
         }
     }
+
+    private void runValidation() {
+        checkDanglingNodes();
+        checkExistingSubnetworks();
+        checkBidirectionalLinkAttributes();
+        checkAttributeRanges();
+    }
+
+    private void checkDanglingNodes() {
+        // Iterate through nodes, check for ones that don't have in- or outlinks
+    }
+
+    private void checkExistingSubnetworks() {
+        // Find if one can reach every node from any other node in the network
+    }
+
+    private void checkBidirectionalLinkAttributes() {
+        // Check if bidirectional links have the same attributes in both directions
+    }
+
+    private void checkAttributeRanges() {
+
+    }
+
 }

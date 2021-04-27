@@ -36,11 +36,13 @@ public class ExtendedNetwork {
     private VBox vBoxNetWork = null;
     private VBox vBoxNodes = null;
     private VBox vBoxLinks = null;
+    private VBox vBoxValidation = null;
     private MapView mapView = null;
     private HashMap<Id<Node>, Marker> nodeMarkers = null;
     private HashMap<Id<Link>, CoordinateLine> linkLines = null;
     private TableView<Node> nodeTable = null;
     private TableView<Link> linkTable = null;
+    private TableView<Object> validationTable = null;
     private NetworkInfo networkInfo = null;
     private String coordinateSystem = null;
 
@@ -48,12 +50,13 @@ public class ExtendedNetwork {
         this.network = NetworkUtils.createNetwork();
         this.nodeTable = new TableView<>();
         this.linkTable = new TableView<>();
+        this.validationTable = new TableView<>();
         this.nodeMarkers = new HashMap<>();
         this.linkLines = new HashMap<>();
     }
 
     public ExtendedNetwork(String name, Double effectiveLaneWidth, Double effectiveCellSize, Double capPeriod, VBox vBoxNetWork,
-            VBox vBoxNodes, VBox vBoxLinks, MapView mapView) {
+            VBox vBoxNodes, VBox vBoxLinks, VBox vBoxValidation, MapView mapView) {
         this.network = NetworkUtils.createNetwork();
         if (name != null) {
             this.network.setName(name);
@@ -70,13 +73,13 @@ public class ExtendedNetwork {
         if (coordinateSystem != null) {
             StringBuilder str = new StringBuilder(coordinateSystem);
         }
-        initializeMapElementLists(vBoxNetWork, vBoxNodes, vBoxLinks, mapView);
+        initializeMapElementLists(vBoxNetWork, vBoxNodes, vBoxLinks, vBoxValidation, mapView);
         initializeTableViews();
         paintToMap();
     }
 
-    public ExtendedNetwork(String networkPath,VBox vBoxNetWork, VBox vBoxNodes, VBox vBoxLinks, MapView mapView) {
-        initializeMapElementLists(vBoxNetWork, vBoxNodes, vBoxLinks, mapView);
+    public ExtendedNetwork(String networkPath,VBox vBoxNetWork, VBox vBoxNodes, VBox vBoxLinks, VBox vBoxValidation, MapView mapView) {
+        initializeMapElementLists(vBoxNetWork, vBoxNodes, vBoxLinks, vBoxValidation, mapView);
         this.network = NetworkUtils.createNetwork();
         this.networkPath = networkPath;
         System.out.println("--------------------------READER---------------------------------------");
@@ -92,13 +95,15 @@ public class ExtendedNetwork {
         this.networkInfo.update(this.network);
     }
 
-    private void initializeMapElementLists(VBox vBoxNetwork, VBox vBoxNodes, VBox vBoxLinks, MapView mapView) {
+    private void initializeMapElementLists(VBox vBoxNetwork, VBox vBoxNodes, VBox vBoxLinks, VBox vBoxValidation, MapView mapView) {
         this.vBoxNetWork = vBoxNetwork;
         this.vBoxLinks = vBoxLinks;
         this.vBoxNodes = vBoxNodes;
+        this.vBoxValidation = vBoxValidation;
         this.mapView = mapView;
         this.nodeTable = new TableView<>();
         this.linkTable = new TableView<>();
+        this.validationTable = new TableView<>();
         this.nodeMarkers = new HashMap<>();
         this.linkLines = new HashMap<>();
     }
@@ -295,6 +300,29 @@ public class ExtendedNetwork {
         this.linkTable.getColumns().addAll(idColumnLink, fromNodeColumn, toNodeColumn, lengthColumn, capacityColumn,
                 freeSpeedColumn, nofLanesColumn,allowedModes,flowCapacity);
 
+
+        // Validation Table stuff
+        this.validationTable = new TableView<>();
+        this.validationTable.setEditable(false);
+        this.validationTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        TableColumn idColumnValidation = new TableColumn<>("ID");
+        idColumnValidation.setMinWidth(5);
+        idColumnValidation
+                .setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Link, Id>, ObservableValue<String>>() {
+                    @Override
+                    public ObservableValue<String> call(TableColumn.CellDataFeatures<Link, Id> p) {
+                        return new SimpleStringProperty(p.getValue().getId().toString());
+                    }
+                });
+
+        // Clear nodes box in case it contains previous data
+        if (vBoxValidation.getChildren().size() > 1){
+            this.vBoxValidation.getChildren().remove(1);
+        }
+
+        this.vBoxValidation.getChildren().add(this.validationTable);
+        this.validationTable.getColumns().addAll(idColumnValidation);
     }
 
     public void addNode(String id, Coordinate coordinate) {
@@ -552,9 +580,7 @@ public class ExtendedNetwork {
                 this.linkLines.put(link.getId(), coordinateLine);
                 mapView.addCoordinateLine(coordinateLine);
             }
-
         }
-
     }
 
     public HashMap<Id<Node>, Marker> getNodeMarkers() {
@@ -575,6 +601,10 @@ public class ExtendedNetwork {
 
     public TableView<Link> getLinkTable(){
         return this.linkTable;
+    }
+
+    public TableView<Object> getValidationTable() {
+        return this.validationTable;
     }
 
     public String getCoordinateSystem() {

@@ -106,7 +106,7 @@
                                 <VBox fx:id="vboxValidation" spacing="10.0">
                                     <children>
                                         <ToolBar>
-                                            <Label text="Select a warning/error to fix" style="-fx-text-fill: gray;"/>
+                                            <Label text="Click on run to execute network validation" style="-fx-text-fill: gray;"/>
                                             <Pane HBox.hgrow="ALWAYS" />
                                             <Button fx:id="validationRunButton"/>
                                             <Button fx:id="validationEditButton"/>
