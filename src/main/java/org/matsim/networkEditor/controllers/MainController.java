@@ -696,9 +696,13 @@ public class MainController {
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 30));
 
+        Coord coordA = TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, this.extendedNetwork.getCoordinateSystem())
+                .transform(CoordUtils.createCoord(nodeCoordinateA.getLongitude(), nodeCoordinateA.getLatitude()));
+        Coord coordB = TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, this.extendedNetwork.getCoordinateSystem())
+                .transform(CoordUtils.createCoord(nodeCoordinateB.getLongitude(), nodeCoordinateB.getLatitude()));
+
         // Calculate distance between two coordinates to show as default
-        Double nodesDistance = CoordUtils.calcProjectedEuclideanDistance(CoordUtils.createCoord(nodeCoordinateA.getLatitude(),
-                nodeCoordinateA.getLongitude()), CoordUtils.createCoord(nodeCoordinateB.getLatitude(), nodeCoordinateB.getLongitude()));
+        Double nodesDistance = CoordUtils.calcEuclideanDistance(coordA, coordB);
 
         // Default value for faster creation (and debugging)
         TextField linkId = new TextField(this.extendedNetwork.createLinkId());
