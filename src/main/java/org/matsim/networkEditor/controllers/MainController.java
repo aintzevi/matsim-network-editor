@@ -377,7 +377,7 @@ public class MainController {
                 Boolean disable = newValue.trim().isEmpty();
                 if (!disable) {
                     if (!numPattern.matcher(newValue).matches()) {
-                        message.setText("One or more values are not numbers!");
+                        message.setText("One or more values are not accepted numbers!");
                         message.setTextFill(Color.RED);
                         disable = true;
                     } else {
@@ -543,7 +543,7 @@ public class MainController {
                 Boolean disable = newValue.trim().isEmpty();
                 if (!disable) {
                     if (!numPattern.matcher(newValue).matches()) {
-                        message.setText("One or more values are not numbers!");
+                        message.setText("One or more values are not accepted numbers!");
                         message.setTextFill(Color.RED);
                         disable = true;
                     }
@@ -746,7 +746,7 @@ public class MainController {
                 Boolean disable = newValue.trim().isEmpty();
                 if (!disable) {
                     if (!numPattern.matcher(newValue).matches()) {
-                        message.setText("One or more values are not numbers!");
+                        message.setText("One or more values are not accepted numbers!");
                         message.setTextFill(Color.RED);
                         disable = true;
                     } else {
@@ -1200,7 +1200,7 @@ public class MainController {
                     Boolean disable = newValue.trim().isEmpty();
                     if (!disable) {
                         if (!numPattern.matcher(newValue).matches()) {
-                            message.setText("One or more values are not numbers!");
+                            message.setText("One or more values are not accepted numbers!");
                             message.setTextFill(Color.RED);
                             disable = true;
                         } else {
@@ -1321,7 +1321,7 @@ public class MainController {
                     Boolean disable = newValue.trim().isEmpty();
                     if (!disable) {
                         if (!numPattern.matcher(newValue).matches()) {
-                            message.setText("One or more values are not numbers!");
+                            message.setText("One or more values are not accepted numbers!");
                             message.setTextFill(Color.RED);
                             disable = true;
                         } else {
