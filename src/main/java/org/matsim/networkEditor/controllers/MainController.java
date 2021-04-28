@@ -738,7 +738,7 @@ public class MainController {
         javafx.scene.Node createButton = dialog.getDialogPane().lookupButton(createButtonType);
         createButton.setDisable(false);
 
-        Pattern numPattern = Pattern.compile("\\d+(\\.\\d+)?");
+        Pattern numPattern = Pattern.compile("^([0-9]\\.\\d+)|([1-9]\\d*\\.?\\d*)$");
 
         final ChangeListener createButtonListener = new ChangeListener<String>() {
             @Override
@@ -1313,7 +1313,7 @@ public class MainController {
             javafx.scene.Node createButton = dialog.getDialogPane().lookupButton(saveButtonType);
             createButton.setDisable(false);
 
-            Pattern numPattern = Pattern.compile("^\\d+(\\.\\d+)?");
+            Pattern numPattern = Pattern.compile("^([0-9]\\.\\d+)|([1-9]\\d*\\.?\\d*)$");
 
             final ChangeListener createButtonListener = new ChangeListener<String>() {
                 @Override
@@ -1321,7 +1321,7 @@ public class MainController {
                     Boolean disable = newValue.trim().isEmpty();
                     if (!disable) {
                         if (!numPattern.matcher(newValue).matches()) {
-                            message.setText("One or more values are not accepted numbers!");
+                            message.setText("One or more values are not valid numbers!");
                             message.setTextFill(Color.RED);
                             disable = true;
                         } else {
