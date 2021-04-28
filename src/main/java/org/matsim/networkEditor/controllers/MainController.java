@@ -406,7 +406,7 @@ public class MainController {
                 Boolean disable = newValue.trim().isEmpty();
                 if (!disable) {
                     if (!numPattern.matcher(newValue).matches()) {
-                        message.setText("One or more values are not numbers!");
+                        message.setText("One or more values are not accepted numbers!");
                         message.setTextFill(Color.RED);
                         disable = true;
                     } else {
@@ -455,7 +455,7 @@ public class MainController {
         importButton.addEventFilter(ActionEvent.ACTION, (event) -> {
             event.consume();
             StringBuilder coordSysOption = new StringBuilder();
-            if (epsgCode.getText().trim().isEmpty()) {
+            if ("Custom".equals(coordinateOptions.getValue())) {
                 coordSysOption.append("EPSG: ");
                 coordSysOption.append(epsgCode.getText());
             } else {
@@ -572,7 +572,7 @@ public class MainController {
                 Boolean disable = newValue.trim().isEmpty();
                 if (!disable) {
                     if (!numPattern.matcher(newValue).matches()) {
-                        message.setText("One or more values are not numbers!");
+                        message.setText("One or more values are not accepted numbers!");
                         message.setTextFill(Color.RED);
                         disable = true;
                     }
@@ -654,7 +654,7 @@ public class MainController {
             }
 
             StringBuilder coordSysOption = new StringBuilder();
-            if (epsgCodeValue.trim().isEmpty()) {
+            if ("Custom".equals(coordinateValue)) {
                 coordSysOption.append("EPSG: ");
                 coordSysOption.append(epsgCodeValue);
             } else {
@@ -735,9 +735,13 @@ public class MainController {
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 30));
 
+        Coord coordA = TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, this.extendedNetwork.getCoordinateSystem())
+                .transform(CoordUtils.createCoord(nodeCoordinateA.getLongitude(), nodeCoordinateA.getLatitude()));
+        Coord coordB = TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, this.extendedNetwork.getCoordinateSystem())
+                .transform(CoordUtils.createCoord(nodeCoordinateB.getLongitude(), nodeCoordinateB.getLatitude()));
+
         // Calculate distance between two coordinates to show as default
-        Double nodesDistance = CoordUtils.calcProjectedEuclideanDistance(CoordUtils.createCoord(nodeCoordinateA.getLatitude(),
-                nodeCoordinateA.getLongitude()), CoordUtils.createCoord(nodeCoordinateB.getLatitude(), nodeCoordinateB.getLongitude()));
+        Double nodesDistance = CoordUtils.calcEuclideanDistance(coordA, coordB);
 
         // Default value for faster creation (and debugging)
         TextField linkId = new TextField(this.extendedNetwork.createLinkId());
@@ -773,7 +777,7 @@ public class MainController {
         javafx.scene.Node createButton = dialog.getDialogPane().lookupButton(createButtonType);
         createButton.setDisable(false);
 
-        Pattern numPattern = Pattern.compile("-?\\d+(\\.\\d+)?");
+        Pattern numPattern = Pattern.compile("^([0-9]\\.\\d+)|([1-9]\\d*\\.?\\d*)$");
 
         final ChangeListener createButtonListener = new ChangeListener<String>() {
             @Override
@@ -781,7 +785,7 @@ public class MainController {
                 Boolean disable = newValue.trim().isEmpty();
                 if (!disable) {
                     if (!numPattern.matcher(newValue).matches()) {
-                        message.setText("One or more values are not numbers!");
+                        message.setText("One or more values are not accepted numbers!");
                         message.setTextFill(Color.RED);
                         disable = true;
                     } else {
@@ -861,6 +865,7 @@ public class MainController {
 
                 alert.showAndWait();
             }
+
             dialog.close();
         });
     }
@@ -1234,7 +1239,7 @@ public class MainController {
                     Boolean disable = newValue.trim().isEmpty();
                     if (!disable) {
                         if (!numPattern.matcher(newValue).matches()) {
-                            message.setText("One or more values are not numbers!");
+                            message.setText("One or more values are not accepted numbers!");
                             message.setTextFill(Color.RED);
                             disable = true;
                         } else {
@@ -1347,7 +1352,7 @@ public class MainController {
             javafx.scene.Node createButton = dialog.getDialogPane().lookupButton(saveButtonType);
             createButton.setDisable(false);
 
-            Pattern numPattern = Pattern.compile("-?\\d+(\\.\\d+)?");
+            Pattern numPattern = Pattern.compile("^([0-9]\\.\\d+)|([1-9]\\d*\\.?\\d*)$");
 
             final ChangeListener createButtonListener = new ChangeListener<String>() {
                 @Override
@@ -1355,7 +1360,7 @@ public class MainController {
                     Boolean disable = newValue.trim().isEmpty();
                     if (!disable) {
                         if (!numPattern.matcher(newValue).matches()) {
-                            message.setText("One or more values are not numbers!");
+                            message.setText("One or more values are not valid numbers!");
                             message.setTextFill(Color.RED);
                             disable = true;
                         } else {
@@ -1366,26 +1371,6 @@ public class MainController {
                     createButton.setDisable(disable);
                 }
             };
-
-           /* Pattern positiveNumber = Pattern.compile("\\d*[1-9]\\d*");
-
-            final ChangeListener createButtonListenerLanes = new ChangeListener<String>() {
-                @Override
-                public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                    Boolean disable = newValue.trim().isEmpty();
-                    if (!disable) {
-                        if (!positiveNumber.matcher(newValue).matches()) {
-                            message.setText("The value must be a natural number");
-                            message.setTextFill(Color.RED);
-                            disable = true;
-                        } else {
-                            message.setText("Please fill in all the above fields.");
-                            message.setTextFill(Color.GRAY);
-                        }
-                    }
-                    createButton.setDisable(disable);
-                }
-            };*/
 
             final ChangeListener createButtonListenerLink = new ChangeListener<String>() {
                 @Override
@@ -1404,7 +1389,6 @@ public class MainController {
             freeSpeed.textProperty().addListener(createButtonListener);
             capacity.textProperty().addListener(createButtonListener);
             numOfLanes.textProperty().addListener(createButtonListener);
-//            numOfLanes.textProperty().addListener(createButtonListenerLanes);
 
             dialog.getDialogPane().setContent(grid);
 
