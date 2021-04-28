@@ -426,7 +426,7 @@ public class MainController {
         importButton.addEventFilter(ActionEvent.ACTION, (event) -> {
             event.consume();
             StringBuilder coordSysOption = new StringBuilder();
-            if (epsgCode.getText().trim().isEmpty()) {
+            if ("Custom".equals(coordinateOptions.getValue())) {
                 coordSysOption.append("EPSG: ");
                 coordSysOption.append(epsgCode.getText());
             } else {
@@ -625,7 +625,7 @@ public class MainController {
             }
 
             StringBuilder coordSysOption = new StringBuilder();
-            if (epsgCodeValue.trim().isEmpty()) {
+            if ("Custom".equals(coordinateValue)) {
                 coordSysOption.append("EPSG: ");
                 coordSysOption.append(epsgCodeValue);
             } else {
@@ -822,6 +822,7 @@ public class MainController {
 
                 alert.showAndWait();
             }
+
             dialog.close();
         });
     }
