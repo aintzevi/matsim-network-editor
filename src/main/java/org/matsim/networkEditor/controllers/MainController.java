@@ -738,7 +738,7 @@ public class MainController {
         javafx.scene.Node createButton = dialog.getDialogPane().lookupButton(createButtonType);
         createButton.setDisable(false);
 
-        Pattern numPattern = Pattern.compile("-?\\d+(\\.\\d+)?");
+        Pattern numPattern = Pattern.compile("\\d+(\\.\\d+)?");
 
         final ChangeListener createButtonListener = new ChangeListener<String>() {
             @Override
@@ -1313,7 +1313,7 @@ public class MainController {
             javafx.scene.Node createButton = dialog.getDialogPane().lookupButton(saveButtonType);
             createButton.setDisable(false);
 
-            Pattern numPattern = Pattern.compile("-?\\d+(\\.\\d+)?");
+            Pattern numPattern = Pattern.compile("^\\d+(\\.\\d+)?");
 
             final ChangeListener createButtonListener = new ChangeListener<String>() {
                 @Override
@@ -1333,26 +1333,6 @@ public class MainController {
                 }
             };
 
-           /* Pattern positiveNumber = Pattern.compile("\\d*[1-9]\\d*");
-
-            final ChangeListener createButtonListenerLanes = new ChangeListener<String>() {
-                @Override
-                public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                    Boolean disable = newValue.trim().isEmpty();
-                    if (!disable) {
-                        if (!positiveNumber.matcher(newValue).matches()) {
-                            message.setText("The value must be a natural number");
-                            message.setTextFill(Color.RED);
-                            disable = true;
-                        } else {
-                            message.setText("Please fill in all the above fields.");
-                            message.setTextFill(Color.GRAY);
-                        }
-                    }
-                    createButton.setDisable(disable);
-                }
-            };*/
-
             final ChangeListener createButtonListenerLink = new ChangeListener<String>() {
                 @Override
                 public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
@@ -1370,7 +1350,6 @@ public class MainController {
             freeSpeed.textProperty().addListener(createButtonListener);
             capacity.textProperty().addListener(createButtonListener);
             numOfLanes.textProperty().addListener(createButtonListener);
-//            numOfLanes.textProperty().addListener(createButtonListenerLanes);
 
             dialog.getDialogPane().setContent(grid);
 
