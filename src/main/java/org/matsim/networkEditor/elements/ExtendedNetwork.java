@@ -311,10 +311,7 @@ public class ExtendedNetwork {
     }
 
     public String createNodeId() {
-        Date date = Calendar.getInstance().getTime();
-        DateFormat dateFormat = new SimpleDateFormat("yyyyMMddhhmmss");
-
-        return "node_" + dateFormat.format(date);
+        return "node_" + System.currentTimeMillis() / 1000L;
     }
 
     public void editNode(String oldId, String newId, Coord newCoord){
@@ -360,10 +357,7 @@ public class ExtendedNetwork {
     }
 
     public String createLinkId() {
-        Date date = Calendar.getInstance().getTime();
-        DateFormat dateFormat = new SimpleDateFormat("yyyyMMddhhmmss");
-
-        return "link_" + dateFormat.format(date);
+        return "link_" + System.currentTimeMillis() / 1000L;
     }
 
     public boolean addLink(String id, String nodeAId, String nodeBId, double length, double freespeed, double capacity,
