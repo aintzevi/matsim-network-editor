@@ -15,12 +15,7 @@
 */
 package org.matsim.networkEditor.controllers;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -102,6 +97,10 @@ public class MainController {
     /** button to import network.xml */
     @FXML
     private Button buttonImport;
+
+    /** button to import from osm file */
+    @FXML
+    private Button buttonImportOsm;
 
     /** button to create new network */
     @FXML
@@ -253,6 +252,7 @@ public class MainController {
 
         // file chooser
         buttonImport.setOnAction(event -> importNetworkDialog());
+        buttonImportOsm.setOnAction(event -> importOsmNetworkDialog());
         buttonCreate.setOnAction(event -> createNetworkDialog());
         buttonUndo.setOnAction(event -> actionUndo());
         buttonRedo.setOnAction(event -> actionRedo());
@@ -475,6 +475,168 @@ public class MainController {
                 this.selectedLink = null;
             }
 
+        });
+        return false;
+    }
+
+    protected Object importOsmNetworkDialog () {
+        if (extendedNetwork != null) {
+            if (!showSaveAlert("Create new network", "Are you sure you want to continue without saving?")) {
+                return null;
+            }
+        }
+        showImportOsmNetworkDialog();
+        return null;
+    }
+
+    protected boolean showImportOsmNetworkDialog() {
+        // Pop up dialog to add network information
+        Dialog<List<String>> dialog = new Dialog<>();
+        dialog.setTitle("Set coordinate system of the importing network");
+        dialog.setHeaderText("Pick a system or give EPSG code:");
+
+        // Set the button types
+        ButtonType buttonTypeImport = new ButtonType("Import", ButtonData.OK_DONE);
+        ButtonType buttonTypeCancel = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(buttonTypeImport, buttonTypeCancel);
+
+        // Create the attributes labels and fields.
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 30));
+
+        ComboBox<String> coordinateOptions = new ComboBox<>();
+
+        // Coordinate dropdown options
+        coordinateOptions.getItems().addAll(TransformationFactory.DHDN_GK4, TransformationFactory.GK4,
+                TransformationFactory.WGS84, "Custom");
+        coordinateOptions.setValue(TransformationFactory.DHDN_GK4);
+
+        // Set the WGS84 as default, let it editable, since the Custom option is chosen in the dropdown
+        TextField epsgCode = new TextField();
+        epsgCode.setDisable(true);
+        epsgCode.setPromptText("4326");
+
+        grid.add(new Label("Coordinate system:"), 0, 0);
+        grid.add(new Label("EPSG code:"), 0, 1);
+        Label message = new Label("Please fill in one of the above fields.");
+        message.setTextFill(Color.GRAY);
+        grid.add(message, 0, 2, 2, 1);
+
+        grid.add(coordinateOptions, 1, 0);
+        grid.add(epsgCode, 1, 1);
+
+        // Enable/Disable button
+        javafx.scene.Node importButton = dialog.getDialogPane().lookupButton(buttonTypeImport);
+        importButton.setDisable(false);
+
+        // Pattern for non-negative integers
+        final Pattern numPattern = Pattern.compile("\\d+");
+
+        final ChangeListener createButtonListenerEPSG = new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                Boolean disable = newValue.trim().isEmpty();
+                if (!disable) {
+                    if (!numPattern.matcher(newValue).matches()) {
+                        message.setText("One or more values are not accepted numbers!");
+                        message.setTextFill(Color.RED);
+                        disable = true;
+                    } else {
+                        message.setText("Please fill in one of the above fields.");
+                        message.setTextFill(Color.GRAY);
+                    }
+                }
+                importButton.setDisable(disable);
+            }
+        };
+
+        final ChangeListener createButtonListener = new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                Boolean disable = newValue.trim().isEmpty();
+                if (!disable) {
+                    message.setText("Please fill in one of the above fields.");
+                    message.setTextFill(Color.GRAY);
+                }
+                // Disable the EPSG textfield unless the drop-down option is set to "Custom"
+                if (!"Custom".equals(newValue)) {
+                    epsgCode.setDisable(true);
+                } else {
+                    epsgCode.setDisable(false);
+                    disable = true;
+                }
+                importButton.setDisable(disable);
+            }
+        };
+
+        // Do some validation (using the Java 8 lambda syntax).
+        coordinateOptions.valueProperty().addListener(createButtonListener);
+        epsgCode.textProperty().addListener(createButtonListenerEPSG);
+
+        dialog.getDialogPane().setContent(grid);
+
+        // Convert the result to list when the create button is clicked.
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == buttonTypeImport) {
+                return new ArrayList<String>(
+                        Arrays.asList(coordinateOptions.getValue(), epsgCode.getText()));
+            }
+            return null;
+        });
+
+        importButton.addEventFilter(ActionEvent.ACTION, (event) -> {
+            event.consume();
+            StringBuilder coordSysOption = new StringBuilder();
+            if ("Custom".equals(coordinateOptions.getValue())) {
+                coordSysOption.append("EPSG: ");
+                coordSysOption.append(epsgCode.getText());
+            } else {
+                coordSysOption.append(coordinateOptions.getValue());
+            }
+
+            if (this.locateOsmFile(coordSysOption.toString()) == false) {
+                if (showImportOptionsDialog()) {
+                    locateOsmFile(coordSysOption.toString());
+                } else {
+                    dialog.close();
+                }
+            }
+            else {
+                dialog.close();
+            }
+        });
+
+        javafx.scene.Node cancelButton = dialog.getDialogPane().lookupButton(buttonTypeCancel);
+
+        cancelButton.addEventFilter(ActionEvent.ACTION, (event) -> {
+            event.consume();
+            dialog.close();
+        });
+
+        Optional<List<String>> result = dialog.showAndWait();
+        result.ifPresent(list ->
+        {
+            String coordinateValue = list.get(0);
+            String epsgCodeValue = list.get(1);
+            System.out.println("Coordinate System = " + coordinateValue + ", EPSG Code = " + epsgCodeValue);
+
+            if (!"Custom".equals(coordinateValue)) {
+                // If not numbers, show the dialog again
+                if (numPattern.matcher(epsgCodeValue).matches() == false) {
+                    importNetworkDialog();
+                }
+            }
+            else {
+                dialog.close();
+            }
+
+            if (this.extendedNetwork != null) {
+                this.extendedNetwork.clear();
+                this.selectedNode = null;
+                this.selectedLink = null;
+            }
         });
         return false;
     }
@@ -1108,7 +1270,7 @@ public class MainController {
 
     protected boolean locateFile(String coordinateSystem) {
         FileChooser chooser = new FileChooser();
-        chooser.setTitle("Choose the .xml file with your network");
+        chooser.setTitle("Choose an .xml file to import");
         chooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("XML Files", "*.xml"),
                 new FileChooser.ExtensionFilter("GZ Files", "*.gz"));
 
@@ -1123,6 +1285,34 @@ public class MainController {
             }
             this.extendedNetwork = new ExtendedNetwork(selectedFile.getPath(), this.vboxNetwork, this.vboxNodes,
                     this.vboxLinks, this.mapView);
+
+            initializeTableListeners();
+            // Enable save button and make glasspane invisible
+            buttonSave.setDisable(false);
+            glassPane.setVisible(false);
+            return true;
+        }
+        return false;
+    }
+
+    protected boolean locateOsmFile(String coordinateSystem) {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Choose an .osm file to import");
+        chooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("OSM Files", "*.osm"));
+
+        File selectedFile = chooser.showOpenDialog(new Stage());
+
+        if (selectedFile != null) {
+            if (this.extendedNetwork != null) {
+                this.extendedNetwork.clear();
+                this.selectedNode = null;
+                this.selectedLink = null;
+                this.extendedNetwork.setCoordinateSystem(coordinateSystem);
+            }
+
+            // TODO Test plus clear out if both .osm and .xml files but in OSM form should be accepted
+            // OSM Reader-specific constructor
+            this.extendedNetwork = new ExtendedNetwork(selectedFile.getPath(), coordinateSystem, this.vboxNetwork, this.vboxNodes, this.vboxLinks, this.mapView);
 
             initializeTableListeners();
             // Enable save button and make glasspane invisible

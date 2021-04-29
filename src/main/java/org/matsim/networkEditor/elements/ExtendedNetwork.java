@@ -20,6 +20,8 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
+import org.matsim.core.utils.geometry.transformations.TransformationFactory;
+import org.matsim.core.utils.io.OsmNetworkReader;
 import org.matsim.networkEditor.visualElements.NetworkInfo;
 
 import javafx.beans.property.SimpleStringProperty;
@@ -75,13 +77,27 @@ public class ExtendedNetwork {
         paintToMap();
     }
 
-    public ExtendedNetwork(String networkPath,VBox vBoxNetWork, VBox vBoxNodes, VBox vBoxLinks, MapView mapView) {
+    public ExtendedNetwork(String networkPath, VBox vBoxNetWork, VBox vBoxNodes, VBox vBoxLinks, MapView mapView) {
         initializeMapElementLists(vBoxNetWork, vBoxNodes, vBoxLinks, mapView);
         this.network = NetworkUtils.createNetwork();
         this.networkPath = networkPath;
-        System.out.println("--------------------------READER---------------------------------------");
+        System.out.println("---------------------------------------READER---------------------------------------");
         // Target is the default for our map, therefore WGS84
         new MatsimNetworkReader(coordinateSystem, "EPSG: 4326", this.network).readFile(networkPath);
+        initializeTableViews();
+        paintToMap();
+    }
+
+    public ExtendedNetwork(String networkPath, String coordinateSystem, VBox vBoxNetWork, VBox vBoxNodes, VBox vBoxLinks, MapView mapView) {
+        initializeMapElementLists(vBoxNetWork, vBoxNodes, vBoxLinks, mapView);
+        this.network = NetworkUtils.createNetwork();
+        this.networkPath = networkPath;
+        this.coordinateSystem = coordinateSystem;
+        System.out.println("-------------------------------------OSM READER-------------------------------------");
+        new OsmNetworkReader(this.network, TransformationFactory.getCoordinateTransformation(this.getCoordinateSystem(), TransformationFactory.WGS84))
+                .parse(this.networkPath);
+
+        System.out.println(this.networkPath);
         initializeTableViews();
         paintToMap();
     }

@@ -28,6 +28,7 @@
             </padding>
 
             <Button fx:id="buttonImport" text="Import Network..." />
+            <Button fx:id="buttonImportOsm" text="Import OSM..." />
             <Button fx:id="buttonCreate" text="Create Network" />
             <Button fx:id="buttonSave" text="Save File..." />
             <Button fx:id="buttonUndo"/>
