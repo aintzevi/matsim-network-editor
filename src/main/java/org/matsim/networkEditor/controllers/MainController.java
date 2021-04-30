@@ -806,7 +806,8 @@ public class MainController {
                 this.extendedNetwork.addLink(dlinkId, firstNodeMarker.getPosition(), secondNodeMarker.getPosition(), dLength,
                         dFreeSpeed, dCapacity, dLanes);
                 if (isBidirectional) {
-                    if (!this.extendedNetwork.containsLink(secondNodeMarker.getPosition(), firstNodeMarker.getPosition())) {
+                    if (NetworkUtils.findLinkInOppositeDirection(this.extendedNetwork.getNetwork().getLinks().get(Id.create(dlinkId, Link.class))) == null) {
+                    //if (!this.extendedNetwork.containsLink(secondNodeMarker.getPosition(), firstNodeMarker.getPosition())) {
                         this.extendedNetwork.addLink(secondNodeMarker.getPosition(), firstNodeMarker.getPosition(), dLength, dFreeSpeed, dCapacity, dLanes);
                     }
                     else {
@@ -1379,11 +1380,11 @@ public class MainController {
                         ", Bidirectional: " + isBidirectional);
                 // TODO Check correctness
                 if (!isBidirectional) {
-                    if (this.extendedNetwork.containsLink(this.selectedLink.getToNode().getId(), this.selectedLink.getFromNode().getId())) {
+                    if (NetworkUtils.findLinkInOppositeDirection(this.selectedLink) != null) {
                         this.extendedNetwork.removeLink(this.selectedLink.getToNode().getId().toString(), this.selectedLink.getFromNode().getId().toString());
                     }
                 } else {
-                    if (!this.extendedNetwork.containsLink(this.selectedLink.getToNode().getId(), this.selectedLink.getFromNode().getId())) {
+                    if (NetworkUtils.findLinkInOppositeDirection(this.selectedLink) == null) {
                         this.extendedNetwork.addLink(this.extendedNetwork.createLinkId(), this.selectedLink.getToNode().getId().toString(),
                                 this.selectedLink.getFromNode().getId().toString(), newLength, newFreeSpeed, newCapacity, newLanes);
                     }

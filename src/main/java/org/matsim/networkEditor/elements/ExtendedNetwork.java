@@ -379,8 +379,8 @@ public class ExtendedNetwork {
 
         if (!newId.equals(oldId)) {
             if (!this.network.getLinks().containsKey(Id.create(newId, Link.class))) {
-                Link newLink = NetworkUtils.createAndAddLink(this.network, Id.create(newId, Link.class), link.getFromNode(),
-                        link.getToNode(), length, freespeed, capacity, numLanes);
+                NetworkUtils.createAndAddLink(this.network, Id.create(newId, Link.class), link.getFromNode(), link.getToNode(),
+                        length, freespeed, capacity, numLanes);
                 network.removeLink(Id.create(oldId, Link.class));
             }
             else {
@@ -396,30 +396,6 @@ public class ExtendedNetwork {
         }
         paintToMap();
         return true;
-
-//        if (!link.getFromNode().getId().toString().equals(newFromNode) || !link.getToNode().getId().toString().equals(newToNode)) {
-//            Id<Node> newFromNodeId = Id.create(newFromNode, Node.class);
-//            Id<Node> newToNodeId = Id.create(newToNode, Node.class);
-//
-//            // TODO use this info to change the in/out links at node
-//            if (this.network.getNodes().containsKey(newFromNodeId) && this.network.getNodes().containsKey(newToNodeId)) {
-//                if (this.containsLink(newFromNodeId, newToNodeId)) {
-//                    removeLink(oldId);
-//                    addLink(oldId, newFromNode, newToNode, length, freespeed, capacity, numLanes);
-//                }
-//                return true;
-//            } else {
-//                return false;
-//            }
-//        } else if (link.getLength() != length || link.getCapacity() != capacity || link.getNumberOfLanes() != numLanes || link.getFreespeed() != freespeed) {
-//            link.setLength(length);
-//            link.setCapacity(capacity);
-//            link.setFreespeed(freespeed);
-//            link.setNumberOfLanes(numLanes);
-//            paintToMap();
-//            return true;
-//        }
-//        return true;
     }
 
     public boolean removeNode(String id) {
