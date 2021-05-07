@@ -1173,13 +1173,13 @@ public class MainController {
             Coord coord = this.selectedNode.getCoord();
 
             // Default value for faster creation (and debugging)
-            TextField newNodeID = new TextField(this.selectedNode.getId().toString());
+            TextField newNodeIdText = new TextField(this.selectedNode.getId().toString());
             // Swap X and Y to match MATSim notation
             TextField coordinateX = new TextField(Double.toString(coord.getY()));
             TextField coordinateY = new TextField(Double.toString(coord.getX()));
 
             grid.add(new Label("Node ID:"), 0, 0);
-            grid.add(newNodeID, 1, 0);
+            grid.add(newNodeIdText, 1, 0);
             grid.add(new Label("Coordinate X:"), 0, 1);
             grid.add(coordinateX, 1, 1);
             grid.add(new Label("Coordinate Y:"), 0, 2);
@@ -1225,7 +1225,7 @@ public class MainController {
                 }
             };
 
-            newNodeID.textProperty().addListener(createButtonListenerNode);
+            newNodeIdText.textProperty().addListener(createButtonListenerNode);
             coordinateX.textProperty().addListener(createButtonListener);
             coordinateY.textProperty().addListener(createButtonListener);
 
@@ -1234,7 +1234,7 @@ public class MainController {
             // Convert the result to list when the create button is clicked.
             dialog.setResultConverter(dialogButton -> {
                 if (dialogButton == saveButtonType) {
-                    return new ArrayList<String>(Arrays.asList(newNodeID.getText(), coordinateX.getText(), coordinateY.getText()));
+                    return new ArrayList<String>(Arrays.asList(newNodeIdText.getText(), coordinateX.getText(), coordinateY.getText()));
                 }
                 return null;
             });
@@ -1242,16 +1242,16 @@ public class MainController {
             Optional<List<String>> result = dialog.showAndWait();
             result.ifPresent(list -> {
 
-                String newNode = list.get(0);
+                String newNodeId = list.get(0);
                 Double coordX = Double.parseDouble(list.get(1));
                 Double coordY = Double.parseDouble(list.get(2));
 
-                System.out.println("Edited node-> OldNodeID: " + this.selectedNode.getId().toString() + ", NewNodeId:" + newNode + ", New X:"
+                System.out.println("Edited node-> OldNodeID: " + this.selectedNode.getId().toString() + ", NewNodeId:" + newNodeId + ", New X:"
                         + coordX + ", New Y:" + coordY);
 
                 // Swap X and Y to match MATSim notation
                 Coord newCoord = new Coord(coordY, coordX);
-                this.extendedNetwork.editNode(this.selectedNode.getId().toString(), newNode, newCoord);
+                this.extendedNetwork.editNode(this.selectedNode.getId().toString(), newNodeId, newCoord);
                 this.selectedNode = null;
                 nodeDeleteButton.setDisable(true);
                 nodeEditButton.setDisable(true);
