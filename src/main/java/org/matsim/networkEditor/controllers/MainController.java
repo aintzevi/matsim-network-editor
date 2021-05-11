@@ -684,9 +684,26 @@ public class MainController {
         this.extendedNetwork.getNodeTable().getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 this.selectedNode = this.extendedNetwork.getNodeTable().getSelectionModel().getSelectedItem();
+                mapView.removeMarker(this.extendedNetwork.getNodeMarkers().get(this.selectedNode.getId()));
+                this.extendedNetwork.getNodeMarkers().remove(selectedNode);
+
+                // Sets blue marker but blue marker left there even after other actions happen
+                Marker selectedMarker = new Marker(getClass().getResource("/icons/node-highlight.png"), -3, -8)
+                        .setPosition(new Coordinate(this.selectedNode.getCoord().getY(), this.selectedNode.getCoord().getX())).setVisible(true);
+                this.extendedNetwork.getNodeMarkers().put(Id.create(this.selectedNode.getId(), Node.class), selectedMarker);
+                mapView.addMarker(selectedMarker);
                 nodeDeleteButton.setDisable(false);
                 nodeEditButton.setDisable(false);
             } else {
+                mapView.removeMarker(this.extendedNetwork.getNodeMarkers().get(this.selectedNode.getId()));
+                this.extendedNetwork.getNodeMarkers().remove(selectedNode);
+
+                // Sets blue marker but blue marker left there even after other actions happen
+                Marker selectedMarker = new Marker(getClass().getResource("/icons/node.png"), -3, -8)
+                        .setPosition(new Coordinate(this.selectedNode.getCoord().getY(), this.selectedNode.getCoord().getX())).setVisible(true);
+                this.extendedNetwork.getNodeMarkers().put(Id.create(this.selectedNode.getId(), Node.class), selectedMarker);
+                mapView.addMarker(selectedMarker);
+
                 this.selectedNode = null;
                 nodeDeleteButton.setDisable(true);
                 nodeEditButton.setDisable(true);
