@@ -1017,6 +1017,19 @@ public class MainController {
             // Add label to currently clicked node
             event.getMarker().attachLabel(
                     new MapLabel(event.getMarker().getId(), 10, -10).setVisible(true).setCssClass("green-label"));
+            Marker hoverMarker = new Marker(getClass().getResource("/icons/node-highlight.png"), -3, -8)
+                    .setPosition(event.getMarker().getPosition()).setVisible(true);
+
+            System.out.println("Entered");
+
+        });
+
+        mapView.addEventHandler(MarkerEvent.MARKER_EXITED, event -> {
+            event.consume();
+            // Add label to currently clicked node
+            Marker hoverMarker = new Marker(getClass().getResource("/icons/node.png"), -3, -8)
+                    .setPosition(event.getMarker().getPosition()).setVisible(true);
+            System.out.println("Exited");
         });
 
         // Handler to remove node marker on right click
