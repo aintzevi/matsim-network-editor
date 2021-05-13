@@ -316,6 +316,15 @@ public class ExtendedNetwork {
                         return new SimpleStringProperty(p.getValue().getId().toString());
                     }
                 });
+        TableColumn messageColumnValidation = new TableColumn<>("Message");
+        idColumnValidation.setMinWidth(5);
+        idColumnValidation
+                .setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Link, Id>, ObservableValue<String>>() {
+                    @Override
+                    public ObservableValue<String> call(TableColumn.CellDataFeatures<Link, Id> p) {
+                        return new SimpleStringProperty("Issue description");
+                    }
+                });
 
         // Clear nodes box in case it contains previous data
         if (vBoxValidation.getChildren().size() > 1){
@@ -323,7 +332,7 @@ public class ExtendedNetwork {
         }
 
         this.vBoxValidation.getChildren().add(this.validationTable);
-        this.validationTable.getColumns().addAll(idColumnValidation);
+        this.validationTable.getColumns().addAll(idColumnValidation, messageColumnValidation);
     }
 
     public void addNode(String id, Coordinate coordinate) {
