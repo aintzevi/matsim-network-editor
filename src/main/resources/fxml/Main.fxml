@@ -101,7 +101,7 @@
                                 </VBox>
                             </content>
                         </TitledPane>
-                        <TitledPane fx:id="validation" animated="true" text="Validation">
+                        <TitledPane fx:id="validation" animated="true" text="Validation &amp; Cleaning">
                             <content>
                                 <VBox fx:id="vboxValidation" spacing="10.0">
                                     <children>
@@ -111,6 +111,7 @@
                                             <Button fx:id="validationRunButton"/>
                                             <Button fx:id="validationEditButton"/>
                                             <Button fx:id="validationDeleteButton"/>
+                                            <Button fx:id="cleanNetworkButton"/>
                                         </ToolBar>
                                     </children>
                                 </VBox>

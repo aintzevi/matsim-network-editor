@@ -180,6 +180,9 @@ public class MainController {
     @FXML
     private Button validationDeleteButton;
 
+    @FXML
+    private Button cleanNetworkButton;
+
     /**
      * the MapView containing the map
      */
@@ -273,6 +276,9 @@ public class MainController {
         Image imageCheckmark = new Image(getClass().getResourceAsStream("/icons/checkmark.png"), 18, 18, true, true);
         validationRunButton.setGraphic(new ImageView(imageCheckmark));
         validationDeleteButton.setGraphic(new ImageView(imageDelete));
+        Image imageClean = new Image(getClass().getResourceAsStream("/icons/clean.png"), 18, 18, true, true);
+        cleanNetworkButton.setGraphic(new ImageView(imageClean));
+
 
         // file chooser
         buttonImport.setOnAction(event -> importNetworkDialog());
@@ -288,6 +294,7 @@ public class MainController {
         validationRunButton.setOnAction(evert -> runValidation());
         validationEditButton.setOnAction(evert -> runValidation());
         validationDeleteButton.setOnAction(evert -> runValidation());
+        cleanNetworkButton.setOnAction(event -> cleanNetwork());
 
         // Undo and Redo initially disabled
         buttonUndo.setDisable(true);
@@ -303,6 +310,7 @@ public class MainController {
         validationRunButton.setDisable(true);
         validationEditButton.setDisable(true);
         validationDeleteButton.setDisable(true);
+        cleanNetworkButton.setDisable(true);
 
         buttonSettings.setOnAction(event -> openSettings());
         // set the controls to disabled, this will be changed when the MapView is initialized
@@ -1463,9 +1471,11 @@ public class MainController {
         checkAttributeRanges();
     }
 
-    private void checkDanglingNodes() {
-        ArrayList<Object> list = new ArrayList<>();
+    private void cleanNetwork() {
 
+    }
+
+    private void checkDanglingNodes(ArrayList<Object> list) {
         // Iterate through nodes, check for ones that don't have in- or outlinks
         for (Node node : this.extendedNetwork.getNetwork().getNodes().values()) {
             if (node.getInLinks().isEmpty() || node.getOutLinks().isEmpty()) {
