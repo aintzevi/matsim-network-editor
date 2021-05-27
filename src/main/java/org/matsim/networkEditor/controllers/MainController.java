@@ -50,6 +50,7 @@ import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.networkEditor.elements.ExtendedNetwork;
+import org.matsim.run.NetworkCleaner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1473,7 +1474,25 @@ public class MainController {
     }
 
     private void cleanNetwork() {
+        // Save file temporarily
+        File tempFile = null;
+        try {
+            tempFile = new File("./data/" + "temp.xml");
+            if (this.extendedNetwork.getNetwork() != null) {
+                NetworkUtils.writeNetwork(this.extendedNetwork.getNetwork(), tempFile.getName());
+                System.out.println("File created: " + tempFile.getName());
+            } else {
+                System.out.println("File already exists.");
+            }
+        } catch (Exception e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
 
+        // Run network cleaner
+        NetworkCleaner nc = new NetworkCleaner();
+        nc.run(tempFile.getName(),"./data/" + "cleaned_file.xml");
+        // Import network from output file to extended network
     }
 
     private void checkDanglingNodes(HashMap<Object, String> list) {
