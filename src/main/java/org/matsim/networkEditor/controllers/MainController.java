@@ -21,10 +21,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import com.sothawo.mapjfx.Configuration;
@@ -1465,31 +1462,32 @@ public class MainController {
     }
 
     private void runValidation() {
-        checkDanglingNodes();
-        checkExistingSubnetworks();
-        checkBidirectionalLinkAttributes();
-        checkAttributeRanges();
+        checkDanglingNodes(this.extendedNetwork.getValidationIssues());
+        checkSubnetworks(extendedNetwork.getValidationIssues());
+        checkBidirectionalLinkAttributes(extendedNetwork.getValidationIssues());
+        checkAttributeRanges(extendedNetwork.getValidationIssues());
+
+        extendedNetwork.populateValidationTable();
     }
 
     private void cleanNetwork() {
 
     }
 
-    private void checkDanglingNodes(ArrayList<Object> list) {
+    private void checkDanglingNodes(HashMap<Object, String> list) {
         // Iterate through nodes, check for ones that don't have in- or outlinks
         for (Node node : this.extendedNetwork.getNetwork().getNodes().values()) {
             if (node.getInLinks().isEmpty() || node.getOutLinks().isEmpty()) {
-                list.add(node);
+                list.put(node, "Node " + node.getId() + " is a dangling node");
             }
         }
     }
 
-    private void checkExistingSubnetworks() {
+    private void checkSubnetworks(HashMap<Object, String> list) {
         // Find if one can reach every node from any other node in the network
     }
 
-    private void checkBidirectionalLinkAttributes() {
-        ArrayList<Object> list = new ArrayList<>();
+    private void checkBidirectionalLinkAttributes(HashMap<Object, String> list) {
 
         // Check if bidirectional links have the same attributes in both directions
         for (Link linkA : this.extendedNetwork.getNetwork().getLinks().values()) {
@@ -1498,9 +1496,9 @@ public class MainController {
                     if (linkA.getLength() != linkB.getLength() || linkA.getCapacity() != linkB.getCapacity() ||
                             linkA.getFreespeed() != linkB.getFreespeed() || linkA.getNumberOfLanes() != linkB.getNumberOfLanes() ||
                             linkA.getAllowedModes() != linkB.getAllowedModes() || linkA.getFlowCapacityPerSec() != linkB.getFlowCapacityPerSec()) {
-                        // TODO Figure out for to show these
-                        list.add(linkA);
-                        list.add(linkB);
+                        // TODO Figure out how to show these
+                        list.put(linkA, "Bidirectional link " + linkB.getId() + " with different attributes");
+                        list.put(linkB, "Bidirectional link " + linkA.getId() + " with different attributes");
                     }
                 }
             }

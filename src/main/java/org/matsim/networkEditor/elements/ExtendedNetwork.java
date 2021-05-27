@@ -45,6 +45,7 @@ public class ExtendedNetwork {
     private TableView<Object> validationTable = null;
     private NetworkInfo networkInfo = null;
     private String coordinateSystem = null;
+    private HashMap<Object, String> validationIssues = null;
 
     public ExtendedNetwork() {
         this.network = NetworkUtils.createNetwork();
@@ -53,6 +54,7 @@ public class ExtendedNetwork {
         this.validationTable = new TableView<>();
         this.nodeMarkers = new HashMap<>();
         this.linkLines = new HashMap<>();
+        this.validationIssues = new HashMap<>();
     }
 
     public ExtendedNetwork(String name, Double effectiveLaneWidth, Double effectiveCellSize, Double capPeriod, VBox vBoxNetWork,
@@ -106,6 +108,7 @@ public class ExtendedNetwork {
         this.validationTable = new TableView<>();
         this.nodeMarkers = new HashMap<>();
         this.linkLines = new HashMap<>();
+        this.validationIssues = new HashMap<>();
     }
 
     private void initializeTableViews() {
@@ -307,22 +310,23 @@ public class ExtendedNetwork {
         this.validationTable.setEditable(false);
         this.validationTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
+        // TODO find a way to show the ID and message, maybe instead of object create another class to incorporate Node and Link?
         TableColumn idColumnValidation = new TableColumn<>("ID");
         idColumnValidation.setMinWidth(5);
         idColumnValidation
-                .setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Link, Id>, ObservableValue<String>>() {
+                .setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Object, Id>, ObservableValue<String>>() {
                     @Override
-                    public ObservableValue<String> call(TableColumn.CellDataFeatures<Link, Id> p) {
-                        return new SimpleStringProperty(p.getValue().getId().toString());
+                    public ObservableValue<String> call(TableColumn.CellDataFeatures<Object, Id> p) {
+                        return new SimpleStringProperty(p.getValue().toString());
                     }
                 });
         TableColumn messageColumnValidation = new TableColumn<>("Message");
         idColumnValidation.setMinWidth(5);
         idColumnValidation
-                .setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Link, Id>, ObservableValue<String>>() {
+                .setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Object, String>, ObservableValue<String>>() {
                     @Override
-                    public ObservableValue<String> call(TableColumn.CellDataFeatures<Link, Id> p) {
-                        return new SimpleStringProperty("Issue description");
+                    public ObservableValue<String> call(TableColumn.CellDataFeatures<Object, String> p) {
+                        return new SimpleStringProperty(p.getValue().toString());
                     }
                 });
 
@@ -576,6 +580,13 @@ public class ExtendedNetwork {
         }
     }
 
+    public void populateValidationTable() {
+        ObservableList<Object> validationData = FXCollections.observableArrayList(this.validationIssues.keySet());
+        this.validationTable.getItems().clear();
+        this.validationTable.setItems(validationData);
+        this.validationTable.refresh();
+    }
+
     public HashMap<Id<Node>, Marker> getNodeMarkers() {
         return this.nodeMarkers;
     }
@@ -604,6 +615,10 @@ public class ExtendedNetwork {
         return this.coordinateSystem;
     }
 
+    public HashMap<Object, String> getValidationIssues() {
+        return this.validationIssues;
+    }
+
     public void setCoordinateSystem(String coordinateSystem) {
         this.coordinateSystem = coordinateSystem;
     }
@@ -611,6 +626,8 @@ public class ExtendedNetwork {
     public void clear() {
         this.nodeTable = new TableView<>();
         this.linkTable = new TableView<>();
+        this.validationTable = new TableView<>();
+
         for (Entry<Id<Node>, Marker> entry : this.nodeMarkers.entrySet()) {
 
             mapView.removeMarker(entry.getValue());
@@ -624,6 +641,8 @@ public class ExtendedNetwork {
 
         this.nodeMarkers = new HashMap<>();
         this.linkLines = new HashMap<>();
+
+        this.validationIssues = new HashMap<>();
     }
 
     public boolean containsLink(Coordinate coordinateFrom, Coordinate coordinateTo) {
