@@ -304,10 +304,11 @@ public class MainController {
         linkEditButton.setDisable(true);
         // disable Save button before a network is created
         buttonSave.setDisable(true);
-        validationRunButton.setDisable(true);
+        // TODO Change validation run and clean network to disabled, when there is a check for network to not be empty
+        validationRunButton.setDisable(false);
         validationEditButton.setDisable(true);
         validationDeleteButton.setDisable(true);
-        cleanNetworkButton.setDisable(true);
+        cleanNetworkButton.setDisable(false);
 
         buttonSettings.setOnAction(event -> openSettings());
         // set the controls to disabled, this will be changed when the MapView is initialized
@@ -746,11 +747,11 @@ public class MainController {
                 .transform(CoordUtils.createCoord(nodeCoordinateB.getLongitude(), nodeCoordinateB.getLatitude()));
 
         // Calculate distance between two coordinates to show as default
-        Double nodesDistance = CoordUtils.calcEuclideanDistance(coordA, coordB);
+        double nodesDistance = CoordUtils.calcEuclideanDistance(coordA, coordB);
 
         // Default value for faster creation (and debugging)
         TextField linkId = new TextField(this.extendedNetwork.createLinkId());
-        TextField length = new TextField(nodesDistance.toString());
+        TextField length = new TextField(Double.toString(nodesDistance));
         TextField freeSpeed = new TextField("13.88");
         TextField capacity = new TextField("36000");
         TextField numOfLanes = new TextField("1.0");
@@ -1138,8 +1139,9 @@ public class MainController {
         if (result.get() == buttonTypeSave) {
             // Handle cancel at the saving stage, show the save promt again
             if (this.saveFile() == false) {
-                if (showSaveAlert(title, headerText) == false)
+                if (showSaveAlert(title, headerText) == false) {
                     return false;
+                }
             }
         } else if (result.get() == buttonTypeCancel) {
             return false;
