@@ -1526,8 +1526,15 @@ public class MainController {
         }
     }
 
-    private void checkAttributeRanges() {
+    private void checkAttributeRanges(HashMap<Object, String> list) {
+        for (Link link : this.extendedNetwork.getNetwork().getLinks().values()) {
 
+            // Calculate distance between two coordinates to show as default
+            double nodesDistance = CoordUtils.calcEuclideanDistance(link.getFromNode().getCoord(), link.getToNode().getCoord());
+            if (link.getNumberOfLanes() < 0 || link.getLength() < nodesDistance - 0.9 ||
+                    link.getLength() > nodesDistance + 0.9 || link.getFreespeed() < 0) {
+                list.put(link, "Attributes might have out of range values");
+            }
+        }
     }
-
 }
