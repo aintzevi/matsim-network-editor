@@ -1,7 +1,5 @@
 package org.matsim.networkEditor.elements;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -42,10 +40,10 @@ public class ExtendedNetwork {
     private HashMap<Id<Link>, CoordinateLine> linkLines = null;
     private TableView<Node> nodeTable = null;
     private TableView<Link> linkTable = null;
-    private TableView<Object> validationTable = null;
+    private TableView<ValidationTableEntry> validationTable = null;
     private NetworkInfo networkInfo = null;
     private String coordinateSystem = null;
-    private HashMap<Object, String> validationIssues = null;
+    private ArrayList<ValidationTableEntry> validationWarnings = null;
 
     public ExtendedNetwork() {
         this.network = NetworkUtils.createNetwork();
@@ -54,7 +52,7 @@ public class ExtendedNetwork {
         this.validationTable = new TableView<>();
         this.nodeMarkers = new HashMap<>();
         this.linkLines = new HashMap<>();
-        this.validationIssues = new HashMap<>();
+        this.validationWarnings = new ArrayList<>();
     }
 
     public ExtendedNetwork(String name, Double effectiveLaneWidth, Double effectiveCellSize, Double capPeriod, VBox vBoxNetWork,
@@ -108,7 +106,7 @@ public class ExtendedNetwork {
         this.validationTable = new TableView<>();
         this.nodeMarkers = new HashMap<>();
         this.linkLines = new HashMap<>();
-        this.validationIssues = new HashMap<>();
+        this.validationWarnings = new ArrayList<>();
     }
 
     private void initializeTableViews() {
@@ -314,19 +312,19 @@ public class ExtendedNetwork {
         TableColumn idColumnValidation = new TableColumn<>("ID");
         idColumnValidation.setMinWidth(5);
         idColumnValidation
-                .setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Object, Id>, ObservableValue<String>>() {
+                .setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ValidationTableEntry, Id>, ObservableValue<String>>() {
                     @Override
-                    public ObservableValue<String> call(TableColumn.CellDataFeatures<Object, Id> p) {
-                        return new SimpleStringProperty(p.getValue().toString());
+                    public ObservableValue<String> call(TableColumn.CellDataFeatures<ValidationTableEntry, Id> p) {
+                        return new SimpleStringProperty(p.getValue().getElement().toString());
                     }
                 });
         TableColumn messageColumnValidation = new TableColumn<>("Message");
         idColumnValidation.setMinWidth(5);
         idColumnValidation
-                .setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Object, String>, ObservableValue<String>>() {
+                .setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ValidationTableEntry, String>, ObservableValue<String>>() {
                     @Override
-                    public ObservableValue<String> call(TableColumn.CellDataFeatures<Object, String> p) {
-                        return new SimpleStringProperty(p.getValue().toString());
+                    public ObservableValue<String> call(TableColumn.CellDataFeatures<ValidationTableEntry, String> p) {
+                        return new SimpleStringProperty(p.getValue().getMessage());
                     }
                 });
 
@@ -581,7 +579,7 @@ public class ExtendedNetwork {
     }
 
     public void populateValidationTable() {
-        ObservableList<Object> validationData = FXCollections.observableArrayList(this.validationIssues.keySet());
+        ObservableList<ValidationTableEntry> validationData = FXCollections.observableArrayList(this.validationWarnings);
         this.validationTable.getItems().clear();
         this.validationTable.setItems(validationData);
         this.validationTable.refresh();
@@ -615,8 +613,8 @@ public class ExtendedNetwork {
         return this.coordinateSystem;
     }
 
-    public HashMap<Object, String> getValidationIssues() {
-        return this.validationIssues;
+    public ArrayList<ValidationTableEntry> getValidationWarnings() {
+        return this.validationWarnings;
     }
 
     public void setCoordinateSystem(String coordinateSystem) {
@@ -642,7 +640,7 @@ public class ExtendedNetwork {
         this.nodeMarkers = new HashMap<>();
         this.linkLines = new HashMap<>();
 
-        this.validationIssues = new HashMap<>();
+        this.validationWarnings = new ArrayList<>();
     }
 
     public boolean containsLink(Coordinate coordinateFrom, Coordinate coordinateTo) {
