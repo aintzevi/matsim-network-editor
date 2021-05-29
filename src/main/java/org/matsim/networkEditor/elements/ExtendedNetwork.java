@@ -361,14 +361,16 @@ public class ExtendedNetwork {
         if (!newId.equals(oldId)) {
             // Check that no node with this id already exists in the network
             for (Node currentNode : this.network.getNodes().values()) {
-                if (NetworkUtils.getOrigId(currentNode).equals(newId))
+                if (NetworkUtils.getOrigId(currentNode).equals(newId)) {
                     break;
-                else
+                } else {
                     NetworkUtils.setOrigId(node, newId);
+                }
             }
         }
-        else
+        else {
             NetworkUtils.setOrigId(node, oldId);
+        }
 
         if (newCoord.getX() != currentCoord.getX() || newCoord.getY() != currentCoord.getY()) {
             node.setCoord(newCoord);
@@ -605,7 +607,7 @@ public class ExtendedNetwork {
         return this.linkTable;
     }
 
-    public TableView<Object> getValidationTable() {
+    public TableView<ValidationTableEntry> getValidationTable() {
         return this.validationTable;
     }
 
@@ -644,7 +646,7 @@ public class ExtendedNetwork {
     }
 
     public boolean containsLink(Coordinate coordinateFrom, Coordinate coordinateTo) {
-        for (Link link : this.network.getLinks().values())
+        for (Link link : this.network.getLinks().values()) {
             // Swap X and Y to match MATSim notation
             if ((link.getFromNode().getCoord().getY() == coordinateFrom.getLatitude() &&
                     link.getFromNode().getCoord().getX() == coordinateFrom.getLongitude()) &&
@@ -652,14 +654,16 @@ public class ExtendedNetwork {
                     link.getToNode().getCoord().getX() == coordinateTo.getLongitude())) {
                 return true;
             }
+        }
         return false;
     }
 
     public boolean containsLink(Id<Node> nodeFrom, Id<Node> nodeTo) {
-        for (Link link : this.network.getLinks().values())
+        for (Link link : this.network.getLinks().values()) {
             if (link.getFromNode().getId() == nodeFrom && link.getToNode().getId() == nodeTo) {
                 return true;
             }
+        }
         return false;
     }
 

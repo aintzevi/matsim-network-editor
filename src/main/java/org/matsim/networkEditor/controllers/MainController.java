@@ -45,7 +45,6 @@ import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.core.api.internal.MatsimNetworkObject;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
@@ -963,8 +962,9 @@ public class MainController {
             // TODO check this pattern matching because dialog doesn't close because of it if only one of the two values is set
             if (pattern.matcher(list.get(0)).matches() == false
                     || pattern.matcher(coordinateList.get(0)).matches() == false
-                    || pattern.matcher(coordinateList.get(1)).matches() == false)
+                    || pattern.matcher(coordinateList.get(1)).matches() == false) {
                 openSettings();
+            }
 
             setDefaultSettingValues(list);
             try {
