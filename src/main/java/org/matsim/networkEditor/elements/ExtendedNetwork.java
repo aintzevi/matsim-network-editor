@@ -312,10 +312,12 @@ public class ExtendedNetwork {
         TableColumn idColumnValidation = new TableColumn<>("ID");
         idColumnValidation.setMinWidth(5);
         idColumnValidation
-                .setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ValidationTableEntry, Id>, ObservableValue<String>>() {
+                .setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ValidationTableEntry, String>, ObservableValue<String>>() {
                     @Override
-                    public ObservableValue<String> call(TableColumn.CellDataFeatures<ValidationTableEntry, Id> p) {
-                        return new SimpleStringProperty(p.getValue().getElement().toString());
+                    public ObservableValue<String> call(TableColumn.CellDataFeatures<ValidationTableEntry, String> p) {
+                        //return new SimpleStringProperty(p.getValue().toString());
+                        //return new SimpleStringProperty("the fuck bro");
+                        return new SimpleStringProperty(p.getValue().getMessage());
                     }
                 });
         TableColumn messageColumnValidation = new TableColumn<>("Message");
@@ -629,12 +631,11 @@ public class ExtendedNetwork {
         this.validationTable = new TableView<>();
 
         for (Entry<Id<Node>, Marker> entry : this.nodeMarkers.entrySet()) {
-
             mapView.removeMarker(entry.getValue());
         }
         this.nodeMarkers.clear();
-        for (Entry<Id<Link>, CoordinateLine> entry : this.linkLines.entrySet()) {
 
+        for (Entry<Id<Link>, CoordinateLine> entry : this.linkLines.entrySet()) {
             mapView.removeCoordinateLine(entry.getValue());
         }
         this.linkLines.clear();
@@ -666,5 +667,4 @@ public class ExtendedNetwork {
         }
         return false;
     }
-
 }

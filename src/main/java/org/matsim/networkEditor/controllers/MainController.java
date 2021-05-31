@@ -289,9 +289,9 @@ public class MainController {
         nodeEditButton.setOnAction(event -> editSelectedNode());
         linkDeleteButton.setOnAction(event -> deleteSelectedLink());
         linkEditButton.setOnAction(event -> editSelectedLink());
-        validationRunButton.setOnAction(evert -> runValidation());
-        validationEditButton.setOnAction(evert -> runValidation());
-        validationDeleteButton.setOnAction(evert -> runValidation());
+        validationRunButton.setOnAction(event -> runValidation());
+        validationEditButton.setOnAction(event -> runValidation());
+        validationDeleteButton.setOnAction(event -> runValidation());
         cleanNetworkButton.setOnAction(event -> cleanNetwork());
 
         // Undo and Redo initially disabled
@@ -1466,6 +1466,9 @@ public class MainController {
     }
 
     private void runValidation() {
+        // Clear from previous warning items
+        this.extendedNetwork.getValidationWarnings().clear();
+
         checkDanglingNodes(this.extendedNetwork.getValidationWarnings());
         checkSubnetworks(extendedNetwork.getValidationWarnings());
         checkBidirectionalLinkAttributes(extendedNetwork.getValidationWarnings());
@@ -1519,8 +1522,8 @@ public class MainController {
                             linkA.getFreespeed() != linkB.getFreespeed() || linkA.getNumberOfLanes() != linkB.getNumberOfLanes() ||
                             linkA.getAllowedModes() != linkB.getAllowedModes() || linkA.getFlowCapacityPerSec() != linkB.getFlowCapacityPerSec()) {
                         // TODO Figure out how to show these
-                        list.add(new ValidationTableEntry(linkA.getId(), "Bidirectional link " + linkB.getId() + " with different attributes"));
-                        list.add(new ValidationTableEntry(linkB.getId(), "Bidirectional link " + linkA.getId() + " with different attributes"));
+                        list.add(new ValidationTableEntry(linkA.getId().toString(), "Bidirectional link " + linkB.getId() + " does not have matching attributes"));
+                        list.add(new ValidationTableEntry(linkB.getId().toString(), "Bidirectional link " + linkA.getId() + " does not have matching attributes"));
                     }
                 }
             }
@@ -1534,7 +1537,7 @@ public class MainController {
             double nodesDistance = CoordUtils.calcEuclideanDistance(link.getFromNode().getCoord(), link.getToNode().getCoord());
             if (link.getNumberOfLanes() < 0 || link.getLength() < nodesDistance - 0.9 ||
                     link.getLength() > nodesDistance + 0.9 || link.getFreespeed() < 0) {
-                list.add(new ValidationTableEntry(link.getId(), "Attributes might have out of range values"));
+                list.add(new ValidationTableEntry(link.getId().toString(), "Link attributes might contain out of range values"));
             }
         }
     }
