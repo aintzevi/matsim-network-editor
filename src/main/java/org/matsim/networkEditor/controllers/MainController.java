@@ -1483,9 +1483,9 @@ public class MainController {
         // Save file temporarily
         File tempFile = null;
         try {
-            tempFile = new File("./data/" + "temp.xml");
+            tempFile = new File( "data/" + this.extendedNetwork.getNetwork().getName()+ "pre-cleaned_file.xml");
             if (this.extendedNetwork.getNetwork() != null) {
-                NetworkUtils.writeNetwork(this.extendedNetwork.getNetwork(), tempFile.getName());
+                NetworkUtils.writeNetwork(this.extendedNetwork.getNetwork(), tempFile.getAbsolutePath());
                 System.out.println("File created: " + tempFile.getName());
             } else {
                 System.out.println("File already exists.");
@@ -1497,8 +1497,12 @@ public class MainController {
 
         // Run network cleaner
         NetworkCleaner nc = new NetworkCleaner();
-        nc.run(tempFile.getName(),"./data/" + "cleaned_file.xml");
-        // Import network from output file to extended network
+        nc.run(tempFile.getAbsolutePath(),"./data/" + this.extendedNetwork.getNetwork().getName() + "_cleaned_file.xml");
+        // Read in network from output file to extended network
+
+        /* new MatsimNetworkReader(coordinateSystem, "EPSG: 4326", this.network).readFile(networkPath);
+        initializeTableViews();
+        paintToMap();*/
     }
 
     private void checkDanglingNodes(ArrayList<ValidationTableEntry> list) {
