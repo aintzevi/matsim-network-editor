@@ -1523,7 +1523,6 @@ public class MainController {
                             linkA.getAllowedModes() != linkB.getAllowedModes() || linkA.getFlowCapacityPerSec() != linkB.getFlowCapacityPerSec()) {
                         // TODO Figure out how to show these
                         list.add(new ValidationTableEntry(linkA.getId().toString(), "Bidirectional link " + linkB.getId() + " does not have matching attributes"));
-                        list.add(new ValidationTableEntry(linkB.getId().toString(), "Bidirectional link " + linkA.getId() + " does not have matching attributes"));
                     }
                 }
             }
