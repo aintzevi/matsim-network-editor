@@ -509,6 +509,7 @@ public class MainController {
                 this.extendedNetwork.clear();
                 this.selectedNode = null;
                 this.selectedLink = null;
+                this.selectedValidationItem = null;
             }
 
         });
@@ -670,9 +671,9 @@ public class MainController {
 
             if (this.extendedNetwork != null) {
                 this.extendedNetwork.clear();
-
                 this.selectedNode = null;
                 this.selectedLink = null;
+                this.selectedValidationItem = null;
             }
 
             this.extendedNetwork = new ExtendedNetwork(nameValue, null, null, null, vboxNetwork,
@@ -1168,6 +1169,7 @@ public class MainController {
                 this.extendedNetwork.clear();
                 this.selectedNode = null;
                 this.selectedLink = null;
+                this.selectedValidationItem = null;
                 this.extendedNetwork.setCoordinateSystem(coordinateSystem);
             }
             this.extendedNetwork = new ExtendedNetwork(selectedFile.getPath(), this.vboxNetwork, this.vboxNodes,
