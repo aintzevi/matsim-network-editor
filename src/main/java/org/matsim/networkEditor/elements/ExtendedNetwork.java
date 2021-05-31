@@ -315,14 +315,12 @@ public class ExtendedNetwork {
                 .setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ValidationTableEntry, String>, ObservableValue<String>>() {
                     @Override
                     public ObservableValue<String> call(TableColumn.CellDataFeatures<ValidationTableEntry, String> p) {
-                        //return new SimpleStringProperty(p.getValue().toString());
-                        //return new SimpleStringProperty("the fuck bro");
-                        return new SimpleStringProperty(p.getValue().getMessage());
+                        return new SimpleStringProperty(p.getValue().getElement());
                     }
                 });
         TableColumn messageColumnValidation = new TableColumn<>("Message");
-        idColumnValidation.setMinWidth(5);
-        idColumnValidation
+        messageColumnValidation.setMinWidth(5);
+        messageColumnValidation
                 .setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ValidationTableEntry, String>, ObservableValue<String>>() {
                     @Override
                     public ObservableValue<String> call(TableColumn.CellDataFeatures<ValidationTableEntry, String> p) {
