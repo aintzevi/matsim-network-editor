@@ -1503,7 +1503,7 @@ public class MainController {
         // Iterate through nodes, check for ones that don't have in- or outlinks
         for (Node node : this.extendedNetwork.getNetwork().getNodes().values()) {
             if (node.getInLinks().isEmpty() || node.getOutLinks().isEmpty()) {
-                list.add(new ValidationTableEntry(node.getId(), "Node " + node.getId() + " is a dangling node"));
+                list.add(new ValidationTableEntry(NetworkUtils.getOrigId(node), "Node " + NetworkUtils.getOrigId(node) + " is a dangling node"));
             }
         }
     }
