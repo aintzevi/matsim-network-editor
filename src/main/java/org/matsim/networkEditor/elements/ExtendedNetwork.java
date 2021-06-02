@@ -109,7 +109,7 @@ public class ExtendedNetwork {
         this.validationWarnings = new ArrayList<>();
     }
 
-    private void initializeTableViews() {
+    public void initializeTableViews() {
         this.networkInfo = new NetworkInfo(this.network);
         ArrayList<Pair<javafx.scene.Node, javafx.scene.Node>> networkInfoNodes=  this.networkInfo.getAll();
 
@@ -315,7 +315,7 @@ public class ExtendedNetwork {
                 .setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ValidationTableEntry, String>, ObservableValue<String>>() {
                     @Override
                     public ObservableValue<String> call(TableColumn.CellDataFeatures<ValidationTableEntry, String> p) {
-                        return new SimpleStringProperty(p.getValue().getElement());
+                        return new SimpleStringProperty(p.getValue().getElementId());
                     }
                 });
         TableColumn messageColumnValidation = new TableColumn<>("Message");

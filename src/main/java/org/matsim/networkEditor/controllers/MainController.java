@@ -82,7 +82,7 @@ public class MainController {
     /** Keeping track of the selected node and link for editing/deleting purposes */
     private Node selectedNode = null;
     private Link selectedLink = null;
-    private Object selectedValidationItem = null;
+    private ValidationTableEntry selectedValidationItem = null;
 
     private static final Coordinate coordGermanyNorth = new Coordinate(55.05863889, 8.417527778);
     private static final Coordinate coordGermanySouth = new Coordinate(47.27166667, 10.17405556);
@@ -290,8 +290,8 @@ public class MainController {
         linkDeleteButton.setOnAction(event -> deleteSelectedLink());
         linkEditButton.setOnAction(event -> editSelectedLink());
         validationRunButton.setOnAction(event -> runValidation());
-        validationEditButton.setOnAction(event -> runValidation());
-        validationDeleteButton.setOnAction(event -> runValidation());
+        validationEditButton.setOnAction(event -> editSelectedValidationItem());
+        validationDeleteButton.setOnAction(event -> deleteSelectedValidationItem());
         cleanNetworkButton.setOnAction(event -> cleanNetwork());
 
         // Undo and Redo initially disabled
@@ -1476,14 +1476,57 @@ public class MainController {
         checkBidirectionalLinkAttributes(extendedNetwork.getValidationWarnings());
         checkAttributeRanges(extendedNetwork.getValidationWarnings());
 
-        extendedNetwork.populateValidationTable();
+        this.extendedNetwork.populateValidationTable();
+    }
+
+    private void editSelectedValidationItem() {
+        if (this.selectedValidationItem != null) {
+            if (this.selectedValidationItem.getElement() instanceof Node) {
+                this.selectedNode = (Node)this.selectedValidationItem.getElement();
+                this.editSelectedNode();
+            }
+            else {
+                this.selectedLink = (Link)this.selectedValidationItem.getElement();
+                this.editSelectedLink();
+            }
+            this.selectedNode = null;
+            this.selectedLink = null;
+            this.selectedValidationItem = null;
+            validationDeleteButton.setDisable(true);
+            validationEditButton.setDisable(true);
+            // TODO Maybe find another way to refresh the warnings list/ validation table
+            this.runValidation();
+        }
+    }
+
+    private void deleteSelectedValidationItem() {
+        if (this.selectedValidationItem != null) {
+            if (this.selectedValidationItem.getElement() instanceof Node) {
+                this.selectedNode = (Node)this.selectedValidationItem.getElement();
+                this.deleteSelectedNode();
+            }
+            else {
+                this.selectedLink = (Link)this.selectedValidationItem.getElement();
+                this.deleteSelectedLink();
+            }
+
+            this.selectedNode = null;
+            this.selectedLink = null;
+            this.selectedValidationItem = null;
+
+            validationDeleteButton.setDisable(true);
+            validationEditButton.setDisable(true);
+            this.extendedNetwork.populateValidationTable();
+            // TODO Maybe find another way to refresh the warnings list/ validation table
+            this.runValidation();
+        }
     }
 
     private void cleanNetwork() {
         // Save file temporarily
         File tempFile = null;
         try {
-            tempFile = new File( "data/" + this.extendedNetwork.getNetwork().getName()+ "pre-cleaned_file.xml");
+            tempFile = new File( "data/" + this.extendedNetwork.getNetwork().getName()+ "_pre-cleaned_file.xml");
             if (this.extendedNetwork.getNetwork() != null) {
                 NetworkUtils.writeNetwork(this.extendedNetwork.getNetwork(), tempFile.getAbsolutePath());
                 System.out.println("File created: " + tempFile.getName());
@@ -1509,7 +1552,7 @@ public class MainController {
         // Iterate through nodes, check for ones that don't have in- or outlinks
         for (Node node : this.extendedNetwork.getNetwork().getNodes().values()) {
             if (node.getInLinks().isEmpty() || node.getOutLinks().isEmpty()) {
-                list.add(new ValidationTableEntry(NetworkUtils.getOrigId(node), "Node " + NetworkUtils.getOrigId(node) + " is a dangling node"));
+                list.add(new ValidationTableEntry(node, NetworkUtils.getOrigId(node), "Node " + NetworkUtils.getOrigId(node) + " is a dangling node"));
             }
         }
     }
@@ -1528,7 +1571,7 @@ public class MainController {
                             linkA.getFreespeed() != linkB.getFreespeed() || linkA.getNumberOfLanes() != linkB.getNumberOfLanes() ||
                             linkA.getAllowedModes() != linkB.getAllowedModes() || linkA.getFlowCapacityPerSec() != linkB.getFlowCapacityPerSec()) {
                         // TODO Figure out how to show these
-                        list.add(new ValidationTableEntry(linkA.getId().toString(), "Bidirectional link " + linkB.getId() + " does not have matching attributes"));
+                        list.add(new ValidationTableEntry(linkA, linkA.getId().toString(), "Bidirectional link " + linkB.getId() + " does not have matching attributes"));
                     }
                 }
             }
@@ -1542,7 +1585,7 @@ public class MainController {
             double nodesDistance = CoordUtils.calcEuclideanDistance(link.getFromNode().getCoord(), link.getToNode().getCoord());
             if (link.getNumberOfLanes() < 0 || link.getLength() < nodesDistance - 0.9 ||
                     link.getLength() > nodesDistance + 0.9 || link.getFreespeed() < 0) {
-                list.add(new ValidationTableEntry(link.getId().toString(), "Link attributes might contain out of range values"));
+                list.add(new ValidationTableEntry(link, link.getId().toString(), "Link attributes might contain out of range values"));
             }
         }
     }

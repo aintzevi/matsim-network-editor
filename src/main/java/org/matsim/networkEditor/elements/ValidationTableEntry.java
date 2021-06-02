@@ -1,8 +1,7 @@
 package org.matsim.networkEditor.elements;
 
-import org.matsim.api.core.v01.Id;
-
 public class ValidationTableEntry {
+    private Object element = null;
     private String elementId = null;
     private String message = null;
 
@@ -10,17 +9,17 @@ public class ValidationTableEntry {
 
     }
 
-    public ValidationTableEntry(String elementId, String message) {
+    public ValidationTableEntry(Object element, String elementId, String message) {
+        this.element = element;
         this.elementId = elementId;
         this.message = message;
     }
 
-    public String getElement() {
+    public String getElementId() {
         return elementId;
     }
 
-    public void setElement(String element) {
-        this.elementId = element;
+    public void setElementId(String elementId) { this.elementId = elementId;
     }
 
     public String getMessage() {
@@ -29,5 +28,13 @@ public class ValidationTableEntry {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public Object getElement() {
+        return element;
+    }
+
+    public void setElement(Object element) {
+        this.element = element;
     }
 }
