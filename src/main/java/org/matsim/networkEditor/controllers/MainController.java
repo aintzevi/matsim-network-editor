@@ -1551,7 +1551,7 @@ public class MainController {
     private void checkDanglingNodes(ArrayList<ValidationTableEntry> list) {
         // Iterate through nodes, check for ones that don't have in- or outlinks
         for (Node node : this.extendedNetwork.getNetwork().getNodes().values()) {
-            if (node.getInLinks().isEmpty() || node.getOutLinks().isEmpty()) {
+            if (node.getInLinks().isEmpty() && node.getOutLinks().isEmpty()) {
                 list.add(new ValidationTableEntry(node, NetworkUtils.getOrigId(node), "Node " + NetworkUtils.getOrigId(node) + " is a dangling node"));
             }
         }
