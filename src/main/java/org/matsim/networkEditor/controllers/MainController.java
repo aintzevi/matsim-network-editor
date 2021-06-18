@@ -1605,12 +1605,18 @@ public class MainController {
     }
 
     private void checkAttributeRanges(ArrayList<ValidationTableEntry> list) {
+        double distanceThreshold = 0.9;
         for (Link link : this.extendedNetwork.getNetwork().getLinks().values()) {
-
             // Calculate distance between two coordinates to show as default
-            double nodesDistance = CoordUtils.calcEuclideanDistance(link.getFromNode().getCoord(), link.getToNode().getCoord());
-            if (link.getNumberOfLanes() < 0 || link.getLength() < nodesDistance - 0.9 ||
-                    link.getLength() > nodesDistance + 0.9 || link.getFreespeed() < 0) {
+
+            Coord coordA = TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, this.extendedNetwork.getCoordinateSystem())
+                    .transform(link.getFromNode().getCoord());
+            Coord coordB = TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, this.extendedNetwork.getCoordinateSystem())
+                    .transform(link.getToNode().getCoord());
+
+            double nodesDistance = CoordUtils.calcEuclideanDistance(coordA, coordB);
+            if (link.getNumberOfLanes() < 0 || link.getLength() < nodesDistance - distanceThreshold ||
+                    link.getLength() > nodesDistance + distanceThreshold || link.getFreespeed() < 0) {
                 list.add(new ValidationTableEntry(link, link.getId().toString(), "Link attributes might contain out of range values"));
             }
         }
