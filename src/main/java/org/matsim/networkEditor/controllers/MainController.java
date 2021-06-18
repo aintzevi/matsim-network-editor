@@ -511,6 +511,9 @@ public class MainController {
                 this.selectedNode = null;
                 this.selectedLink = null;
                 this.selectedValidationItem = null;
+                // Clear markers and coords for next pair
+                firstNodeMarker = null;
+                secondNodeMarker = null;
             }
 
         });
@@ -675,6 +678,9 @@ public class MainController {
                 this.selectedNode = null;
                 this.selectedLink = null;
                 this.selectedValidationItem = null;
+                // Clear markers and coords for next pair
+                firstNodeMarker = null;
+                secondNodeMarker = null;
             }
 
             this.extendedNetwork = new ExtendedNetwork(nameValue, null, null, null, vboxNetwork,
@@ -1171,6 +1177,9 @@ public class MainController {
                 this.selectedNode = null;
                 this.selectedLink = null;
                 this.selectedValidationItem = null;
+                // Clear markers and coords for next pair
+                firstNodeMarker = null;
+                secondNodeMarker = null;
                 this.extendedNetwork.setCoordinateSystem(coordinateSystem);
             }
             this.extendedNetwork = new ExtendedNetwork(selectedFile.getPath(), this.vboxNetwork, this.vboxNodes,
@@ -1189,9 +1198,13 @@ public class MainController {
         if (this.selectedNode != null) {
             this.extendedNetwork.removeNode(this.selectedNode.getId().toString());
             this.selectedNode = null;
+
+            // Clear markers and coords for next pair
+            firstNodeMarker = null;
+            secondNodeMarker = null;
+
             nodeDeleteButton.setDisable(true);
             nodeEditButton.setDisable(true);
-
         }
     }
 
@@ -1199,6 +1212,11 @@ public class MainController {
         if (this.selectedLink != null) {
             this.extendedNetwork.removeLink(this.selectedLink.getId().toString());
             this.selectedLink = null;
+
+            // Clear markers and coords for next pair
+            firstNodeMarker = null;
+            secondNodeMarker = null;
+
             linkDeleteButton.setDisable(true);
             linkEditButton.setDisable(true);
         }
@@ -1309,6 +1327,11 @@ public class MainController {
                 dialog.close();
             });
             this.selectedNode = null;
+
+            // Clear markers and coords for next pair
+            firstNodeMarker = null;
+            secondNodeMarker = null;
+
             nodeDeleteButton.setDisable(true);
             nodeEditButton.setDisable(true);
         }
@@ -1463,6 +1486,10 @@ public class MainController {
             });
 
             this.selectedLink = null;
+            // Clear markers and coords for next pair
+            firstNodeMarker = null;
+            secondNodeMarker = null;
+
             linkDeleteButton.setDisable(true);
             linkEditButton.setDisable(true);
         }
@@ -1471,6 +1498,9 @@ public class MainController {
     private void runValidation() {
         // Clear from previous warning items
         this.extendedNetwork.getValidationWarnings().clear();
+        // Clear markers and coords for next pair
+        firstNodeMarker = null;
+        secondNodeMarker = null;
 
         checkDanglingNodes(this.extendedNetwork.getValidationWarnings());
         checkSubnetworks(extendedNetwork.getValidationWarnings());
@@ -1498,6 +1528,9 @@ public class MainController {
             // TODO Maybe find another way to refresh the warnings list/ validation table
             this.runValidation();
         }
+        // Clear markers and coords for next pair
+        firstNodeMarker = null;
+        secondNodeMarker = null;
     }
 
     private void deleteSelectedValidationItem() {
@@ -1521,6 +1554,9 @@ public class MainController {
 
             this.runValidation();
         }
+        // Clear markers and coords for next pair
+        firstNodeMarker = null;
+        secondNodeMarker = null;
     }
 
     private void cleanNetwork() {
@@ -1569,9 +1605,12 @@ public class MainController {
 
         // Refreshing Node/Link tableview UIs and their listeners to edit/delete Node/Links
         this.extendedNetwork.initializeTableViews();
-        this.initializeTableListeners();
+        initializeTableListeners();
 
         this.extendedNetwork.paintToMap();
+        // Clear markers and coords for next pair
+        firstNodeMarker = null;
+        secondNodeMarker = null;
     }
 
     private void checkDanglingNodes(ArrayList<ValidationTableEntry> list) {
