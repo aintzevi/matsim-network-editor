@@ -1540,12 +1540,37 @@ public class MainController {
 
         // Run network cleaner
         NetworkCleaner nc = new NetworkCleaner();
-        nc.run(tempFile.getAbsolutePath(),"./data/" + this.extendedNetwork.getNetwork().getName() + "_cleaned_file.xml");
-        // Read in network from output file to extended network
+        String cleanedFilePath = "./data/" + this.extendedNetwork.getNetwork().getName() + "_cleaned_file.xml";
+        nc.run(tempFile.getAbsolutePath(), cleanedFilePath);
 
-        /* new MatsimNetworkReader(coordinateSystem, "EPSG: 4326", this.network).readFile(networkPath);
-        initializeTableViews();
-        paintToMap();*/
+        // Clean mapview of all previous elements
+        this.extendedNetwork.clear();
+
+        ExtendedNetwork cleanNetwork = new ExtendedNetwork(this.extendedNetwork.getNetwork().getName(), this.extendedNetwork.getNetwork().getEffectiveLaneWidth(),
+                this.extendedNetwork.getNetwork().getEffectiveCellSize(), this.extendedNetwork.getNetwork().getCapacityPeriod(), vboxNetwork, vboxNodes,
+                vboxLinks, vboxValidation, mapView);
+        cleanNetwork.setCoordinateSystem(this.extendedNetwork.getCoordinateSystem());
+
+        new MatsimNetworkReader(this.extendedNetwork.getCoordinateSystem(), "EPSG: 4326", cleanNetwork.getNetwork()).readFile(cleanedFilePath);
+
+        ArrayList<Id<Node>> nodesToRemove = new ArrayList<>();
+
+        for (Id<Node> nodeId : this.extendedNetwork.getNetwork().getNodes().keySet()) {
+            if (!cleanNetwork.getNetwork().getNodes().containsKey(nodeId)) {
+                nodesToRemove.add(nodeId);
+            }
+        }
+
+        for (Id<Node> currentNode : nodesToRemove) {
+            this.extendedNetwork.getNetwork().removeNode(currentNode);
+            this.extendedNetwork.getNodeMarkers().remove(currentNode);
+        }
+
+        // Refreshing Node/Link tableview UIs and their listeners to edit/delete Node/Links
+        this.extendedNetwork.initializeTableViews();
+        this.initializeTableListeners();
+
+        this.extendedNetwork.paintToMap();
     }
 
     private void checkDanglingNodes(ArrayList<ValidationTableEntry> list) {
