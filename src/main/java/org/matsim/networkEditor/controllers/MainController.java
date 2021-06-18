@@ -21,10 +21,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import com.sothawo.mapjfx.Configuration;
@@ -49,9 +46,12 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.networkEditor.elements.ExtendedNetwork;
+import org.matsim.networkEditor.elements.ValidationTableEntry;
+import org.matsim.run.NetworkCleaner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,6 +83,7 @@ public class MainController {
     /** Keeping track of the selected node and link for editing/deleting purposes */
     private Node selectedNode = null;
     private Link selectedLink = null;
+    private ValidationTableEntry selectedValidationItem = null;
 
     private static final Coordinate coordGermanyNorth = new Coordinate(55.05863889, 8.417527778);
     private static final Coordinate coordGermanySouth = new Coordinate(47.27166667, 10.17405556);
@@ -147,6 +148,12 @@ public class MainController {
     @FXML
     private VBox vboxLinks;
 
+    /**
+     * contents of validation pane
+     */
+    @FXML
+    private VBox vboxValidation;
+
     /** button to edit selected node */
     @FXML
     private Button nodeEditButton;
@@ -163,7 +170,21 @@ public class MainController {
     @FXML
     private Button linkDeleteButton;
 
-    /** the MapView containing the map */
+    @FXML
+    private Button validationRunButton;
+
+    @FXML
+    private Button validationEditButton;
+
+    @FXML
+    private Button validationDeleteButton;
+
+    @FXML
+    private Button cleanNetworkButton;
+
+    /**
+     * the MapView containing the map
+     */
     @FXML
     private MapView mapView;
 
@@ -250,6 +271,13 @@ public class MainController {
         Image imageEdit = new Image(getClass().getResourceAsStream("/icons/edit.png"), 18, 18, true, true);
         nodeEditButton.setGraphic(new ImageView(imageEdit));
         linkEditButton.setGraphic(new ImageView(imageEdit));
+        validationEditButton.setGraphic(new ImageView(imageEdit));
+        Image imageCheckmark = new Image(getClass().getResourceAsStream("/icons/checkmark.png"), 18, 18, true, true);
+        validationRunButton.setGraphic(new ImageView(imageCheckmark));
+        validationDeleteButton.setGraphic(new ImageView(imageDelete));
+        Image imageClean = new Image(getClass().getResourceAsStream("/icons/clean.png"), 18, 18, true, true);
+        cleanNetworkButton.setGraphic(new ImageView(imageClean));
+
 
         // file chooser
         buttonImport.setOnAction(event -> importNetworkDialog());
@@ -262,6 +290,10 @@ public class MainController {
         nodeEditButton.setOnAction(event -> editSelectedNode());
         linkDeleteButton.setOnAction(event -> deleteSelectedLink());
         linkEditButton.setOnAction(event -> editSelectedLink());
+        validationRunButton.setOnAction(event -> runValidation());
+        validationEditButton.setOnAction(event -> editSelectedValidationItem());
+        validationDeleteButton.setOnAction(event -> deleteSelectedValidationItem());
+        cleanNetworkButton.setOnAction(event -> cleanNetwork());
 
         // Undo and Redo initially disabled
         buttonUndo.setDisable(true);
@@ -274,6 +306,11 @@ public class MainController {
         linkEditButton.setDisable(true);
         // disable Save button before a network is created
         buttonSave.setDisable(true);
+        // TODO Change validation run and clean network to disabled, when there is a check for network to not be empty
+        validationRunButton.setDisable(false);
+        validationEditButton.setDisable(true);
+        validationDeleteButton.setDisable(true);
+        cleanNetworkButton.setDisable(false);
 
         buttonSettings.setOnAction(event -> openSettings());
         // set the controls to disabled, this will be changed when the MapView is initialized
@@ -473,6 +510,7 @@ public class MainController {
                 this.extendedNetwork.clear();
                 this.selectedNode = null;
                 this.selectedLink = null;
+                this.selectedValidationItem = null;
             }
 
         });
@@ -634,13 +672,13 @@ public class MainController {
 
             if (this.extendedNetwork != null) {
                 this.extendedNetwork.clear();
-
                 this.selectedNode = null;
                 this.selectedLink = null;
+                this.selectedValidationItem = null;
             }
 
             this.extendedNetwork = new ExtendedNetwork(nameValue, null, null, null, vboxNetwork,
-                    vboxNodes, vboxLinks, mapView);
+                    vboxNodes, vboxLinks, vboxValidation, mapView);
             this.extendedNetwork.setCoordinateSystem(coordSysOption.toString());
             initializeTableListeners();
             // Enable save button and make glasspane invisible
@@ -652,31 +690,41 @@ public class MainController {
 
     public void initializeTableListeners() {
         // Add listeners to tableviews
-        this.extendedNetwork.getNodeTable().getSelectionModel().selectedItemProperty()
-                .addListener((obs, oldSelection, newSelection) -> {
-                    if (newSelection != null) {
-                        this.selectedNode = this.extendedNetwork.getNodeTable().getSelectionModel().getSelectedItem();
-                        nodeDeleteButton.setDisable(false);
-                        nodeEditButton.setDisable(false);
-                    } else {
-                        this.selectedNode = null;
-                        nodeDeleteButton.setDisable(true);
-                        nodeEditButton.setDisable(true);
-                    }
-                });
+        this.extendedNetwork.getNodeTable().getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                this.selectedNode = this.extendedNetwork.getNodeTable().getSelectionModel().getSelectedItem();
+                nodeDeleteButton.setDisable(false);
+                nodeEditButton.setDisable(false);
+            } else {
+                this.selectedNode = null;
+                nodeDeleteButton.setDisable(true);
+                nodeEditButton.setDisable(true);
+            }
+        });
 
-        this.extendedNetwork.getLinkTable().getSelectionModel().selectedItemProperty()
-                .addListener((obs, oldSelection, newSelection) -> {
-                    if (newSelection != null) {
-                        this.selectedLink = this.extendedNetwork.getLinkTable().getSelectionModel().getSelectedItem();
-                        linkDeleteButton.setDisable(false);
-                        linkEditButton.setDisable(false);
-                    } else {
-                        this.selectedLink = null;
-                        linkDeleteButton.setDisable(true);
-                        linkEditButton.setDisable(true);
-                    }
-                });
+        this.extendedNetwork.getLinkTable().getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                this.selectedLink = this.extendedNetwork.getLinkTable().getSelectionModel().getSelectedItem();
+                linkDeleteButton.setDisable(false);
+                linkEditButton.setDisable(false);
+            } else {
+                this.selectedLink = null;
+                linkDeleteButton.setDisable(true);
+                linkEditButton.setDisable(true);
+            }
+        });
+
+        this.extendedNetwork.getValidationTable().getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                this.selectedValidationItem = this.extendedNetwork.getValidationTable().getSelectionModel().getSelectedItem();
+                validationEditButton.setDisable(false);
+                validationDeleteButton.setDisable(false);
+            } else {
+                this.selectedValidationItem = null;
+                validationEditButton.setDisable(true);
+                validationDeleteButton.setDisable(true);
+            }
+        });
     }
 
     private void addLinkDialog(Coordinate nodeCoordinateA, Coordinate nodeCoordinateB) {
@@ -702,11 +750,11 @@ public class MainController {
                 .transform(CoordUtils.createCoord(nodeCoordinateB.getLongitude(), nodeCoordinateB.getLatitude()));
 
         // Calculate distance between two coordinates to show as default
-        Double nodesDistance = CoordUtils.calcEuclideanDistance(coordA, coordB);
+        double nodesDistance = CoordUtils.calcEuclideanDistance(coordA, coordB);
 
         // Default value for faster creation (and debugging)
         TextField linkId = new TextField(this.extendedNetwork.createLinkId());
-        TextField length = new TextField(nodesDistance.toString());
+        TextField length = new TextField(Double.toString(nodesDistance));
         TextField freeSpeed = new TextField("13.88");
         TextField capacity = new TextField("36000");
         TextField numOfLanes = new TextField("1.0");
@@ -916,8 +964,9 @@ public class MainController {
             // TODO check this pattern matching because dialog doesn't close because of it if only one of the two values is set
             if (pattern.matcher(list.get(0)).matches() == false
                     || pattern.matcher(coordinateList.get(0)).matches() == false
-                    || pattern.matcher(coordinateList.get(1)).matches() == false)
+                    || pattern.matcher(coordinateList.get(1)).matches() == false) {
                 openSettings();
+            }
 
             setDefaultSettingValues(list);
             try {
@@ -1094,8 +1143,9 @@ public class MainController {
         if (result.get() == buttonTypeSave) {
             // Handle cancel at the saving stage, show the save promt again
             if (this.saveFile() == false) {
-                if (showSaveAlert(title, headerText) == false)
+                if (showSaveAlert(title, headerText) == false) {
                     return false;
+                }
             }
         } else if (result.get() == buttonTypeCancel) {
             return false;
@@ -1120,10 +1170,11 @@ public class MainController {
                 this.extendedNetwork.clear();
                 this.selectedNode = null;
                 this.selectedLink = null;
+                this.selectedValidationItem = null;
                 this.extendedNetwork.setCoordinateSystem(coordinateSystem);
             }
             this.extendedNetwork = new ExtendedNetwork(selectedFile.getPath(), this.vboxNetwork, this.vboxNodes,
-                    this.vboxLinks, this.mapView);
+                    this.vboxLinks, this.vboxValidation, this.mapView);
 
             initializeTableListeners();
             // Enable save button and make glasspane invisible
@@ -1414,6 +1465,160 @@ public class MainController {
             this.selectedLink = null;
             linkDeleteButton.setDisable(true);
             linkEditButton.setDisable(true);
+        }
+    }
+
+    private void runValidation() {
+        // Clear from previous warning items
+        this.extendedNetwork.getValidationWarnings().clear();
+
+        checkDanglingNodes(this.extendedNetwork.getValidationWarnings());
+        checkSubnetworks(extendedNetwork.getValidationWarnings());
+        checkBidirectionalLinkAttributes(extendedNetwork.getValidationWarnings());
+        checkAttributeRanges(extendedNetwork.getValidationWarnings());
+
+        this.extendedNetwork.populateValidationTable();
+    }
+
+    private void editSelectedValidationItem() {
+        if (this.selectedValidationItem != null) {
+            if (this.selectedValidationItem.getElement() instanceof Node) {
+                this.selectedNode = (Node)this.selectedValidationItem.getElement();
+                this.editSelectedNode();
+            }
+            else {
+                this.selectedLink = (Link)this.selectedValidationItem.getElement();
+                this.editSelectedLink();
+            }
+            this.selectedNode = null;
+            this.selectedLink = null;
+            this.selectedValidationItem = null;
+            validationDeleteButton.setDisable(true);
+            validationEditButton.setDisable(true);
+            // TODO Maybe find another way to refresh the warnings list/ validation table
+            this.runValidation();
+        }
+    }
+
+    private void deleteSelectedValidationItem() {
+        if (this.selectedValidationItem != null) {
+            if (this.selectedValidationItem.getElement() instanceof Node) {
+                this.selectedNode = (Node)this.selectedValidationItem.getElement();
+                this.deleteSelectedNode();
+            }
+            else {
+                this.selectedLink = (Link)this.selectedValidationItem.getElement();
+                this.deleteSelectedLink();
+            }
+
+            this.selectedNode = null;
+            this.selectedLink = null;
+            this.selectedValidationItem = null;
+
+            validationDeleteButton.setDisable(true);
+            validationEditButton.setDisable(true);
+            this.extendedNetwork.populateValidationTable();
+
+            this.runValidation();
+        }
+    }
+
+    private void cleanNetwork() {
+        // Save file temporarily
+        File tempFile = null;
+        try {
+            tempFile = new File( "data/" + this.extendedNetwork.getNetwork().getName()+ "_pre-cleaned_file.xml");
+            if (this.extendedNetwork.getNetwork() != null) {
+                NetworkUtils.writeNetwork(this.extendedNetwork.getNetwork(), tempFile.getAbsolutePath());
+                System.out.println("File created: " + tempFile.getName());
+            } else {
+                System.out.println("File already exists.");
+            }
+        } catch (Exception e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+
+        // Run network cleaner
+        NetworkCleaner nc = new NetworkCleaner();
+        String cleanedFilePath = "./data/" + this.extendedNetwork.getNetwork().getName() + "_cleaned_file.xml";
+        nc.run(tempFile.getAbsolutePath(), cleanedFilePath);
+
+        // Clean mapview of all previous elements
+        this.extendedNetwork.clear();
+
+        ExtendedNetwork cleanNetwork = new ExtendedNetwork(this.extendedNetwork.getNetwork().getName(), this.extendedNetwork.getNetwork().getEffectiveLaneWidth(),
+                this.extendedNetwork.getNetwork().getEffectiveCellSize(), this.extendedNetwork.getNetwork().getCapacityPeriod(), vboxNetwork, vboxNodes,
+                vboxLinks, vboxValidation, mapView);
+        cleanNetwork.setCoordinateSystem(this.extendedNetwork.getCoordinateSystem());
+
+        new MatsimNetworkReader(this.extendedNetwork.getCoordinateSystem(), "EPSG: 4326", cleanNetwork.getNetwork()).readFile(cleanedFilePath);
+
+        ArrayList<Id<Node>> nodesToRemove = new ArrayList<>();
+
+        for (Id<Node> nodeId : this.extendedNetwork.getNetwork().getNodes().keySet()) {
+            if (!cleanNetwork.getNetwork().getNodes().containsKey(nodeId)) {
+                nodesToRemove.add(nodeId);
+            }
+        }
+
+        for (Id<Node> currentNode : nodesToRemove) {
+            this.extendedNetwork.getNetwork().removeNode(currentNode);
+            this.extendedNetwork.getNodeMarkers().remove(currentNode);
+        }
+
+        // Refreshing Node/Link tableview UIs and their listeners to edit/delete Node/Links
+        this.extendedNetwork.initializeTableViews();
+        this.initializeTableListeners();
+
+        this.extendedNetwork.paintToMap();
+    }
+
+    private void checkDanglingNodes(ArrayList<ValidationTableEntry> list) {
+        // Iterate through nodes, check for ones that don't have in- or outlinks
+        for (Node node : this.extendedNetwork.getNetwork().getNodes().values()) {
+            if (node.getInLinks().isEmpty() && node.getOutLinks().isEmpty()) {
+                list.add(new ValidationTableEntry(node, NetworkUtils.getOrigId(node), "Node " + NetworkUtils.getOrigId(node) + " is a dangling node"));
+            }
+        }
+    }
+
+    private void checkSubnetworks(ArrayList<ValidationTableEntry> list) {
+        // Find if one can reach every node from any other node in the network
+    }
+
+    private void checkBidirectionalLinkAttributes(ArrayList<ValidationTableEntry> list) {
+
+        // Check if bidirectional links have the same attributes in both directions
+        for (Link linkA : this.extendedNetwork.getNetwork().getLinks().values()) {
+            for (Link linkB : this.extendedNetwork.getNetwork().getLinks().values()) {
+                if (linkA.getFromNode() == linkB.getToNode() && linkA.getToNode() == linkB.getFromNode()) {
+                    if (linkA.getLength() != linkB.getLength() || linkA.getCapacity() != linkB.getCapacity() ||
+                            linkA.getFreespeed() != linkB.getFreespeed() || linkA.getNumberOfLanes() != linkB.getNumberOfLanes() ||
+                            linkA.getAllowedModes() != linkB.getAllowedModes() || linkA.getFlowCapacityPerSec() != linkB.getFlowCapacityPerSec()) {
+                        // TODO Figure out how to show these
+                        list.add(new ValidationTableEntry(linkA, linkA.getId().toString(), "Bidirectional link " + linkB.getId() + " does not have matching attributes"));
+                    }
+                }
+            }
+        }
+    }
+
+    private void checkAttributeRanges(ArrayList<ValidationTableEntry> list) {
+        double distanceThreshold = 0.9;
+        for (Link link : this.extendedNetwork.getNetwork().getLinks().values()) {
+            // Calculate distance between two coordinates to show as default
+
+            Coord coordA = TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, this.extendedNetwork.getCoordinateSystem())
+                    .transform(link.getFromNode().getCoord());
+            Coord coordB = TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, this.extendedNetwork.getCoordinateSystem())
+                    .transform(link.getToNode().getCoord());
+
+            double nodesDistance = CoordUtils.calcEuclideanDistance(coordA, coordB);
+            if (link.getNumberOfLanes() < 0 || link.getLength() < nodesDistance - distanceThreshold ||
+                    link.getLength() > nodesDistance + distanceThreshold || link.getFreespeed() < 0) {
+                list.add(new ValidationTableEntry(link, link.getId().toString(), "Link attributes might contain out of range values"));
+            }
         }
     }
 }

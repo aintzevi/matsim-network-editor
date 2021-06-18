@@ -1,7 +1,5 @@
 package org.matsim.networkEditor.elements;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -36,24 +34,29 @@ public class ExtendedNetwork {
     private VBox vBoxNetWork = null;
     private VBox vBoxNodes = null;
     private VBox vBoxLinks = null;
+    private VBox vBoxValidation = null;
     private MapView mapView = null;
     private HashMap<Id<Node>, Marker> nodeMarkers = null;
     private HashMap<Id<Link>, CoordinateLine> linkLines = null;
     private TableView<Node> nodeTable = null;
     private TableView<Link> linkTable = null;
+    private TableView<ValidationTableEntry> validationTable = null;
     private NetworkInfo networkInfo = null;
     private String coordinateSystem = null;
+    private ArrayList<ValidationTableEntry> validationWarnings = null;
 
     public ExtendedNetwork() {
         this.network = NetworkUtils.createNetwork();
         this.nodeTable = new TableView<>();
         this.linkTable = new TableView<>();
+        this.validationTable = new TableView<>();
         this.nodeMarkers = new HashMap<>();
         this.linkLines = new HashMap<>();
+        this.validationWarnings = new ArrayList<>();
     }
 
     public ExtendedNetwork(String name, Double effectiveLaneWidth, Double effectiveCellSize, Double capPeriod, VBox vBoxNetWork,
-            VBox vBoxNodes, VBox vBoxLinks, MapView mapView) {
+            VBox vBoxNodes, VBox vBoxLinks, VBox vBoxValidation, MapView mapView) {
         this.network = NetworkUtils.createNetwork();
         if (name != null) {
             this.network.setName(name);
@@ -70,13 +73,13 @@ public class ExtendedNetwork {
         if (coordinateSystem != null) {
             StringBuilder str = new StringBuilder(coordinateSystem);
         }
-        initializeMapElementLists(vBoxNetWork, vBoxNodes, vBoxLinks, mapView);
+        initializeMapElementLists(vBoxNetWork, vBoxNodes, vBoxLinks, vBoxValidation, mapView);
         initializeTableViews();
         paintToMap();
     }
 
-    public ExtendedNetwork(String networkPath,VBox vBoxNetWork, VBox vBoxNodes, VBox vBoxLinks, MapView mapView) {
-        initializeMapElementLists(vBoxNetWork, vBoxNodes, vBoxLinks, mapView);
+    public ExtendedNetwork(String networkPath,VBox vBoxNetWork, VBox vBoxNodes, VBox vBoxLinks, VBox vBoxValidation, MapView mapView) {
+        initializeMapElementLists(vBoxNetWork, vBoxNodes, vBoxLinks, vBoxValidation, mapView);
         this.network = NetworkUtils.createNetwork();
         this.networkPath = networkPath;
         System.out.println("--------------------------READER---------------------------------------");
@@ -89,21 +92,25 @@ public class ExtendedNetwork {
     public void paintToMap() {
         populateNodesTable();
         populateLinksTable();
+        populateValidationTable();
         this.networkInfo.update(this.network);
     }
 
-    private void initializeMapElementLists(VBox vBoxNetwork, VBox vBoxNodes, VBox vBoxLinks, MapView mapView) {
+    private void initializeMapElementLists(VBox vBoxNetwork, VBox vBoxNodes, VBox vBoxLinks, VBox vBoxValidation, MapView mapView) {
         this.vBoxNetWork = vBoxNetwork;
         this.vBoxLinks = vBoxLinks;
         this.vBoxNodes = vBoxNodes;
+        this.vBoxValidation = vBoxValidation;
         this.mapView = mapView;
         this.nodeTable = new TableView<>();
         this.linkTable = new TableView<>();
+        this.validationTable = new TableView<>();
         this.nodeMarkers = new HashMap<>();
         this.linkLines = new HashMap<>();
+        this.validationWarnings = new ArrayList<>();
     }
 
-    private void initializeTableViews() {
+    public void initializeTableViews() {
         this.networkInfo = new NetworkInfo(this.network);
         ArrayList<Pair<javafx.scene.Node, javafx.scene.Node>> networkInfoNodes=  this.networkInfo.getAll();
 
@@ -296,6 +303,39 @@ public class ExtendedNetwork {
         this.linkTable.getColumns().addAll(idColumnLink, fromNodeColumn, toNodeColumn, lengthColumn, capacityColumn,
                 freeSpeedColumn, nofLanesColumn,allowedModes,flowCapacity);
 
+
+        // Validation Table stuff
+        this.validationTable = new TableView<>();
+        this.validationTable.setEditable(false);
+        this.validationTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        // TODO find a way to show the ID and message, maybe instead of object create another class to incorporate Node and Link?
+        TableColumn idColumnValidation = new TableColumn<>("ID");
+        idColumnValidation.setMinWidth(5);
+        idColumnValidation
+                .setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ValidationTableEntry, String>, ObservableValue<String>>() {
+                    @Override
+                    public ObservableValue<String> call(TableColumn.CellDataFeatures<ValidationTableEntry, String> p) {
+                        return new SimpleStringProperty(p.getValue().getElementId());
+                    }
+                });
+        TableColumn messageColumnValidation = new TableColumn<>("Message");
+        messageColumnValidation.setMinWidth(5);
+        messageColumnValidation
+                .setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ValidationTableEntry, String>, ObservableValue<String>>() {
+                    @Override
+                    public ObservableValue<String> call(TableColumn.CellDataFeatures<ValidationTableEntry, String> p) {
+                        return new SimpleStringProperty(p.getValue().getMessage());
+                    }
+                });
+
+        // Clear nodes box in case it contains previous data
+        if (vBoxValidation.getChildren().size() > 1){
+            this.vBoxValidation.getChildren().remove(1);
+        }
+
+        this.vBoxValidation.getChildren().add(this.validationTable);
+        this.validationTable.getColumns().addAll(idColumnValidation, messageColumnValidation);
     }
 
     public void addNode(String id, Coordinate coordinate) {
@@ -322,14 +362,16 @@ public class ExtendedNetwork {
         if (!newId.equals(oldId)) {
             // Check that no node with this id already exists in the network
             for (Node currentNode : this.network.getNodes().values()) {
-                if (NetworkUtils.getOrigId(currentNode).equals(newId))
+                if (NetworkUtils.getOrigId(currentNode).equals(newId)) {
                     break;
-                else
+                } else {
                     NetworkUtils.setOrigId(node, newId);
+                }
             }
         }
-        else
+        else {
             NetworkUtils.setOrigId(node, oldId);
+        }
 
         if (newCoord.getX() != currentCoord.getX() || newCoord.getY() != currentCoord.getY()) {
             node.setCoord(newCoord);
@@ -467,11 +509,6 @@ public class ExtendedNetwork {
             if (entryCoord.getX() == coord.getX() && entryCoord.getY() == coord.getY()) {
                 return entry.getValue();
             }
-            // if (entryCoord.equals(coord)) {
-            // This can be used, when network initialized
-            // the Z value is to -Infinity but when a new node was add it goes to 0
-            // return entry.getValue();
-            // }
         }
         return null;
     }
@@ -536,9 +573,14 @@ public class ExtendedNetwork {
                 this.linkLines.put(link.getId(), coordinateLine);
                 mapView.addCoordinateLine(coordinateLine);
             }
-
         }
+    }
 
+    public void populateValidationTable() {
+        ObservableList<ValidationTableEntry> validationData = FXCollections.observableArrayList(this.validationWarnings);
+        this.validationTable.getItems().clear();
+        this.validationTable.setItems(validationData);
+        this.validationTable.refresh();
     }
 
     public HashMap<Id<Node>, Marker> getNodeMarkers() {
@@ -561,8 +603,16 @@ public class ExtendedNetwork {
         return this.linkTable;
     }
 
+    public TableView<ValidationTableEntry> getValidationTable() {
+        return this.validationTable;
+    }
+
     public String getCoordinateSystem() {
         return this.coordinateSystem;
+    }
+
+    public ArrayList<ValidationTableEntry> getValidationWarnings() {
+        return this.validationWarnings;
     }
 
     public void setCoordinateSystem(String coordinateSystem) {
@@ -572,23 +622,26 @@ public class ExtendedNetwork {
     public void clear() {
         this.nodeTable = new TableView<>();
         this.linkTable = new TableView<>();
-        for (Entry<Id<Node>, Marker> entry : this.nodeMarkers.entrySet()) {
+        this.validationTable = new TableView<>();
 
+        for (Entry<Id<Node>, Marker> entry : this.nodeMarkers.entrySet()) {
             mapView.removeMarker(entry.getValue());
         }
         this.nodeMarkers.clear();
-        for (Entry<Id<Link>, CoordinateLine> entry : this.linkLines.entrySet()) {
 
+        for (Entry<Id<Link>, CoordinateLine> entry : this.linkLines.entrySet()) {
             mapView.removeCoordinateLine(entry.getValue());
         }
         this.linkLines.clear();
+        this.validationWarnings.clear();
 
         this.nodeMarkers = new HashMap<>();
         this.linkLines = new HashMap<>();
+        this.validationWarnings = new ArrayList<>();
     }
 
     public boolean containsLink(Coordinate coordinateFrom, Coordinate coordinateTo) {
-        for (Link link : this.network.getLinks().values())
+        for (Link link : this.network.getLinks().values()) {
             // Swap X and Y to match MATSim notation
             if ((link.getFromNode().getCoord().getY() == coordinateFrom.getLatitude() &&
                     link.getFromNode().getCoord().getX() == coordinateFrom.getLongitude()) &&
@@ -596,15 +649,16 @@ public class ExtendedNetwork {
                     link.getToNode().getCoord().getX() == coordinateTo.getLongitude())) {
                 return true;
             }
+        }
         return false;
     }
 
     public boolean containsLink(Id<Node> nodeFrom, Id<Node> nodeTo) {
-        for (Link link : this.network.getLinks().values())
+        for (Link link : this.network.getLinks().values()) {
             if (link.getFromNode().getId() == nodeFrom && link.getToNode().getId() == nodeTo) {
                 return true;
             }
+        }
         return false;
     }
-
 }
