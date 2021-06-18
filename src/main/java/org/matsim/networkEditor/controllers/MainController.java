@@ -888,6 +888,10 @@ public class MainController {
 
     @FXML
     protected boolean saveFile() {
+        // Clear markers and coords for next pair
+        firstNodeMarker = null;
+        secondNodeMarker = null;
+
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Saving file...");
         // TODO When importing, set the name of the file as the name of the network?
@@ -901,9 +905,6 @@ public class MainController {
 
             if (file != null) {
                 NetworkUtils.writeNetwork(this.extendedNetwork.getNetwork(), file.getPath());
-                // Clear markers and coords for next pair
-                firstNodeMarker = null;
-                secondNodeMarker = null;
             }
         } catch (Exception exception) {
             logger.debug("Saving file fail");
