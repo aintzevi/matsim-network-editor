@@ -46,6 +46,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.networkEditor.elements.ExtendedNetwork;
@@ -1517,7 +1518,7 @@ public class MainController {
             validationDeleteButton.setDisable(true);
             validationEditButton.setDisable(true);
             this.extendedNetwork.populateValidationTable();
-            // TODO Maybe find another way to refresh the warnings list/ validation table
+
             this.runValidation();
         }
     }

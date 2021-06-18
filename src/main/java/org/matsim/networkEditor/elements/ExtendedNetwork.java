@@ -92,6 +92,7 @@ public class ExtendedNetwork {
     public void paintToMap() {
         populateNodesTable();
         populateLinksTable();
+        populateValidationTable();
         this.networkInfo.update(this.network);
     }
 
@@ -508,11 +509,6 @@ public class ExtendedNetwork {
             if (entryCoord.getX() == coord.getX() && entryCoord.getY() == coord.getY()) {
                 return entry.getValue();
             }
-            // if (entryCoord.equals(coord)) {
-            // This can be used, when network initialized
-            // the Z value is to -Infinity but when a new node was add it goes to 0
-            // return entry.getValue();
-            // }
         }
         return null;
     }
@@ -637,10 +633,10 @@ public class ExtendedNetwork {
             mapView.removeCoordinateLine(entry.getValue());
         }
         this.linkLines.clear();
+        this.validationWarnings.clear();
 
         this.nodeMarkers = new HashMap<>();
         this.linkLines = new HashMap<>();
-
         this.validationWarnings = new ArrayList<>();
     }
 
