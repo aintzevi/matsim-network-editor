@@ -901,6 +901,9 @@ public class MainController {
 
             if (file != null) {
                 NetworkUtils.writeNetwork(this.extendedNetwork.getNetwork(), file.getPath());
+                // Clear markers and coords for next pair
+                firstNodeMarker = null;
+                secondNodeMarker = null;
             }
         } catch (Exception exception) {
             logger.debug("Saving file fail");
