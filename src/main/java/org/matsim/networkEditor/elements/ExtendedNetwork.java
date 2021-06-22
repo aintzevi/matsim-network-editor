@@ -29,7 +29,7 @@ import javafx.scene.paint.Color;
 import javafx.util.Callback;
 
 /**
- * Includes a MATSim network and the elements needed for the visuals for nodes, links, validation items and nettwork information, both for the
+ * Includes a MATSim network and the elements needed for the visuals for nodes, links, validation items and network information, both for the
  * side panels and the map markers and lines
  */
 public class ExtendedNetwork {
@@ -154,7 +154,7 @@ public class ExtendedNetwork {
      */
     public void initializeTableViews() {
         this.networkInfo = new NetworkInfo(this.network);
-        ArrayList<Pair<javafx.scene.Node, javafx.scene.Node>> networkInfoNodes=  this.networkInfo.getAll();
+        ArrayList<Pair<javafx.scene.Node, javafx.scene.Node>> networkInfoNodes = this.networkInfo.getAll();
 
         this.vBoxNetWork.getChildren().clear();
         GridPane grid = new GridPane();

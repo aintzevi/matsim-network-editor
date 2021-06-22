@@ -92,11 +92,11 @@ public class MainController {
     private static final Extent extentGermany = Extent.forCoordinates(coordGermanyNorth, coordGermanySouth,
             coordGermanyWest, coordGermanyEast);
 
-    // Default settings values (zoom and center coordinates set to Munich).
+    /** Default settings values (zoom and center coordinates set to Munich) */
     private int zoomDefault = 14;
     private Coordinate coordCenter = new Coordinate(48.1351, 11.5820);
 
-    /** To keep track of the nodes for link addition */
+    /** Used to keep track of the from and to nodes for link creation */
     private Marker firstNodeMarker = null;
     private Marker secondNodeMarker = null;
 
@@ -170,21 +170,23 @@ public class MainController {
     @FXML
     private Button linkDeleteButton;
 
+    /** button to run the validation function */
     @FXML
     private Button validationRunButton;
 
+    /** button to edit Node/Link from the validation table */
     @FXML
     private Button validationEditButton;
 
+    /** button to delete Node/Link from the validation table */
     @FXML
     private Button validationDeleteButton;
 
+    /** button to run the network cleaner */
     @FXML
     private Button cleanNetworkButton;
 
-    /**
-     * the MapView containing the map
-     */
+    /** the MapView containing the map */
     @FXML
     private MapView mapView;
 
@@ -278,14 +280,15 @@ public class MainController {
         Image imageClean = new Image(getClass().getResourceAsStream("/icons/clean.png"), 18, 18, true, true);
         cleanNetworkButton.setGraphic(new ImageView(imageClean));
 
-
         // file chooser
         buttonImport.setOnAction(event -> importNetworkDialog());
         buttonCreate.setOnAction(event -> createNetworkDialog());
+        buttonSave.setOnAction(event -> saveFile());
+
         buttonUndo.setOnAction(event -> actionUndo());
         buttonRedo.setOnAction(event -> actionRedo());
-        buttonSave.setOnAction(event -> saveFile());
-        // node and link operations
+
+        // Connect node, link, validation and cleaning buttons to respective operations
         nodeDeleteButton.setOnAction(event -> deleteSelectedNode());
         nodeEditButton.setOnAction(event -> editSelectedNode());
         linkDeleteButton.setOnAction(event -> deleteSelectedLink());
@@ -294,17 +297,17 @@ public class MainController {
         validationEditButton.setOnAction(event -> editSelectedValidationItem());
         validationDeleteButton.setOnAction(event -> deleteSelectedValidationItem());
         cleanNetworkButton.setOnAction(event -> cleanNetwork());
+        buttonSettings.setOnAction(event -> openSettings());
 
         // Undo and Redo initially disabled
         buttonUndo.setDisable(true);
         buttonRedo.setDisable(true);
 
-        // buttons initially disabled
+        // buttons initially disabled before the action becomes available
         nodeDeleteButton.setDisable(true);
         nodeEditButton.setDisable(true);
         linkDeleteButton.setDisable(true);
         linkEditButton.setDisable(true);
-        // disable Save button before a network is created
         buttonSave.setDisable(true);
         // TODO Change validation run and clean network to disabled, when there is a check for network to not be empty
         validationRunButton.setDisable(false);
@@ -312,35 +315,35 @@ public class MainController {
         validationDeleteButton.setDisable(true);
         cleanNetworkButton.setDisable(false);
 
-        buttonSettings.setOnAction(event -> openSettings());
         // set the controls to disabled, this will be changed when the MapView is initialized
         setControlsDisable(true);
 
         // TODO check if button changes position when new settings are given by the user
-        // wire the zoom button and connect the slider to the map's zoom
+        // Wire the zoom button and connect the slider to the map's zoom
         buttonZoom.setOnAction(event -> mapView.setZoom(zoomDefault));
         sliderZoom.valueProperty().bindBidirectional(mapView.zoomProperty());
 
-        // watch the MapView's initialized property to finish initialization
+        // Watch the MapView's initialized property to finish initialization
         mapView.initializedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
                 afterMapIsInitialized();
             }
         });
 
+        // Setup map type and map event handlers
         mapView.setMapType(MapType.OSM);
-
         setupEventHandlers();
 
-
-        // finally initialize the map view
+        // Finally initialize the map view and add glass pane
         logger.trace("start map initialization");
         mapView.initialize(Configuration.builder().projection(projection).showZoomControls(false).build());
         logger.debug("initialization finished");
         initTransparentWelcome();
-
     }
 
+    /**
+     * Adds a glasspane over the map view, with prompt for the user to import/create network to start
+     */
     protected void initTransparentWelcome() {
         final Label label = new Label("Create or Import Network to continue...");
         label.setStyle(
@@ -352,6 +355,10 @@ public class MainController {
         glassPane.setMaxHeight(mapView.getMaxHeight());
     }
 
+    /**
+     * Shows the import dialog if the network is empty, or a save file prompt otherwise
+     * @return
+     */
     @FXML
     protected Object importNetworkDialog() {
         if (extendedNetwork != null) {
@@ -363,6 +370,11 @@ public class MainController {
         return null;
     }
 
+    /**
+     * Displays the import network dialog for the user to input the desired coordinate system
+     * and select the file from which to import the network
+     * @return True if the file is imported successfully, otherwise false
+     */
     private boolean showImportOptionsDialog() {
         // Pop up dialog to add network information
         Dialog<List<String>> dialog = new Dialog<>();
@@ -401,13 +413,14 @@ public class MainController {
         grid.add(coordinateOptions, 1, 0);
         grid.add(epsgCode, 1, 1);
 
-        // Enable/Disable button
+        /*
+         Enable/Disable button based on input validity
+         */
         javafx.scene.Node importButton = dialog.getDialogPane().lookupButton(buttonTypeImport);
         importButton.setDisable(false);
 
         // Pattern for non-negative integers
         final Pattern numPattern = Pattern.compile("\\d+");
-
         final ChangeListener createButtonListenerEPSG = new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
@@ -460,8 +473,10 @@ public class MainController {
             return null;
         });
 
+        // Listeners for clicks on import and cancel buttons
         importButton.addEventFilter(ActionEvent.ACTION, (event) -> {
             event.consume();
+            // If dropdown is on Custom, make EPSG text input element editable, disable if not
             StringBuilder coordSysOption = new StringBuilder();
             if ("Custom".equals(coordinateOptions.getValue())) {
                 coordSysOption.append("EPSG: ");
@@ -470,6 +485,7 @@ public class MainController {
                 coordSysOption.append(coordinateOptions.getValue());
             }
 
+            // Open the file chooser for the import, passing the desired coordinate system too
             if (this.locateFile(coordSysOption.toString()) == false) {
                 if (showImportOptionsDialog()) {
                     locateFile(coordSysOption.toString());
@@ -506,20 +522,25 @@ public class MainController {
                 dialog.close();
             }
 
+            // If there is a previous network loaded, clear the content, map, side panel and selected node/link items
+            // for the new network to be imported and displayed
             if (this.extendedNetwork != null) {
                 this.extendedNetwork.clear();
                 this.selectedNode = null;
                 this.selectedLink = null;
                 this.selectedValidationItem = null;
-                // Clear markers and coords for next pair
+                // Clear node markers used for link creation
                 firstNodeMarker = null;
                 secondNodeMarker = null;
             }
-
         });
         return false;
     }
 
+    /**
+     * Shows the create network dialog if the network is empty, or a save file prompt otherwise
+     * @return
+     */
     protected Object createNetworkDialog () {
         if (extendedNetwork != null) {
             if (!showSaveAlert("Create new network", "Are you sure you want to continue without saving?")) {
@@ -530,6 +551,10 @@ public class MainController {
         return null;
     }
 
+    /**
+     * Displays the create network dialog for the user to input the network name and the desired coordinate system
+     * @return
+     */
     private boolean showCreateNetworkDialog() {
         // Pop up dialog to add network information
         Dialog<List<String>> dialog = new Dialog<>();
@@ -560,6 +585,7 @@ public class MainController {
         epsgCode.setDisable(true);
         epsgCode.setPromptText("4326");
 
+        // Main text and text inputs for the window
         grid.add(new Label("Network name:"), 0, 0);
         grid.add(new Label("Coordinate system:"), 0, 1);
         grid.add(new Label("EPSG code:"), 0, 2);
@@ -571,13 +597,14 @@ public class MainController {
         grid.add(coordinateOptions, 1, 1);
         grid.add(epsgCode, 1, 2);
 
-        // Enable/Disable button bind on effectiveCellSize
+        // Enable button bind on effectiveCellSize
         javafx.scene.Node createButton = dialog.getDialogPane().lookupButton(buttonTypeCreate);
         createButton.setDisable(false);
 
         // Pattern for non-negative integers
         final Pattern numPattern = Pattern.compile("\\d+");
 
+        // Listeners for validity of input to disable/enable
         final ChangeListener createButtonListenerEPSG = new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
@@ -616,18 +643,18 @@ public class MainController {
             }
         };
 
-        // Do some validation (using the Java 8 lambda syntax).
+        // Binding the listeners to the text iputs
         networkName.textProperty().addListener(createButtonListener);
         coordinateOptions.valueProperty().addListener(createButtonListener);
         epsgCode.textProperty().addListener(createButtonListenerEPSG);
 
         dialog.getDialogPane().setContent(grid);
 
-        // Request focus on the network name field by default.
         /*
          *   TODO this doesn't work as it is, it has smth to do with initialization
          *    see here: https://stackoverflow.com/questions/12744542/requestfocus-in-textfield-doesnt-work
          */
+        // Request focus on the network name field by default.
         networkName.requestFocus();
 
         // Convert the result to list when the create button is clicked.
@@ -665,6 +692,7 @@ public class MainController {
                 dialog.close();
             }
 
+            // If dropdown in opttion "Custom", EPSG is enabled so building a string out of it to store
             StringBuilder coordSysOption = new StringBuilder();
             if ("Custom".equals(coordinateValue)) {
                 coordSysOption.append("EPSG: ");
@@ -673,16 +701,19 @@ public class MainController {
                 coordSysOption.append(coordinateValue);
             }
 
+            // If there is a previous network loaded, clear the contents, map, side panel and selected node/link items
+            // for the new network to be imported and displayed
             if (this.extendedNetwork != null) {
                 this.extendedNetwork.clear();
                 this.selectedNode = null;
                 this.selectedLink = null;
                 this.selectedValidationItem = null;
-                // Clear markers and coords for next pair
+                // Clear node markers used for link creation
                 firstNodeMarker = null;
                 secondNodeMarker = null;
             }
 
+            // Create new network, set coord system, initialize table listeners and remove overlapping glass pane
             this.extendedNetwork = new ExtendedNetwork(nameValue, null, null, null, vboxNetwork,
                     vboxNodes, vboxLinks, vboxValidation, mapView);
             this.extendedNetwork.setCoordinateSystem(coordSysOption.toString());
@@ -694,6 +725,10 @@ public class MainController {
         return false;
     }
 
+    /**
+     * Sets Listeners for the Node, Link and Validation Tableviews of the side panel, detecting when an item
+     * is selected and enabling/disabling the editing/deleting buttons accordingly
+     */
     public void initializeTableListeners() {
         // Add listeners to tableviews
         this.extendedNetwork.getNodeTable().getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
@@ -733,14 +768,20 @@ public class MainController {
         });
     }
 
+    /**
+     * Shows a dialog for the creation of a new link. The user can insert the link's attributes,
+     * linke length, freespeed, number of lanes or bidirectional. The link id is automatically created
+     * and the length proposed based on the coordinates of the 'from' and 'to' nodes.
+     * @param nodeCoordinateA The coordinates of the 'from' node of the link, used to calculate link length
+     * @param nodeCoordinateB The coordinates of the 'to' node of the link, used to calculate link length
+     */
     private void addLinkDialog(Coordinate nodeCoordinateA, Coordinate nodeCoordinateB) {
         // Pop up dialog to add link information
-
         Dialog<List<String>> dialog = new Dialog<>();
         dialog.setTitle("Add new link");
         dialog.setHeaderText("Enter the link's attributes: ");
 
-        // Set the button types
+        // Set the button types creatte and cancel
         ButtonType createButtonType = new ButtonType("Add Link", ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(createButtonType, ButtonType.CANCEL);
 
@@ -750,6 +791,7 @@ public class MainController {
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 30));
 
+        // Transform map coordinates to MATSim style coords, considering the coordinate system
         Coord coordA = TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, this.extendedNetwork.getCoordinateSystem())
                 .transform(CoordUtils.createCoord(nodeCoordinateA.getLongitude(), nodeCoordinateA.getLatitude()));
         Coord coordB = TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, this.extendedNetwork.getCoordinateSystem())
@@ -792,8 +834,10 @@ public class MainController {
         javafx.scene.Node createButton = dialog.getDialogPane().lookupButton(createButtonType);
         createButton.setDisable(false);
 
+        // Pattern for non-negative numbers
         Pattern numPattern = Pattern.compile("^([0-9]\\.\\d+)|([1-9]\\d*\\.?\\d*)$");
 
+        // Listeners for text input validity, to enable/disable accordingly
         final ChangeListener createButtonListener = new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
@@ -824,6 +868,7 @@ public class MainController {
             }
         };
 
+        // Bind listeners to respective text inputs
         linkId.textProperty().addListener(createButtonListenerLink);
         length.textProperty().addListener(createButtonListener);
         freeSpeed.textProperty().addListener(createButtonListener);
@@ -861,7 +906,8 @@ public class MainController {
                         dFreeSpeed, dCapacity, dLanes);
                 if (isBidirectional) {
                     if (NetworkUtils.findLinkInOppositeDirection(this.extendedNetwork.getNetwork().getLinks().get(Id.create(dlinkId, Link.class))) == null) {
-                    //if (!this.extendedNetwork.containsLink(secondNodeMarker.getPosition(), firstNodeMarker.getPosition())) {
+                        // TODO Add check of already existing link
+                        //if (!this.extendedNetwork.containsLink(secondNodeMarker.getPosition(), firstNodeMarker.getPosition()))
                         this.extendedNetwork.addLink(secondNodeMarker.getPosition(), firstNodeMarker.getPosition(), dLength, dFreeSpeed, dCapacity, dLanes);
                     }
                     else {
@@ -881,14 +927,17 @@ public class MainController {
 
                 alert.showAndWait();
             }
-
             dialog.close();
         });
     }
 
+    /**
+     * Shows the file saving dialog and saves the network in a .xml file according to the MATSim notation
+     * @return True if the file is successfully created and saved, otherwise false
+     */
     @FXML
     protected boolean saveFile() {
-        // Clear markers and coords for next pair
+        // Clear node markers used for link creation
         firstNodeMarker = null;
         secondNodeMarker = null;
 
@@ -914,16 +963,29 @@ public class MainController {
         return true;
     }
 
+    /**
+     * Repeats the last change that was undone from the network - to be implemented
+     * @return
+     */
     @FXML
     private Object actionRedo() {
         return null;
     }
 
+    /**
+     * Removes the last change made to the network - to be implemented
+     * @return
+     */
     @FXML
     private Object actionUndo() {
         return null;
     }
 
+    /**
+     * Shows a dialog with the default zoom size and the center of the map location for the user
+     * to choose and set. Changes are persistent
+     * @return
+     */
     @FXML
     private Object openSettings() {
         Dialog<List<String>> dialog = new Dialog<>();
@@ -978,6 +1040,7 @@ public class MainController {
                 openSettings();
             }
 
+            // Set the default values in the map and save the defaults in file to load when the app is started again
             setDefaultSettingValues(list);
             try {
                 writeToSettingsFile();
@@ -993,7 +1056,7 @@ public class MainController {
     }
 
     /**
-     * initializes the event handlers.
+     * Initializes the map event handlers, including map clicks and markerker clicks
      */
     private void setupEventHandlers() {
         // Handler to add node by left clicking on the map
@@ -1004,7 +1067,7 @@ public class MainController {
             this.extendedNetwork.addNode(coordinate);
         });
 
-        // Handler to create link between two nodes - double click
+        // Handler to remove a node by double clicking it
         mapView.addEventHandler(MarkerEvent.MARKER_DOUBLECLICKED, event -> {
             event.consume();
             Marker marker = event.getMarker();
@@ -1014,7 +1077,7 @@ public class MainController {
         });
 
         // TODO for this to work, create a node with an invisible label first, then make it visible here
-        // Handler to show node info on click
+        // Handler to show node info on marker enter
         mapView.addEventHandler(MarkerEvent.MARKER_ENTERED, event -> {
             event.consume();
             // Add label to currently clicked node
@@ -1022,7 +1085,7 @@ public class MainController {
                     new MapLabel(event.getMarker().getId(), 10, -10).setVisible(true).setCssClass("green-label"));
         });
 
-        // Handler to remove node marker on right click
+        // Handler to create link by right clicking the first node, then the second
         mapView.addEventHandler(MarkerEvent.MARKER_RIGHTCLICKED, event -> {
             event.consume();
             if (firstNodeMarker == null) {
@@ -1034,7 +1097,7 @@ public class MainController {
                 // Coordinate secondNodeCoordinate = secondNodeMarker.getPosition().normalize();
                 labelEvent.setText("Event: second node picked: " + secondNodeMarker.getPosition());
                 addLinkDialog(firstNodeMarker.getPosition(), secondNodeMarker.getPosition());
-                // Clear markers and coords for next pair
+                // Clear node markers used for link creation
                 firstNodeMarker = null;
                 secondNodeMarker = null;
             }
@@ -1082,7 +1145,7 @@ public class MainController {
     }
 
     /**
-     * enables / disables the different controls
+     * Enables / Disables the top and right controls of the map
      *
      * @param flag if true the controls are disabled
      */
@@ -1092,7 +1155,7 @@ public class MainController {
     }
 
     /**
-     * finishes setup after the map is initialzed
+     * Finishes setup after the map is initialized, sets zoom default and default map center coordinates
      */
     private void afterMapIsInitialized() {
         logger.debug("map intialized");
@@ -1103,6 +1166,12 @@ public class MainController {
         setControlsDisable(false);
     }
 
+    /**
+     * Reads the default map center coordinates and default zoom size from the settings file
+     * and sets the values in the network editor
+     * @param filePath
+     * @throws IOException
+     */
     private void readFromSettingsFile(String filePath) throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(filePath));
         try {
@@ -1121,6 +1190,10 @@ public class MainController {
         }
     }
 
+    /**
+     * Writes the default zoom and map coordinates values to a settings file
+     * @throws IOException If the file is not correctly opened or written in
+     */
     private void writeToSettingsFile() throws IOException {
         String str = zoomDefault + "\n" + coordCenter.getLatitude() + ", " + coordCenter.getLongitude();
         BufferedWriter writer = new BufferedWriter(new FileWriter("./src/main/resources/.settings"));
@@ -1129,6 +1202,10 @@ public class MainController {
         writer.close();
     }
 
+    /**
+     * Sets the default values from a list to the respective map values
+     * @param settingsList
+     */
     private void setDefaultSettingValues(List<String> settingsList) {
         zoomDefault = Integer.valueOf(settingsList.get(0));
         String coordinatesString = settingsList.get(1);
@@ -1137,8 +1214,15 @@ public class MainController {
         coordCenter = new Coordinate(Double.valueOf(coordinateList.get(0)), Double.valueOf(coordinateList.get(1)));
     }
 
+    /**
+     * Shows a saving alert dialog to the user, prompting them to confirm they want to save the file before continuing
+     * If the next step of saving to file is canceled, the save alert dialog appears again
+     * @param title The title of the Alert dialog, different in cases of importing or creating a network
+     * @param headerText The main text of the dialog, different in cases of importing or creating a network
+     * @return true if Save is selected, otherwise false, used to show the dialog again if the next save to file dialog is canceled
+     */
     private boolean showSaveAlert(String title, String headerText) {
-        // Option to save before importing dialog
+        // Option to save before importing/creating new network dialog
         Alert alert = new Alert(AlertType.CONFIRMATION);
         alert.setTitle(title);
         alert.setHeaderText(headerText);
@@ -1150,6 +1234,7 @@ public class MainController {
         alert.getButtonTypes().setAll(buttonTypeDontSave, buttonTypeCancel, buttonTypeSave);
         Optional<ButtonType> result = alert.showAndWait();
 
+        // If the user wants to save, open the save alert, if that is canceled, show the alert dialog again
         if (result.get() == buttonTypeSave) {
             // Handle cancel at the saving stage, show the save promt again
             if (this.saveFile() == false) {
@@ -1163,10 +1248,24 @@ public class MainController {
         return true;
     }
 
+    /**
+     * File to import a file, passing the coordinate options and epsg code - to be implemented
+     * @param coordinateOptions The coordinate options selected from the dropdown list. If "Custom" is
+     * selected, then the user can give the epsg code manually
+     * @param epsgCode The epsg code manually given by the user. The user is responsible for the correctness
+     * of the value.
+     * @return True if the file is correctly imported, otherwise false
+     */
     private boolean importFile(String coordinateOptions, String epsgCode) {
         return false;
     }
 
+    /**
+     * Opens up the system's open file window for the user to choose the file containing the
+     * MATSim network. .xml and .gz files are accepted.
+     * @param coordinateSystem The coordinate system of the network stored in the file
+     * @return True if the file is successfully opened, otherwise false
+     */
     protected boolean locateFile(String coordinateSystem) {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Choose the .xml file with your network");
@@ -1175,13 +1274,15 @@ public class MainController {
 
         File selectedFile = chooser.showOpenDialog(new Stage());
 
+        // If a file is selected, check if a network is already loaded and clear the contents and the map of all elements
+        // along with the selected node, link and markers for link creation, then set in the new network
         if (selectedFile != null) {
             if (this.extendedNetwork != null) {
                 this.extendedNetwork.clear();
                 this.selectedNode = null;
                 this.selectedLink = null;
                 this.selectedValidationItem = null;
-                // Clear markers and coords for next pair
+                // Clear node markers used for link creation
                 firstNodeMarker = null;
                 secondNodeMarker = null;
                 this.extendedNetwork.setCoordinateSystem(coordinateSystem);
@@ -1198,12 +1299,16 @@ public class MainController {
         return false;
     }
 
+    /**
+     * Deletes a node selected from the node tableview of the side panel. Resets the selected node and disables the
+     * edit/delete buttons for the tableview items
+     */
     private void deleteSelectedNode() {
         if (this.selectedNode != null) {
             this.extendedNetwork.removeNode(this.selectedNode.getId().toString());
             this.selectedNode = null;
 
-            // Clear markers and coords for next pair
+            // Clear node markers used for link creation
             firstNodeMarker = null;
             secondNodeMarker = null;
 
@@ -1212,12 +1317,16 @@ public class MainController {
         }
     }
 
+    /**
+     * Deletes a link selected from the link tableview of the side panel. Resets the selected link and disables the
+     * edit/delete buttons for the tableview items
+     */
     private void deleteSelectedLink() {
         if (this.selectedLink != null) {
             this.extendedNetwork.removeLink(this.selectedLink.getId().toString());
             this.selectedLink = null;
 
-            // Clear markers and coords for next pair
+            // Clear node markers used for link creation
             firstNodeMarker = null;
             secondNodeMarker = null;
 
@@ -1226,10 +1335,13 @@ public class MainController {
         }
     }
 
+    /**
+     * Shows the edit node dialog for the node selected on the tableview of the side panel.
+     */
     private void editSelectedNode() {
         if (this.selectedNode != null) {
             // Pop up dialog to edit node information
-
+            // TODO Make the dialog pop-up into its own function
             Dialog<List<String>> dialog = new Dialog<>();
             dialog.setTitle("Edit node");
             dialog.setHeaderText("Edit the node's attributes");
@@ -1268,6 +1380,7 @@ public class MainController {
 
             Pattern numPattern = Pattern.compile("-?\\d+(\\.\\d+)?");
 
+            // Create listeners to ensure the validity of the user input
             final ChangeListener createButtonListener = new ChangeListener<String>() {
                 @Override
                 public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
@@ -1298,6 +1411,7 @@ public class MainController {
                 }
             };
 
+            // Bind listeners to the text input fields
             newNodeIdText.textProperty().addListener(createButtonListenerNode);
             coordinateX.textProperty().addListener(createButtonListener);
             coordinateY.textProperty().addListener(createButtonListener);
@@ -1314,10 +1428,9 @@ public class MainController {
 
             Optional<List<String>> result = dialog.showAndWait();
             result.ifPresent(list -> {
-
                 String newNodeId = list.get(0);
-                Double coordX = Double.parseDouble(list.get(1));
-                Double coordY = Double.parseDouble(list.get(2));
+                double coordX = Double.parseDouble(list.get(1));
+                double coordY = Double.parseDouble(list.get(2));
 
                 System.out.println("Edited node-> OldNodeID: " + this.selectedNode.getId().toString() + ", NewNodeId:" + newNodeId + ", New X:"
                         + coordX + ", New Y:" + coordY);
@@ -1332,15 +1445,18 @@ public class MainController {
             });
             this.selectedNode = null;
 
-            // Clear markers and coords for next pair
+            // Clear node markers used for link creation
             firstNodeMarker = null;
             secondNodeMarker = null;
-
+            // Disable edit/delete buttons after editing
             nodeDeleteButton.setDisable(true);
             nodeEditButton.setDisable(true);
         }
     }
 
+    /**
+     * Shows the edit link dialog for the link selected on the tableview of the side panel.
+     */
     private void editSelectedLink() {
         if (this.selectedLink != null) {
             // Pop up dialog to edit link information
@@ -1394,6 +1510,7 @@ public class MainController {
 
             Pattern numPattern = Pattern.compile("^([0-9]\\.\\d+)|([1-9]\\d*\\.?\\d*)$");
 
+            // Listeners for input text type validity
             final ChangeListener createButtonListener = new ChangeListener<String>() {
                 @Override
                 public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
@@ -1424,6 +1541,7 @@ public class MainController {
                 }
             };
 
+            // Bind listeners to the text inputs
             newLinkIdField.textProperty().addListener(createButtonListenerLink);
             length.textProperty().addListener(createButtonListener);
             freeSpeed.textProperty().addListener(createButtonListener);
@@ -1490,7 +1608,7 @@ public class MainController {
             });
 
             this.selectedLink = null;
-            // Clear markers and coords for next pair
+            // Clear node markers used for link creation
             firstNodeMarker = null;
             secondNodeMarker = null;
 
@@ -1499,10 +1617,15 @@ public class MainController {
         }
     }
 
+    /**
+     * Checks for basic issues with the network, and shows the issues on the validation tableview of the side panel.
+     * Includes checks for dangling nodes, subnetworks existing, bidirectional link attributes being different between
+     * them and link attributes having odd values
+     */
     private void runValidation() {
-        // Clear from previous warning items
+        // Clear previous warning items
         this.extendedNetwork.getValidationWarnings().clear();
-        // Clear markers and coords for next pair
+        // Clear node markers used for link creation
         firstNodeMarker = null;
         secondNodeMarker = null;
 
@@ -1514,6 +1637,10 @@ public class MainController {
         this.extendedNetwork.populateValidationTable();
     }
 
+    /**
+     * Checks whether the selected item from the validity tableview is a node or a link and shows the respective
+     * edit dialog
+     */
     private void editSelectedValidationItem() {
         if (this.selectedValidationItem != null) {
             if (this.selectedValidationItem.getElement() instanceof Node) {
@@ -1524,6 +1651,7 @@ public class MainController {
                 this.selectedLink = (Link)this.selectedValidationItem.getElement();
                 this.editSelectedLink();
             }
+            // Clear selected items and disable edit(delete buttons right after edit action is complete
             this.selectedNode = null;
             this.selectedLink = null;
             this.selectedValidationItem = null;
@@ -1532,11 +1660,15 @@ public class MainController {
             // TODO Maybe find another way to refresh the warnings list/ validation table
             this.runValidation();
         }
-        // Clear markers and coords for next pair
+        // Clear node markers used for link creation
         firstNodeMarker = null;
         secondNodeMarker = null;
     }
 
+    /**
+     * Checks whether the selected item from the validity tableview is a node or a link and shows the respective
+     * delete dialog
+     */
     private void deleteSelectedValidationItem() {
         if (this.selectedValidationItem != null) {
             if (this.selectedValidationItem.getElement() instanceof Node) {
@@ -1558,11 +1690,14 @@ public class MainController {
 
             this.runValidation();
         }
-        // Clear markers and coords for next pair
+        // Clear node markers used for link creation
         firstNodeMarker = null;
         secondNodeMarker = null;
     }
 
+    /**
+     * Stores the current network in a file, cleans the network and loads it to the map view
+     */
     private void cleanNetwork() {
         // Save file temporarily
         File tempFile = null;
@@ -1594,6 +1729,7 @@ public class MainController {
 
         new MatsimNetworkReader(this.extendedNetwork.getCoordinateSystem(), "EPSG: 4326", cleanNetwork.getNetwork()).readFile(cleanedFilePath);
 
+        // To load the new network, the nodes to be removed are kept on a list, then removed from the current network and the map
         ArrayList<Id<Node>> nodesToRemove = new ArrayList<>();
 
         for (Id<Node> nodeId : this.extendedNetwork.getNetwork().getNodes().keySet()) {
@@ -1612,11 +1748,15 @@ public class MainController {
         initializeTableListeners();
 
         this.extendedNetwork.paintToMap();
-        // Clear markers and coords for next pair
+        // Clear node markers used for link creation
         firstNodeMarker = null;
         secondNodeMarker = null;
     }
 
+    /**
+     * Checks the network for nodes that are not corrected by any links, aka dangling nodes
+     * @param list The list in which the validation warning items are stored to show on the side panel
+     */
     private void checkDanglingNodes(ArrayList<ValidationTableEntry> list) {
         // Iterate through nodes, check for ones that don't have in- or outlinks
         for (Node node : this.extendedNetwork.getNetwork().getNodes().values()) {
@@ -1626,12 +1766,22 @@ public class MainController {
         }
     }
 
+    /**
+     * Checks that the network isn't split in subnetworks. The network should be in one piece, with each node being
+     * reachable from any other node
+     * @param list The list in which the validation warning items are stored to show on the side panel
+     */
     private void checkSubnetworks(ArrayList<ValidationTableEntry> list) {
         // Find if one can reach every node from any other node in the network
+        // TODO Implement or remove - ask Nico
     }
 
+    /**
+     * Checks the links that are bodirectional and compares each attribute of the bidirectional links.
+     * If any attribute is different, it is added to the warnings list for the user to ensure correctness
+     * @param list The list in which the validation warning items are stored to show on the side panel
+     */
     private void checkBidirectionalLinkAttributes(ArrayList<ValidationTableEntry> list) {
-
         // Check if bidirectional links have the same attributes in both directions
         for (Link linkA : this.extendedNetwork.getNetwork().getLinks().values()) {
             for (Link linkB : this.extendedNetwork.getNetwork().getLinks().values()) {
@@ -1647,11 +1797,14 @@ public class MainController {
         }
     }
 
+    /**
+     * Checks the links of the network for possibly odd values, for the user to ensure their correctness.
+     * @param list The list in which the validation warning items are stored to show on the side panel
+     */
     private void checkAttributeRanges(ArrayList<ValidationTableEntry> list) {
         double distanceThreshold = 0.9;
         for (Link link : this.extendedNetwork.getNetwork().getLinks().values()) {
             // Calculate distance between two coordinates to show as default
-
             Coord coordA = TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, this.extendedNetwork.getCoordinateSystem())
                     .transform(link.getFromNode().getCoord());
             Coord coordB = TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, this.extendedNetwork.getCoordinateSystem())
