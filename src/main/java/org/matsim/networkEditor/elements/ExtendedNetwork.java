@@ -1,5 +1,7 @@
 package org.matsim.networkEditor.elements;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -18,6 +20,8 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
+import org.matsim.core.utils.geometry.transformations.TransformationFactory;
+import org.matsim.core.utils.io.OsmNetworkReader;
 import org.matsim.networkEditor.visualElements.NetworkInfo;
 
 import javafx.beans.property.SimpleStringProperty;
@@ -75,7 +79,7 @@ public class ExtendedNetwork {
      * @param mapView The visual map component
      */
     public ExtendedNetwork(String name, Double effectiveLaneWidth, Double effectiveCellSize, Double capPeriod, VBox vBoxNetWork,
-            VBox vBoxNodes, VBox vBoxLinks, VBox vBoxValidation, MapView mapView) {
+                           VBox vBoxNodes, VBox vBoxLinks, VBox vBoxValidation, MapView mapView) {
         this.network = NetworkUtils.createNetwork();
         if (name != null) {
             this.network.setName(name);
@@ -320,18 +324,18 @@ public class ExtendedNetwork {
                 new Callback<TableColumn.CellDataFeatures<Link, String>, ObservableValue<String>>() {
                     @Override
                     public ObservableValue<String> call(TableColumn.CellDataFeatures<Link, String> p) {
-                        
+
                         return new SimpleStringProperty(String.join(",", p.getValue().getAllowedModes()));
                     }
                 });
-        
+
         TableColumn flowCapacity = new TableColumn("FlowCapacityPerSec");
         flowCapacity.setMinWidth(10);
         flowCapacity.setCellValueFactory(
                 new Callback<TableColumn.CellDataFeatures<Link, String>, ObservableValue<String>>() {
                     @Override
                     public ObservableValue<String> call(TableColumn.CellDataFeatures<Link, String> p) {
-                        
+
                         return new SimpleStringProperty(Double.toString(p.getValue().getFlowCapacityPerSec()));
                     }
                 });
@@ -471,7 +475,7 @@ public class ExtendedNetwork {
      * @param numLanes The number of lanes (permlanes) available in the direction specified by the ’from’ and ’to’ nodes.
      */
     public void addLink(String id, Coordinate nodeA, Coordinate nodeB, double length, double freespeed,
-            double capacity, double numLanes) {
+                        double capacity, double numLanes) {
         // TODO Check if link id already exists and other checks
         Node fromNode = findNodeByCoordinate(nodeA);
         Node toNode = findNodeByCoordinate(nodeB);
@@ -516,7 +520,7 @@ public class ExtendedNetwork {
      * @return true if link is successfully added to the network and painted on the map, false if otherwise
      */
     public boolean addLink(String id, String nodeAId, String nodeBId, double length, double freespeed, double capacity,
-            double numLanes) {
+                           double numLanes) {
         // TODO Check if link id already exists and other checks
         Node fromNode = this.network.getNodes().get(Id.create(nodeAId, Node.class));
         Node toNode = this.network.getNodes().get(Id.create(nodeBId, Node.class));
@@ -856,7 +860,7 @@ public class ExtendedNetwork {
             if ((link.getFromNode().getCoord().getY() == coordinateFrom.getLatitude() &&
                     link.getFromNode().getCoord().getX() == coordinateFrom.getLongitude()) &&
                     (link.getToNode().getCoord().getY() == coordinateTo.getLatitude() &&
-                    link.getToNode().getCoord().getX() == coordinateTo.getLongitude())) {
+                            link.getToNode().getCoord().getX() == coordinateTo.getLongitude())) {
                 return true;
             }
         }
