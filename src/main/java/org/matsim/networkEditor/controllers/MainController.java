@@ -1426,7 +1426,7 @@ public class MainController {
 
             Optional<List<String>> result = dialog.showAndWait();
             result.ifPresent(list -> {
-                String newNodeId = list.get(0);
+                String newNodeId = list.get(0).trim().replaceAll(" +", " ");
                 double coordX = Double.parseDouble(list.get(1));
                 double coordY = Double.parseDouble(list.get(2));
 
