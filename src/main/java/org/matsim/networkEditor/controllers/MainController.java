@@ -542,6 +542,10 @@ public class MainController {
         return false;
     }
 
+    /**
+     * Shows the import from osm file dialog if the network is empty, or a save file prompt otherwise
+     * @return
+     */
     protected Object importOsmNetwork() {
         if (extendedNetwork != null) {
             if (!showSaveAlert("Create new network", "Are you sure you want to continue without saving?")) {
@@ -552,6 +556,11 @@ public class MainController {
         return null;
     }
 
+    /**
+     * Displays the import osm network dialog for the user to input the desired coordinate system
+     * and select the file from which to import the network
+     * @return True if the file is imported successfully, otherwise false
+     */
     protected boolean importOsmNetworkDialog() {
         // Pop up dialog to add network information
         Dialog<List<String>> dialog = new Dialog<>();
