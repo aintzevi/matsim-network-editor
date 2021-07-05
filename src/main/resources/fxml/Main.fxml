@@ -102,12 +102,18 @@
                                 </VBox>
                             </content>
                         </TitledPane>
-                        <TitledPane fx:id="validation" animated="true" text="Validation">
+                        <TitledPane fx:id="validation" animated="true" text="Validation &amp; Cleaning">
                             <content>
-                                <VBox spacing="10.0">
+                                <VBox fx:id="vboxValidation" spacing="10.0">
                                     <children>
-                                        <Label text="validation" />
-                                        <TextField fx:id="validationText" prefWidth="120.0" promptText="milliseconds" />
+                                        <ToolBar>
+                                            <Label text="Click on run to execute network validation" style="-fx-text-fill: gray;"/>
+                                            <Pane HBox.hgrow="ALWAYS" />
+                                            <Button fx:id="validationRunButton"/>
+                                            <Button fx:id="validationEditButton"/>
+                                            <Button fx:id="validationDeleteButton"/>
+                                            <Button fx:id="cleanNetworkButton"/>
+                                        </ToolBar>
                                     </children>
                                 </VBox>
                             </content>

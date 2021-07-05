@@ -26,6 +26,11 @@ public class App extends Application {
         logger.trace("end main");
     }
 
+    /**
+     * Main function displaying the page of the application and linking the controllers to the visuals
+     * @param primaryStage The main application window
+     * @throws Exception
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
         logger.info("Starting Matsim Network Editor");

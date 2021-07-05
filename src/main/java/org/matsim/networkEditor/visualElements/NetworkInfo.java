@@ -8,6 +8,9 @@ import org.matsim.api.core.v01.network.Network;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 
+/**
+ * Object containing information about the network, in order to display them on the side panel of the editor
+ */
 public class NetworkInfo {
     private Label name = new Label("Name:");
     Label numOfNodes = new Label("#Nodes:");
@@ -23,7 +26,10 @@ public class NetworkInfo {
     Label effectiveCellSizeValue = new Label();
     ArrayList<Pair<Node, Node>> nodes = new ArrayList<>();
 
-
+    /**
+     * Creates an object for displaying the network information on the side panel of the network editor
+     * @param network The MATSim network containing Nodes, Links and other network attributes used for MATSim
+     */
     public NetworkInfo(Network network) {
         toDefault();
         nameValue.setText(network.getName());
@@ -41,6 +47,9 @@ public class NetworkInfo {
         nodes.add(new Pair<>(effectiveCellSize, effectiveCellSizeValue));
     }
 
+    /**
+     * Sets the labels for the network information
+     */
     public void toDefault() {
         name.setText("Name: ");
         numOfNodes.setText("#Nodes: ");
@@ -50,6 +59,11 @@ public class NetworkInfo {
         effectiveCellSize.setText("Effective Cell Size: ");
     }
 
+    /**
+     * Updates the values of the information of the network, like the name, number of nodes and links etc,
+     * everytime things are changed in the network
+     * @param network The MATSim network containing the nodes and links
+     */
     public void update(Network network) {
         toDefault();
         nameValue.setText(network.getName());
@@ -60,9 +74,11 @@ public class NetworkInfo {
         effectiveCellSizeValue.setText(String.valueOf(network.getEffectiveCellSize()));
     }
 
+    /**
+     * @return A list of the pairs of the visual nodes containing the labels of the network information
+     * and the respective value
+     */
     public ArrayList<Pair<Node, Node>> getAll() {
         return nodes;
     }
-
-
 }
