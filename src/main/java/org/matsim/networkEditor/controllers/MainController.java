@@ -397,7 +397,7 @@ public class MainController {
         // Coordinate dropdown options
         coordinateOptions.getItems().addAll(TransformationFactory.DHDN_GK4, TransformationFactory.GK4,
                 TransformationFactory.WGS84, "Custom");
-        coordinateOptions.setValue(TransformationFactory.DHDN_GK4);
+        coordinateOptions.setValue(TransformationFactory.WGS84);
 
         // Set the WGS84 as default, let it editable, since the Custom option is chosen in the dropdown
         TextField epsgCode = new TextField();
@@ -479,7 +479,7 @@ public class MainController {
             // If dropdown is on Custom, make EPSG text input element editable, disable if not
             StringBuilder coordSysOption = new StringBuilder();
             if ("Custom".equals(coordinateOptions.getValue())) {
-                coordSysOption.append("EPSG: ");
+                coordSysOption.append("EPSG:");
                 coordSysOption.append(epsgCode.getText());
             } else {
                 coordSysOption.append(coordinateOptions.getValue());
@@ -578,7 +578,7 @@ public class MainController {
         // Coordinate dropdown options
         coordinateOptions.getItems().addAll(TransformationFactory.DHDN_GK4, TransformationFactory.GK4,
                 TransformationFactory.WGS84, "Custom");
-        coordinateOptions.setValue(TransformationFactory.DHDN_GK4);
+        coordinateOptions.setValue(TransformationFactory.WGS84);
 
         // Set the WGS84 code as prompt, disable since default is WGS84 label
         TextField epsgCode = new TextField();
@@ -695,7 +695,7 @@ public class MainController {
             // If dropdown in opttion "Custom", EPSG is enabled so building a string out of it to store
             StringBuilder coordSysOption = new StringBuilder();
             if ("Custom".equals(coordinateValue)) {
-                coordSysOption.append("EPSG: ");
+                coordSysOption.append("EPSG:");
                 coordSysOption.append(epsgCodeValue);
             } else {
                 coordSysOption.append(coordinateValue);
@@ -713,10 +713,9 @@ public class MainController {
                 secondNodeMarker = null;
             }
 
-            // Create new network, set coord system, initialize table listeners and remove overlapping glass pane
+            // Create new network, initialize table listeners and remove overlapping glass pane
             this.extendedNetwork = new ExtendedNetwork(nameValue, null, null, null, vboxNetwork,
-                    vboxNodes, vboxLinks, vboxValidation, mapView);
-            this.extendedNetwork.setCoordinateSystem(coordSysOption.toString());
+                    vboxNodes, vboxLinks, vboxValidation, mapView, coordSysOption.toString());
             initializeTableListeners();
             // Enable save button and make glasspane invisible
             buttonSave.setDisable(false);
@@ -770,7 +769,7 @@ public class MainController {
 
     /**
      * Shows a dialog for the creation of a new link. The user can insert the link's attributes,
-     * linke length, freespeed, number of lanes or bidirectional. The link id is automatically created
+     * link length, freespeed, number of lanes or bidirectional. The link id is automatically created
      * and the length proposed based on the coordinates of the 'from' and 'to' nodes.
      * @param nodeCoordinateA The coordinates of the 'from' node of the link, used to calculate link length
      * @param nodeCoordinateB The coordinates of the 'to' node of the link, used to calculate link length
@@ -1285,10 +1284,9 @@ public class MainController {
                 // Clear node markers used for link creation
                 firstNodeMarker = null;
                 secondNodeMarker = null;
-                this.extendedNetwork.setCoordinateSystem(coordinateSystem);
             }
             this.extendedNetwork = new ExtendedNetwork(selectedFile.getPath(), this.vboxNetwork, this.vboxNodes,
-                    this.vboxLinks, this.vboxValidation, this.mapView);
+                    this.vboxLinks, this.vboxValidation, this.mapView, coordinateSystem);
 
             initializeTableListeners();
             // Enable save button and make glasspane invisible
@@ -1724,8 +1722,7 @@ public class MainController {
 
         ExtendedNetwork cleanNetwork = new ExtendedNetwork(this.extendedNetwork.getNetwork().getName(), this.extendedNetwork.getNetwork().getEffectiveLaneWidth(),
                 this.extendedNetwork.getNetwork().getEffectiveCellSize(), this.extendedNetwork.getNetwork().getCapacityPeriod(), vboxNetwork, vboxNodes,
-                vboxLinks, vboxValidation, mapView);
-        cleanNetwork.setCoordinateSystem(this.extendedNetwork.getCoordinateSystem());
+                vboxLinks, vboxValidation, mapView, this.extendedNetwork.getCoordinateSystem());
 
         new MatsimNetworkReader(this.extendedNetwork.getCoordinateSystem(), "EPSG: 4326", cleanNetwork.getNetwork()).readFile(cleanedFilePath);
 

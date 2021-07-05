@@ -64,6 +64,7 @@ public class ExtendedNetwork {
         this.nodeMarkers = new HashMap<>();
         this.linkLines = new HashMap<>();
         this.validationWarnings = new ArrayList<>();
+        this.coordinateSystem = "WGS84";
     }
 
     /**
@@ -77,9 +78,10 @@ public class ExtendedNetwork {
      * @param vBoxLinks The visual box element containing the links information
      * @param vBoxValidation The visual box element containing the validation elements information
      * @param mapView The visual map component
+     * @param coordinateSystem The coordinate system of the network
      */
     public ExtendedNetwork(String name, Double effectiveLaneWidth, Double effectiveCellSize, Double capPeriod, VBox vBoxNetWork,
-                           VBox vBoxNodes, VBox vBoxLinks, VBox vBoxValidation, MapView mapView) {
+                           VBox vBoxNodes, VBox vBoxLinks, VBox vBoxValidation, MapView mapView, String coordinateSystem) {
         this.network = NetworkUtils.createNetwork();
         if (name != null) {
             this.network.setName(name);
@@ -94,7 +96,7 @@ public class ExtendedNetwork {
             this.network.setCapacityPeriod(capPeriod);
         }
         if (coordinateSystem != null) {
-            StringBuilder str = new StringBuilder(coordinateSystem);
+            this.coordinateSystem = coordinateSystem;
         }
         initializeMapElementLists(vBoxNetWork, vBoxNodes, vBoxLinks, vBoxValidation, mapView);
         initializeTableViews();
@@ -109,11 +111,13 @@ public class ExtendedNetwork {
      * @param vBoxLinks The visual box element containing the links information
      * @param vBoxValidation The visual box element containing the validation elements information
      * @param mapView The visual map component
+     * @param coordinateSystem The coordinate system of the network
      */
-    public ExtendedNetwork(String networkPath,VBox vBoxNetWork, VBox vBoxNodes, VBox vBoxLinks, VBox vBoxValidation, MapView mapView) {
+    public ExtendedNetwork(String networkPath, VBox vBoxNetWork, VBox vBoxNodes, VBox vBoxLinks, VBox vBoxValidation, MapView mapView, String coordinateSystem) {
         initializeMapElementLists(vBoxNetWork, vBoxNodes, vBoxLinks, vBoxValidation, mapView);
         this.network = NetworkUtils.createNetwork();
         this.networkPath = networkPath;
+        this.coordinateSystem = coordinateSystem;
         System.out.println("--------------------------READER---------------------------------------");
         // Target is the default for our map, therefore WGS84
         new MatsimNetworkReader(coordinateSystem, "EPSG: 4326", this.network).readFile(networkPath);
