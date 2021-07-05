@@ -803,7 +803,7 @@ public class MainController {
         TextField linkId = new TextField(this.extendedNetwork.createLinkId());
         TextField length = new TextField(Double.toString(nodesDistance));
         TextField freeSpeed = new TextField("13.88");
-        TextField capacity = new TextField("36000");
+        TextField capacity = new TextField("1800");
         TextField numOfLanes = new TextField("1.0");
         CheckBox bidirectionalCheckBox = new CheckBox();
         bidirectionalCheckBox.setSelected(true);
@@ -1774,7 +1774,7 @@ public class MainController {
                 if (linkA.getFromNode() == linkB.getToNode() && linkA.getToNode() == linkB.getFromNode()) {
                     if (linkA.getLength() != linkB.getLength() || linkA.getCapacity() != linkB.getCapacity() ||
                             linkA.getFreespeed() != linkB.getFreespeed() || linkA.getNumberOfLanes() != linkB.getNumberOfLanes() ||
-                            linkA.getAllowedModes() != linkB.getAllowedModes() || linkA.getFlowCapacityPerSec() != linkB.getFlowCapacityPerSec()) {
+                            linkA.getAllowedModes() != linkB.getAllowedModes()) {
                         // TODO Figure out how to show these
                         list.add(new ValidationTableEntry(linkA, linkA.getId().toString(), "Bidirectional link " + linkB.getId() + " does not have matching attributes"));
                     }

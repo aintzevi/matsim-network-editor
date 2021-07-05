@@ -333,25 +333,13 @@ public class ExtendedNetwork {
                     }
                 });
 
-        TableColumn flowCapacity = new TableColumn("FlowCapacityPerSec");
-        flowCapacity.setMinWidth(10);
-        flowCapacity.setCellValueFactory(
-                new Callback<TableColumn.CellDataFeatures<Link, String>, ObservableValue<String>>() {
-                    @Override
-                    public ObservableValue<String> call(TableColumn.CellDataFeatures<Link, String> p) {
-
-                        return new SimpleStringProperty(Double.toString(p.getValue().getFlowCapacityPerSec()));
-                    }
-                });
-
-
         // Clear nodes box in case it contains previous data
         if (vBoxLinks.getChildren().size() > 1){
             this.vBoxLinks.getChildren().remove(1);
         }
         this.vBoxLinks.getChildren().add(this.linkTable);
         this.linkTable.getColumns().addAll(idColumnLink, fromNodeColumn, toNodeColumn, lengthColumn, capacityColumn,
-                freeSpeedColumn, nofLanesColumn,allowedModes,flowCapacity);
+                freeSpeedColumn, nofLanesColumn, allowedModes);
 
 
         this.validationTable = new TableView<>();
