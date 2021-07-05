@@ -1561,7 +1561,7 @@ public class MainController {
             Optional<List<String>> result = dialog.showAndWait();
             result.ifPresent(list -> {
                 String oldLinkId = list.get(0);
-                String newLinkId = list.get(1);
+                String newLinkId = list.get(1).trim().replaceAll(" +", " ");
                 double newLength = Double.parseDouble(list.get(2));
                 double newFreeSpeed = Double.parseDouble(list.get(3));
                 double newCapacity = Double.parseDouble(list.get(4));
