@@ -1356,7 +1356,7 @@ public class MainController {
             Coord coord = this.selectedNode.getCoord();
 
             // Default value for faster creation (and debugging)
-            TextField newNodeIdText = new TextField(this.selectedNode.getId().toString());
+            TextField newNodeIdText = new TextField(NetworkUtils.getOrigId(this.selectedNode));
             // Swap X and Y to match MATSim notation
             TextField coordinateX = new TextField(Double.toString(coord.getY()));
             TextField coordinateY = new TextField(Double.toString(coord.getX()));
