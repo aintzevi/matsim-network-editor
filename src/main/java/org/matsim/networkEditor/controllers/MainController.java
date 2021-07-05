@@ -281,8 +281,8 @@ public class MainController {
         cleanNetworkButton.setGraphic(new ImageView(imageClean));
 
         // file chooser
-        buttonImport.setOnAction(event -> importNetworkDialog());
-        buttonCreate.setOnAction(event -> createNetworkDialog());
+        buttonImport.setOnAction(event -> importNetwork());
+        buttonCreate.setOnAction(event -> createNetwork());
         buttonSave.setOnAction(event -> saveFile());
 
         buttonUndo.setOnAction(event -> actionUndo());
@@ -360,13 +360,13 @@ public class MainController {
      * @return
      */
     @FXML
-    protected Object importNetworkDialog() {
+    protected Object importNetwork() {
         if (extendedNetwork != null) {
             if (!showSaveAlert("Import network", "Are you sure you want to continue without saving?")) {
                 return null;
             }
         }
-        showImportOptionsDialog();
+        importNetworkDialog();
         return null;
     }
 
@@ -375,7 +375,7 @@ public class MainController {
      * and select the file from which to import the network
      * @return True if the file is imported successfully, otherwise false
      */
-    private boolean showImportOptionsDialog() {
+    private boolean importNetworkDialog() {
         // Pop up dialog to add network information
         Dialog<List<String>> dialog = new Dialog<>();
         dialog.setTitle("Set coordinate system of the importing network");
@@ -487,7 +487,7 @@ public class MainController {
 
             // Open the file chooser for the import, passing the desired coordinate system too
             if (this.locateFile(coordSysOption.toString()) == false) {
-                if (showImportOptionsDialog()) {
+                if (importNetworkDialog()) {
                     locateFile(coordSysOption.toString());
                 } else {
                     dialog.close();
@@ -515,7 +515,7 @@ public class MainController {
             if (!"Custom".equals(coordinateValue)) {
                 // If not numbers, show the dialog again
                 if (numPattern.matcher(epsgCodeValue).matches() == false) {
-                    importNetworkDialog();
+                    importNetwork();
                 }
             }
             else {
@@ -541,13 +541,13 @@ public class MainController {
      * Shows the create network dialog if the network is empty, or a save file prompt otherwise
      * @return
      */
-    protected Object createNetworkDialog () {
+    protected Object createNetwork() {
         if (extendedNetwork != null) {
             if (!showSaveAlert("Create new network", "Are you sure you want to continue without saving?")) {
                 return null;
             }
         }
-        showCreateNetworkDialog();
+        createNetworkDialog();
         return null;
     }
 
@@ -555,7 +555,7 @@ public class MainController {
      * Displays the create network dialog for the user to input the network name and the desired coordinate system
      * @return
      */
-    private boolean showCreateNetworkDialog() {
+    private boolean createNetworkDialog() {
         // Pop up dialog to add network information
         Dialog<List<String>> dialog = new Dialog<>();
         dialog.setTitle("Create new network");
@@ -685,7 +685,7 @@ public class MainController {
             if ("Custom".equals(coordinateValue)) {
                 // If EPSG code is not a number, show the creation dialog again
                 if (numPattern.matcher(epsgCodeValue).matches() == false || epsgCodeValue.trim().isEmpty()) {
-                    showCreateNetworkDialog();
+                    createNetworkDialog();
                 }
             }
             else {
