@@ -190,7 +190,7 @@ public class MainController {
     @FXML
     private MapView mapView;
 
-    /** Glasspane sitting over the map when opening the application */
+    /** Glass pane sitting over the map when opening the application */
     @FXML
     private StackPane glassPane;
 
@@ -220,7 +220,7 @@ public class MainController {
 
     // TODO Check if still relevant for the application
     /** params for the WMS server. */
-    private WMSParam wmsParam = new WMSParam().setUrl("http://ows.terrestris.de/osm/service?").addParam("layers",
+    private WMSParam wmsParam = new WMSParam().setUrl("https://ows.terrestris.de/osm/service?").addParam("layers",
             "OSM-WMS");
 
     private XYZParam xyzParams = new XYZParam()
@@ -342,7 +342,7 @@ public class MainController {
     }
 
     /**
-     * Adds a glasspane over the map view, with prompt for the user to import/create network to start
+     * Adds a glass pane over the map view, with prompt for the user to import/create network to start
      */
     protected void initTransparentWelcome() {
         final Label label = new Label("Create or Import Network to continue...");
@@ -447,7 +447,7 @@ public class MainController {
                     message.setText("Please fill in one of the above fields.");
                     message.setTextFill(Color.GRAY);
                 }
-                // Disable the EPSG textfield unless the drop-down option is set to "Custom"
+                // Disable the EPSG text field unless the drop-down option is set to "Custom"
                 if (!"Custom".equals(newValue)) {
                     epsgCode.setDisable(true);
                 } else {
@@ -632,7 +632,7 @@ public class MainController {
                     message.setText("Please fill in one of the above fields.");
                     message.setTextFill(Color.GRAY);
                 }
-                // Disable the EPSG textfield unless the drop-down option is set to "Custom"
+                // Disable the EPSG text field unless the drop-down option is set to "Custom"
                 if (!"Custom".equals(newValue)) {
                     epsgCode.setDisable(true);
                 } else {
@@ -643,7 +643,7 @@ public class MainController {
             }
         };
 
-        // Binding the listeners to the text iputs
+        // Binding the listeners to the text inputs
         networkName.textProperty().addListener(createButtonListener);
         coordinateOptions.valueProperty().addListener(createButtonListener);
         epsgCode.textProperty().addListener(createButtonListenerEPSG);
@@ -651,7 +651,7 @@ public class MainController {
         dialog.getDialogPane().setContent(grid);
 
         /*
-         *   TODO this doesn't work as it is, it has smth to do with initialization
+         *   TODO this doesn't work as it is, it has something to do with initialization
          *    see here: https://stackoverflow.com/questions/12744542/requestfocus-in-textfield-doesnt-work
          */
         // Request focus on the network name field by default.
@@ -692,7 +692,7 @@ public class MainController {
                 dialog.close();
             }
 
-            // If dropdown in opttion "Custom", EPSG is enabled so building a string out of it to store
+            // If dropdown in option "Custom", EPSG is enabled so building a string out of it to store
             StringBuilder coordSysOption = new StringBuilder();
             if ("Custom".equals(coordinateValue)) {
                 coordSysOption.append("EPSG:");
@@ -717,7 +717,7 @@ public class MainController {
             this.extendedNetwork = new ExtendedNetwork(nameValue, null, null, null, vboxNetwork,
                     vboxNodes, vboxLinks, vboxValidation, mapView, coordSysOption.toString());
             initializeTableListeners();
-            // Enable save button and make glasspane invisible
+            // Enable save button and make glass pane invisible
             buttonSave.setDisable(false);
             glassPane.setVisible(false);
         });
@@ -769,7 +769,7 @@ public class MainController {
 
     /**
      * Shows a dialog for the creation of a new link. The user can insert the link's attributes,
-     * link length, freespeed, number of lanes or bidirectional. The link id is automatically created
+     * link length, free speed, number of lanes or bidirectional. The link id is automatically created
      * and the length proposed based on the coordinates of the 'from' and 'to' nodes.
      * @param nodeCoordinateA The coordinates of the 'from' node of the link, used to calculate link length
      * @param nodeCoordinateB The coordinates of the 'to' node of the link, used to calculate link length
@@ -780,7 +780,7 @@ public class MainController {
         dialog.setTitle("Add new link");
         dialog.setHeaderText("Enter the link's attributes: ");
 
-        // Set the button types creatte and cancel
+        // Set the button types create and cancel
         ButtonType createButtonType = new ButtonType("Add Link", ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(createButtonType, ButtonType.CANCEL);
 
@@ -1055,7 +1055,7 @@ public class MainController {
     }
 
     /**
-     * Initializes the map event handlers, including map clicks and markerker clicks
+     * Initializes the map event handlers, including map clicks and marker clicks
      */
     private void setupEventHandlers() {
         // Handler to add node by left clicking on the map
@@ -1157,7 +1157,7 @@ public class MainController {
      * Finishes setup after the map is initialized, sets zoom default and default map center coordinates
      */
     private void afterMapIsInitialized() {
-        logger.debug("map intialized");
+        logger.debug("map initialised");
         // start at the harbour with default zoom
         mapView.setZoom(zoomDefault);
         mapView.setCenter(coordCenter);
@@ -1289,7 +1289,7 @@ public class MainController {
                     this.vboxLinks, this.vboxValidation, this.mapView, coordinateSystem);
 
             initializeTableListeners();
-            // Enable save button and make glasspane invisible
+            // Enable save button and make glass pane invisible
             buttonSave.setDisable(false);
             glassPane.setVisible(false);
             return true;
@@ -1628,7 +1628,6 @@ public class MainController {
         secondNodeMarker = null;
 
         checkDanglingNodes(this.extendedNetwork.getValidationWarnings());
-        checkSubnetworks(extendedNetwork.getValidationWarnings());
         checkBidirectionalLinkAttributes(extendedNetwork.getValidationWarnings());
         checkAttributeRanges(extendedNetwork.getValidationWarnings());
 
@@ -1764,17 +1763,7 @@ public class MainController {
     }
 
     /**
-     * Checks that the network isn't split in subnetworks. The network should be in one piece, with each node being
-     * reachable from any other node
-     * @param list The list in which the validation warning items are stored to show on the side panel
-     */
-    private void checkSubnetworks(ArrayList<ValidationTableEntry> list) {
-        // Find if one can reach every node from any other node in the network
-        // TODO Implement or remove - ask Nico
-    }
-
-    /**
-     * Checks the links that are bodirectional and compares each attribute of the bidirectional links.
+     * Checks the links that are bidirectional and compares each attribute of the bidirectional links.
      * If any attribute is different, it is added to the warnings list for the user to ensure correctness
      * @param list The list in which the validation warning items are stored to show on the side panel
      */
