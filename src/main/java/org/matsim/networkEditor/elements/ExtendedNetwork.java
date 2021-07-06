@@ -124,7 +124,7 @@ public class ExtendedNetwork {
         // Target is the default for our map, therefore WGS84
         new MatsimNetworkReader(coordinateSystem, "EPSG: 4326", this.network).readFile(networkPath);
 
-        if ("null".equals(this.network.getName())) {
+        if (this.network.getName() == null) {
             // Get the name of the imported file and set it as the network name
             Path p = Paths.get(networkPath);
             String[] parts = p.getFileName().toString().split("\\.");
@@ -144,7 +144,7 @@ public class ExtendedNetwork {
         new OsmNetworkReader(this.network, TransformationFactory.getCoordinateTransformation(this.getCoordinateSystem(), TransformationFactory.WGS84))
                 .parse(this.networkPath);
 
-        if ("null".equals(this.network.getName())) {
+        if (this.network.getName() == null) {
             // Get the name of the imported file and set it as the network name
             Path p = Paths.get(networkPath);
             String[] parts = p.getFileName().toString().split("\\.");
