@@ -1,5 +1,7 @@
 package org.matsim.networkEditor.elements;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -118,9 +120,36 @@ public class ExtendedNetwork {
         this.network = NetworkUtils.createNetwork();
         this.networkPath = networkPath;
         this.coordinateSystem = coordinateSystem;
-        System.out.println("--------------------------READER---------------------------------------");
+        System.out.println("---------------------------------------READER---------------------------------------");
         // Target is the default for our map, therefore WGS84
         new MatsimNetworkReader(coordinateSystem, "EPSG: 4326", this.network).readFile(networkPath);
+
+        if (this.network.getName() == null) {
+            // Get the name of the imported file and set it as the network name
+            Path p = Paths.get(networkPath);
+            String[] parts = p.getFileName().toString().split("\\.");
+            this.network.setName(parts[0]);
+        }
+
+        initializeTableViews();
+        paintToMap();
+    }
+
+    public ExtendedNetwork(String networkPath, String coordinateSystem, VBox vBoxNetWork, VBox vBoxNodes, VBox vBoxLinks, VBox vBoxValidation, MapView mapView) {
+        initializeMapElementLists(vBoxNetWork, vBoxNodes, vBoxLinks, vBoxValidation, mapView);
+        this.network = NetworkUtils.createNetwork();
+        this.networkPath = networkPath;
+        this.coordinateSystem = coordinateSystem;
+        System.out.println("-------------------------------------OSM READER-------------------------------------");
+        new OsmNetworkReader(this.network, TransformationFactory.getCoordinateTransformation(this.getCoordinateSystem(), TransformationFactory.WGS84))
+                .parse(this.networkPath);
+
+        if (this.network.getName() == null) {
+            // Get the name of the imported file and set it as the network name
+            Path p = Paths.get(networkPath);
+            String[] parts = p.getFileName().toString().split("\\.");
+            this.network.setName(parts[0]);
+        }
         initializeTableViews();
         paintToMap();
     }
