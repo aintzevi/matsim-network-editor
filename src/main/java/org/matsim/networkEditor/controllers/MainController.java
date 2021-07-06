@@ -1473,6 +1473,12 @@ public class MainController {
         return false;
     }
 
+    /**
+     * Opens up the system's open file window for the user to choose the file containing the
+     * osm network. .osm files are accepted.
+     * @param coordinateSystem
+     * @return
+     */
     protected boolean locateOsmFile(String coordinateSystem) {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Choose an .osm file to import");
