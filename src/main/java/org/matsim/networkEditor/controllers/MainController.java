@@ -1485,12 +1485,11 @@ public class MainController {
                 this.extendedNetwork.clear();
                 this.selectedNode = null;
                 this.selectedLink = null;
-                this.extendedNetwork.setCoordinateSystem(coordinateSystem);
             }
 
             // TODO Test plus clear out if both .osm and .xml files but in OSM form should be accepted
             // OSM Reader-specific constructor
-            this.extendedNetwork = new ExtendedNetwork(selectedFile.getPath(), coordinateSystem, this.vboxNetwork, this.vboxNodes, this.vboxLinks, this.mapView);
+            this.extendedNetwork = new ExtendedNetwork(selectedFile.getPath(), coordinateSystem, this.vboxNetwork, this.vboxNodes, this.vboxLinks, this.vboxValidation, this.mapView);
 
             initializeTableListeners();
             // Enable save button and make glass pane invisible

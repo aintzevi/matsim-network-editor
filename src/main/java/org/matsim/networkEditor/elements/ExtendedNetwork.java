@@ -1,5 +1,7 @@
 package org.matsim.networkEditor.elements;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -121,11 +123,19 @@ public class ExtendedNetwork {
         System.out.println("---------------------------------------READER---------------------------------------");
         // Target is the default for our map, therefore WGS84
         new MatsimNetworkReader(coordinateSystem, "EPSG: 4326", this.network).readFile(networkPath);
+
+        if ("null".equals(this.network.getName())) {
+            // Get the name of the imported file and set it as the network name
+            Path p = Paths.get(networkPath);
+            String[] parts = p.getFileName().toString().split("\\.");
+            this.network.setName(parts[0]);
+        }
+
         initializeTableViews();
         paintToMap();
     }
 
-    public ExtendedNetwork(String networkPath, String coordinateSystem, VBox vBoxNetWork, VBox vBoxNodes, VBox vBoxLinks, MapView mapView) {
+    public ExtendedNetwork(String networkPath, String coordinateSystem, VBox vBoxNetWork, VBox vBoxNodes, VBox vBoxLinks, VBox vBoxValidation, MapView mapView) {
         initializeMapElementLists(vBoxNetWork, vBoxNodes, vBoxLinks, vBoxValidation, mapView);
         this.network = NetworkUtils.createNetwork();
         this.networkPath = networkPath;
@@ -134,7 +144,12 @@ public class ExtendedNetwork {
         new OsmNetworkReader(this.network, TransformationFactory.getCoordinateTransformation(this.getCoordinateSystem(), TransformationFactory.WGS84))
                 .parse(this.networkPath);
 
-        System.out.println(this.networkPath);
+        if ("null".equals(this.network.getName())) {
+            // Get the name of the imported file and set it as the network name
+            Path p = Paths.get(networkPath);
+            String[] parts = p.getFileName().toString().split("\\.");
+            this.network.setName(parts[0]);
+        }
         initializeTableViews();
         paintToMap();
     }
