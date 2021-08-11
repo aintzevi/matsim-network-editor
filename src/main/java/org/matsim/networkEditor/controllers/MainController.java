@@ -1005,6 +1005,9 @@ public class MainController {
         message.setTextFill(Color.GRAY);
         grid.add(message, 0, 8, 2, 1);
 
+        Label linkHint = new Label("Length might not be exact if 1 unit in x/y does not refer to 1m distance in the selected system.");
+        linkHint.setTextFill(Color.DARKRED);
+        grid.add(linkHint, 0, 10, 2, 1);
         // Enable/Disable button
         javafx.scene.Node createButton = dialog.getDialogPane().lookupButton(createButtonType);
         createButton.setDisable(false);
