@@ -383,7 +383,7 @@ public class MainController {
     private boolean importNetworkDialog() {
         // Pop up dialog to add network information
         Dialog<List<String>> dialog = new Dialog<>();
-        dialog.setTitle("Set coordinate system of the importing network");
+        dialog.setTitle("Set coordinate system of the imported network");
         dialog.setHeaderText("Pick a system or give EPSG code:");
 
         // Set the button types
@@ -564,7 +564,7 @@ public class MainController {
     protected boolean importOsmNetworkDialog() {
         // Pop up dialog to add network information
         Dialog<List<String>> dialog = new Dialog<>();
-        dialog.setTitle("Set coordinate system of the importing network");
+        dialog.setTitle("Set coordinate system of the imported network");
         dialog.setHeaderText("Pick a system or give EPSG code:");
 
         // Set the button types
