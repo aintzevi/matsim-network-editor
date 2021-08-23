@@ -83,12 +83,12 @@ public class MainController {
     private Link selectedLink = null;
     private ValidationTableEntry selectedValidationItem = null;
 
-    private static final Coordinate coordGermanyNorth = new Coordinate(55.05863889, 8.417527778);
-    private static final Coordinate coordGermanySouth = new Coordinate(47.27166667, 10.17405556);
-    private static final Coordinate coordGermanyWest = new Coordinate(51.0525, 5.866944444);
-    private static final Coordinate coordGermanyEast = new Coordinate(51.27277778, 15.04361111);
-    private static final Extent extentGermany = Extent.forCoordinates(coordGermanyNorth, coordGermanySouth,
-            coordGermanyWest, coordGermanyEast);
+    private static final Coordinate COORD_GERMANY_NORTH = new Coordinate(55.05863889, 8.417527778);
+    private static final Coordinate COORD_GERMANY_SOUTH = new Coordinate(47.27166667, 10.17405556);
+    private static final Coordinate COORD_GERMANY_WEST = new Coordinate(51.0525, 5.866944444);
+    private static final Coordinate COORD_GERMANY_EAST = new Coordinate(51.27277778, 15.04361111);
+    private static final Extent EXTENT_GERMANY = Extent.forCoordinates(COORD_GERMANY_NORTH, COORD_GERMANY_SOUTH,
+            COORD_GERMANY_WEST, COORD_GERMANY_EAST);
 
     /** Default settings values (zoom and center coordinates set to Munich) */
     private int zoomDefault = 14;
@@ -231,13 +231,11 @@ public class MainController {
                     "'Tiles &copy; <a href=\"https://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer\">ArcGIS</a>'");
 
     public MainController() {
-        // TODO Maybe init stuff here?
-        // TODO Clear the handling of creation and import dialogs. Using event handlers for button clicks?
     }
 
     /**
      * Called after the fxml is loaded and all objects are created. This is not
-     * called initialize any more, because we need to pass in the projection before
+     * called initialize anymore, because we need to pass in the projection before
      * initializing.
      *
      * @param projection the projection to use in the map.
@@ -339,7 +337,7 @@ public class MainController {
         mapView.setMapType(MapType.OSM);
         setupEventHandlers();
 
-        // Finally initialize the map view and add glass pane
+        // Finally, initialize the map view and add glass pane
         logger.trace("start map initialization");
         mapView.initialize(Configuration.builder().projection(projection).showZoomControls(false).build());
         logger.debug("initialization finished");
@@ -362,7 +360,7 @@ public class MainController {
 
     /**
      * Shows the import dialog if the network is empty, or a save file prompt otherwise
-     * @return
+     * @returns object to check if the dialog has been successfully closed or canceled
      */
     @FXML
     protected Object importNetwork() {
@@ -426,7 +424,7 @@ public class MainController {
 
         // Pattern for non-negative integers
         final Pattern numPattern = Pattern.compile("\\d+");
-        final ChangeListener createButtonListenerEPSG = new ChangeListener<String>() {
+        final ChangeListener createButtonListenerEpsg = new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 Boolean disable = newValue.trim().isEmpty();
@@ -465,7 +463,7 @@ public class MainController {
 
         // Do some validation (using the Java 8 lambda syntax).
         coordinateOptions.valueProperty().addListener(createButtonListener);
-        epsgCode.textProperty().addListener(createButtonListenerEPSG);
+        epsgCode.textProperty().addListener(createButtonListenerEpsg);
 
         dialog.getDialogPane().setContent(grid);
 
@@ -606,7 +604,7 @@ public class MainController {
         // Pattern for non-negative integers
         final Pattern numPattern = Pattern.compile("\\d+");
 
-        final ChangeListener createButtonListenerEPSG = new ChangeListener<String>() {
+        final ChangeListener createButtonListenerEpsg = new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 Boolean disable = newValue.trim().isEmpty();
@@ -645,7 +643,7 @@ public class MainController {
 
         // Do some validation (using the Java 8 lambda syntax).
         coordinateOptions.valueProperty().addListener(createButtonListener);
-        epsgCode.textProperty().addListener(createButtonListenerEPSG);
+        epsgCode.textProperty().addListener(createButtonListenerEpsg);
 
         dialog.getDialogPane().setContent(grid);
 
@@ -781,7 +779,7 @@ public class MainController {
         final Pattern numPattern = Pattern.compile("\\d+");
 
         // Listeners for validity of input to disable/enable
-        final ChangeListener createButtonListenerEPSG = new ChangeListener<String>() {
+        final ChangeListener createButtonListenerEpsg = new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 Boolean disable = newValue.trim().isEmpty();
@@ -822,7 +820,7 @@ public class MainController {
         // Binding the listeners to the text inputs
         networkName.textProperty().addListener(createButtonListener);
         coordinateOptions.valueProperty().addListener(createButtonListener);
-        epsgCode.textProperty().addListener(createButtonListenerEPSG);
+        epsgCode.textProperty().addListener(createButtonListenerEpsg);
 
         dialog.getDialogPane().setContent(grid);
 
@@ -1237,7 +1235,7 @@ public class MainController {
      * Initializes the map event handlers, including map clicks and marker clicks
      */
     private void setupEventHandlers() {
-        // Handler to add node by left clicking on the map
+        // Handler to add node by left-clicking on the map
         mapView.addEventHandler(MapViewEvent.MAP_CLICKED, event -> {
             event.consume();
             final Coordinate coordinate = event.getCoordinate().normalize();
@@ -1245,7 +1243,7 @@ public class MainController {
             this.extendedNetwork.addNode(coordinate);
         });
 
-        // Handler to remove a node by double clicking it
+        // Handler to remove a node by double-clicking it
         mapView.addEventHandler(MarkerEvent.MARKER_DOUBLECLICKED, event -> {
             event.consume();
             Marker marker = event.getMarker();
@@ -1263,7 +1261,7 @@ public class MainController {
                     new MapLabel(event.getMarker().getId(), 10, -10).setVisible(true).setCssClass("green-label"));
         });
 
-        // Handler to create link by right clicking the first node, then the second
+        // Handler to create link by right-clicking the first node, then the second
         mapView.addEventHandler(MarkerEvent.MARKER_RIGHTCLICKED, event -> {
             event.consume();
             if (firstNodeMarker == null) {
@@ -1315,7 +1313,6 @@ public class MainController {
         });
 
         mapView.addEventHandler(MapViewEvent.MAP_POINTER_MOVED, event -> {
-            // logger.debug("pointer moved to " + event.getCoordinate());
             labelCursor.setText("Cursor at: " + event.getCoordinate().toString());
         });
 
@@ -1926,7 +1923,12 @@ public class MainController {
         // Run network cleaner
         NetworkCleaner nc = new NetworkCleaner();
         String cleanedFilePath = "./data/" + this.extendedNetwork.getNetwork().getName() + "_cleaned_file.xml";
-        nc.run(tempFile.getAbsolutePath(), cleanedFilePath);
+        try {
+            nc.run(tempFile.getAbsolutePath(), cleanedFilePath);
+        }
+        catch (NullPointerException e) {
+            e.printStackTrace();
+        }
 
         // Clean mapview of all previous elements
         this.extendedNetwork.clear();
