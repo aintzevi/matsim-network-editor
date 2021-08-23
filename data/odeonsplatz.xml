@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE network SYSTEM "http://www.matsim.org/files/dtd/network_v2.dtd">
+<network name="New Network">
+
+	<attributes>
+		<attribute name="coordinateReferenceSystem" class="java.lang.String" >EPSG: 4326</attribute>
+	</attributes>
+<!-- ====================================================================== -->
+
+	<nodes>
+		<node id="node_1629030865" x="11.577603950300212" y="48.143955366251305" z="0.0" origid="node_1629030865" >
+		</node>
+		<node id="node_1629030866" x="11.577335729398722" y="48.14344707916379" z="0.0" origid="node_1629030866" >
+		</node>
+		<node id="node_1629030867" x="11.57790435770988" y="48.143332534899855" z="0.0" origid="node_1629030867" >
+		</node>
+		<node id="node_1629030869" x="11.57839788416862" y="48.144270358539984" z="0.0" origid="node_1629030869" >
+		</node>
+		<node id="node_1629030871" x="11.581819358349128" y="48.143539448337094" z="0.0" origid="node_1629030871" >
+		</node>
+		<node id="node_1629030939" x="11.578160825252814" y="48.143825807363356" z="0.0" origid="node_1629030939" >
+		</node>
+		<node id="node_1629234787" x="11.578877908706671" y="48.14532389198115" z="0.0" origid="node_1629234787" >
+		</node>
+	</nodes>
+
+<!-- ====================================================================== -->
+
+	<links capperiod="01:00:00" effectivecellsize="7.5" effectivelanewidth="3.75">
+		<link id="link_1629030903" from="node_1629030869" to="node_1629030871" length="0.003498673361800002" freespeed="23.88" capacity="1800.0" permlanes="1.0" oneway="1" modes="car" >
+		</link>
+		<link id="link_1629030905" from="node_1629030871" to="node_1629030869" length="0.003498673361800002" freespeed="13.88" capacity="1800.0" permlanes="1.0" oneway="1" modes="car" >
+		</link>
+		<link id="link_1629030913" from="node_1629030866" to="node_1629030865" length="5.74715769165926E-4" freespeed="13.88" capacity="1800.0" permlanes="1.0" oneway="1" modes="car" >
+		</link>
+		<link id="link_1629030914" from="node_1629030865" to="node_1629030866" length="5.74715769165926E-4" freespeed="13.88" capacity="1800.0" permlanes="1.0" oneway="1" modes="car" >
+		</link>
+		<link id="link_1629030917" from="node_1629030867" to="node_1629030866" length="5.80050467330545E-4" freespeed="13.88" capacity="1800.0" permlanes="1.0" oneway="1" modes="car" >
+		</link>
+		<link id="link_1629030918" from="node_1629030866" to="node_1629030867" length="5.80050467330545E-4" freespeed="13.88" capacity="1800.0" permlanes="1.0" oneway="1" modes="car" >
+		</link>
+		<link id="link_1629030943" from="node_1629030865" to="node_1629030939" length="5.717475127032729E-4" freespeed="13.88" capacity="1800.0" permlanes="1.0" oneway="1" modes="car" >
+		</link>
+		<link id="link_1629030944" from="node_1629030939" to="node_1629030865" length="5.717475127032729E-4" freespeed="13.88" capacity="1800.0" permlanes="1.0" oneway="1" modes="car" >
+		</link>
+		<link id="link_1629030948" from="node_1629030939" to="node_1629030869" length="5.038081759997382E-4" freespeed="13.88" capacity="1800.0" permlanes="1.0" oneway="1" modes="car" >
+		</link>
+		<link id="link_1629030949" from="node_1629030869" to="node_1629030939" length="5.038081759997382E-4" freespeed="13.88" capacity="1800.0" permlanes="1.0" oneway="1" modes="car" >
+		</link>
+		<link id="link_1629030960" from="node_1629030939" to="node_1629030867" length="5.55961620822268E-4" freespeed="13.88" capacity="1800.0" permlanes="1.0" oneway="1" modes="car" >
+		</link>
+		<link id="link_1629030961" from="node_1629030867" to="node_1629030939" length="5.55961620822268E-4" freespeed="13.88" capacity="1800.0" permlanes="1.0" oneway="1" modes="car" >
+		</link>
+		<link id="link_1629234791" from="node_1629030869" to="node_1629234787" length="0.0011577375647294156" freespeed="13.88" capacity="1800.0" permlanes="1.0" oneway="1" modes="car" >
+		</link>
+		<link id="link_1629234792" from="node_1629234787" to="node_1629030869" length="0.0011577375647294156" freespeed="13.88" capacity="1800.0" permlanes="1.0" oneway="1" modes="car" >
+		</link>
+	</links>
+
+<!-- ====================================================================== -->
+
+</network>
