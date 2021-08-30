@@ -1,1 +1,6 @@
-/home/katerina/Documents/TUM/4th-semester/IDP/MATSimNetworkEditor/src/main/java/Main.java
+/Users/katerinaintzevidou/IdeaProjects/msm/matsim-network-editor/src/main/java/org/matsim/networkEditor/controllers/MainController.java
+/Users/katerinaintzevidou/IdeaProjects/msm/matsim-network-editor/src/main/java/org/matsim/networkEditor/AppLauncher.java
+/Users/katerinaintzevidou/IdeaProjects/msm/matsim-network-editor/src/main/java/org/matsim/networkEditor/elements/ExtendedNetwork.java
+/Users/katerinaintzevidou/IdeaProjects/msm/matsim-network-editor/src/main/java/org/matsim/networkEditor/elements/ValidationTableEntry.java
+/Users/katerinaintzevidou/IdeaProjects/msm/matsim-network-editor/src/main/java/org/matsim/networkEditor/App.java
+/Users/katerinaintzevidou/IdeaProjects/msm/matsim-network-editor/src/main/java/org/matsim/networkEditor/visualElements/NetworkInfo.java
