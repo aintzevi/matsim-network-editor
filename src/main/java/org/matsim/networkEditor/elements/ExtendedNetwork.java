@@ -120,7 +120,10 @@ public class ExtendedNetwork {
         this.network = NetworkUtils.createNetwork();
         this.networkPath = networkPath;
         this.coordinateSystem = coordinateSystem;
+
         System.out.println("---------------------------------------READER---------------------------------------");
+
+        long startTime = System.nanoTime();
         // Target is the default for our map, therefore WGS84
         new MatsimNetworkReader(coordinateSystem, "EPSG: 4326", this.network).readFile(networkPath);
 
@@ -133,6 +136,11 @@ public class ExtendedNetwork {
 
         initializeTableViews();
         paintToMap();
+
+        long endTime = System.nanoTime();
+        //divided by 1000000 to get milliseconds.
+        long duration = (endTime - startTime)/1000000;
+        System.out.println("Time elapsed to load network: " + duration + "ms");
     }
 
     public ExtendedNetwork(String networkPath, String coordinateSystem, VBox vBoxNetWork, VBox vBoxNodes, VBox vBoxLinks, VBox vBoxValidation, MapView mapView) {
@@ -141,6 +149,8 @@ public class ExtendedNetwork {
         this.networkPath = networkPath;
         this.coordinateSystem = coordinateSystem;
         System.out.println("-------------------------------------OSM READER-------------------------------------");
+
+        long startTime = System.nanoTime();
         new OsmNetworkReader(this.network, TransformationFactory.getCoordinateTransformation(this.getCoordinateSystem(), TransformationFactory.WGS84))
                 .parse(this.networkPath);
 
@@ -152,6 +162,11 @@ public class ExtendedNetwork {
         }
         initializeTableViews();
         paintToMap();
+
+        long endTime = System.nanoTime();
+        //divided by 1000000 to get milliseconds.
+        long duration = (endTime - startTime)/1000000;
+        System.out.println("Time elapsed to load network: " + duration + "ms");
     }
 
     /**
